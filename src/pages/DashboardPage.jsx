@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, memo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,15 +12,256 @@ import {
   FaGlobe,
   FaMapMarkerAlt,
   FaSave,
-  FaEdit,
-  FaShareAlt,
   FaRegCopy,
   FaMoon,
-  FaSun
+  FaSun,
+  FaEdit
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
+import { useSpring, animated } from '@react-spring/web';
+
+// Reusable ContactRow
+const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition"
+    >
+      <div className="flex items-center gap-3">
+        <div className="text-xl text-[#FFC300]">{icon}</div>
+        <div className="text-left">
+          <p className="font-medium text-sm text-gray-900 dark:text-white">{label}</p>
+          <p className="text-xs text-gray-700 dark:text-gray-400 truncate">{value}</p>
+        </div>
+      </div>
+      <button
+        onClick={e => {
+          e.preventDefault();
+          onCopy();
+        }}
+        className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition"
+      >
+        <FaRegCopy className="text-sm" />
+      </button>
+    </a>
+  );
+});
+
+// Extracted CardContent to top-level to preserve input focus
+const CardContent = memo(function CardContent({
+  API,
+  form,
+  editMode,
+  handleChange,
+  bannerFile,
+  avatarFile,
+  setBannerFile,
+  setAvatarFile,
+  uploadFile,
+  theme,
+  setTheme
+}) {
+  return (
+    <>
+      <div className="absolute top-3 right-3 z-10">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:scale-105 transition"
+        >
+          {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-800" />}
+        </button>
+      </div>
+
+      <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
+        {form.bannerUrl && (
+          <img
+            src={form.bannerUrl.startsWith('http') ? form.bannerUrl : `${API}${form.bannerUrl}`}
+            alt="Banner"
+            className="w-full h-full object-cover"
+          />
+        )}
+        {form.avatarUrl && (
+          <img
+            src={form.avatarUrl.startsWith('http') ? form.avatarUrl : `${API}${form.avatarUrl}`}
+            alt="Avatar"
+            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 object-cover shadow-lg"
+          />
+        )}
+      </div>
+
+      {editMode ? (
+        <div className="px-6 pt-4 pb-6 space-y-4 text-left">
+          {/* Name */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+            />
+          </div>
+          {/* Title */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Title</label>
+            <input
+              type="text"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+            />
+          </div>
+          {/* Subtitle */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Subtitle / Organization</label>
+            <input
+              type="text"
+              name="subtitle"
+              value={form.subtitle}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+            />
+          </div>
+          {/* Tags */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Tags (comma-separated)</label>
+            <input
+              type="text"
+              name="tags"
+              value={form.tags.join(', ')}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+            />
+          </div>
+          {/* Phone */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Phone</label>
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+            />
+          </div>
+          {/* Website */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Website</label>
+            <input
+              type="url"
+              name="website"
+              value={form.website}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+            />
+          </div>
+          {/* Social + Location */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Instagram</label>
+              <input
+                type="text"
+                name="instagram"
+                value={form.socialLinks.instagram}
+                onChange={handleChange}
+                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">LinkedIn</label>
+              <input
+                type="text"
+                name="linkedin"
+                value={form.socialLinks.linkedin}
+                onChange={handleChange}
+                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Twitter</label>
+              <input
+                type="text"
+                name="twitter"
+                value={form.socialLinks.twitter}
+                onChange={handleChange}
+                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Location</label>
+              <input
+                type="text"
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              />
+            </div>
+          </div>
+          {/* File uploads */}
+          <div className="grid grid-cols-2 gap-4 items-end">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Banner</label>  
+              <input
+                type="file"
+                onChange={e => setBannerFile(e.target.files[0])}
+                className="block w-full text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded focus:outline-none file:bg-gray-700 file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
+              />
+              {bannerFile && (
+                <button
+                  onClick={() => uploadFile(bannerFile, 'banner')}
+                  className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm"
+                >
+                  Upload
+                </button>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Avatar</label>  
+              <input
+                type="file"
+                onChange={e => setAvatarFile(e.target.files[0])}
+                className="block w-full text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded focus:outline-none file:bg-gray-700 file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
+              />
+              {avatarFile && (
+                <button
+                  onClick={() => uploadFile(avatarFile, 'avatar')}
+                  className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm"
+                >
+                  Upload
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="px-6 pt-16 pb-6 text-center space-y-2">
+          <h1 className="text-2xl font-bold dark:text-white">{form.name}</h1>
+          {form.title && <p className="text-base font-semibold text-gray-700 dark:text-gray-300">{form.title}</p>}
+          {form.subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{form.subtitle}</p>}
+          {form.tags.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1">
+              {form.tags.map(t => (
+                <span
+                  key={t}
+                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+});
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -29,13 +270,41 @@ export default function DashboardPage() {
   const { theme, setTheme } = useTheme();
 
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState({});
   const [loading, setLoading] = useState(true);
+  const [showQR, setShowQR] = useState(false);
+  const [message, setMessage] = useState('');
+  const [darkMode, setDarkMode] = useState(theme === 'dark');
+  const [form, setForm] = useState({
+    name: '',
+    title: '',
+    subtitle: '',
+    tags: [],
+    ownerEmail: '',
+    phone: '',
+    website: '',
+    location: '',
+    bio: '',
+    socialLinks: { instagram: '', linkedin: '', twitter: '' },
+    bannerUrl: '',
+    avatarUrl: ''
+  });
   const [editMode, setEditMode] = useState(false);
   const [bannerFile, setBannerFile] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
-  const [showQR, setShowQR] = useState(false);
-  const [message, setMessage] = useState('');
+
+  useEffect(() => setDarkMode(theme === 'dark'), [theme]);
+
+  const { rotateY } = useSpring({
+    rotateY: darkMode ? 180 : 0,
+    config: { tension: 200, friction: 20 }
+  });
+
+  // Auto-hide message
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(''), 2000);
+    return () => clearTimeout(t);
+  }, [message]);
 
   // Fetch profile
   useEffect(() => {
@@ -46,30 +315,55 @@ export default function DashboardPage() {
     axios
       .get(`${API}/api/profile/${profileId}`)
       .then(res => {
-        setProfile(res.data);
-        setForm(res.data);
+        const data = res.data;
+        setProfile(data);
+        setForm({
+          name: data.name || '',
+          title: data.title || '',
+          subtitle: data.subtitle || '',
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          ownerEmail: data.ownerEmail || '',
+          phone: data.phone || '',
+          website: data.website || '',
+          location: data.location || '',
+          bio: data.bio || '',
+          socialLinks: {
+            instagram: data.socialLinks?.instagram || '',
+            linkedin: data.socialLinks?.linkedin || '',
+            twitter: data.socialLinks?.twitter || ''
+          },
+          bannerUrl: data.bannerUrl || '',
+          avatarUrl: data.avatarUrl || ''
+        });
       })
       .catch(() => navigate('/login', { replace: true }))
       .finally(() => setLoading(false));
   }, [API, profileId, navigate]);
 
-  // Handle inputs
-  const handleChange = e => {
+  // Clipboard
+  const copyToClipboard = useCallback(txt => {
+    navigator.clipboard.writeText(txt);
+    setMessage('Copied!');
+  }, []);
+
+  // Handle changes
+  const handleChange = useCallback(e => {
     const { name, value } = e.target;
-    if (name === 'tags') {
-      setForm(f => ({ ...f, tags: value.split(',').map(t => t.trim()) }));
-    } else if (['instagram', 'linkedin', 'twitter'].includes(name)) {
-      setForm(f => ({
-        ...f,
-        socialLinks: { ...f.socialLinks, [name]: value }
-      }));
-    } else {
-      setForm(f => ({ ...f, [name]: value }));
-    }
-  };
+    setForm(prev => {
+      const updated = { ...prev };
+      if (name === 'tags') {
+        updated.tags = value.split(',').map(t => t.trim());
+      } else if (['instagram', 'linkedin', 'twitter'].includes(name)) {
+        updated.socialLinks = { ...prev.socialLinks, [name]: value };
+      } else {
+        updated[name] = value;
+      }
+      return updated;
+    });
+  }, []);
 
   // Save edits
-  const saveProfile = async () => {
+  const saveProfile = useCallback(async () => {
     try {
       await axios.put(`${API}/api/profile/${profileId}`, form);
       setProfile(form);
@@ -78,428 +372,291 @@ export default function DashboardPage() {
     } catch {
       setMessage('Save failed');
     }
-  };
+  }, [API, profileId, form]);
 
   // Upload files
-  const uploadFile = async (file, field) => {
-    if (!file) return;
-    const fd = new FormData();
-    fd.append(field, file);
-    try {
-      const { data } = await axios.post(
-        `${API}/api/profile/${profileId}/${field}`,
-        fd,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      setForm(f => ({ ...f, [`${field}Url`]: data.url }));
-      setProfile(p => ({ ...p, [`${field}Url`]: data.url }));
-      setMessage(`${field} uploaded`);
-      if (field === 'banner') setBannerFile(null);
-      else setAvatarFile(null);
-    } catch {
-      setMessage('Upload failed');
-    }
-  };
-
-  // Clipboard helper
-  const copyToClipboard = txt => {
-    navigator.clipboard.writeText(txt);
-    setMessage('Copied!');
-  };
-
-  // Share profile
-  const shareProfile = () => {
-    const url = `${API.replace(/\/$/, '')}/p/${profile.activationCode}`;
-    if (navigator.share) {
-      navigator.share({ title: profile.name, url }).catch(() => copyToClipboard(url));
-    } else {
-      copyToClipboard(url);
-    }
-  };
-
-  // Logout
-  const logout = () => {
-    localStorage.removeItem('profileId');
-    navigate('/login', { replace: true });
-  };
-
-  // Loading
-  if (loading) return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-900 dark:to-gray-800">
-      <p className="animate-pulse text-indigo-600 dark:text-indigo-300">Loading…</p>
-    </div>
+  const uploadFile = useCallback(
+    async (file, field) => {
+      if (!file) return;
+      const fd = new FormData();
+      fd.append(field, file);
+      try {
+        const { data } = await axios.post(
+          `${API}/api/profile/${profileId}/${field}`,
+          fd,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        setForm(f => ({ ...f, [`${field}Url`]: data.url }));
+        setProfile(p => ({ ...p, [`${field}Url`]: data.url }));
+        setMessage(`${field} uploaded`);
+        if (field === 'banner') setBannerFile(null);
+        else setAvatarFile(null);
+      } catch {
+        setMessage('Upload failed');
+      }
+    },
+    [profileId]
   );
 
-  // Profile not found
-  if (!profile) return (
-    <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <p className="text-red-500 dark:text-red-400">Profile not found.</p>
-    </div>
-  );
-
-  // Build vCard
-  const vCard = [
+  // vCard
+  const vCardLines = [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    `FN:${form.name}`,
-    `TITLE:${form.title || ''}`,
-    `ORG:${form.subtitle || ''}`,
-    `EMAIL;TYPE=work:${form.ownerEmail}`,
-    form.phone && `TEL;TYPE=CELL:${form.phone}`,
-    `URL:${API}/p/${profile.activationCode}`,
-    form.socialLinks.instagram && `X-SOCIALPROFILE;type=instagram:https://instagram.com/${form.socialLinks.instagram}`,
-    form.socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${form.socialLinks.linkedin}`,
-    form.socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${form.socialLinks.twitter}`,
-    form.website && `URL;type=work:${form.website}`,
+    `FN:${profile?.name || ''}`,
+    `TITLE:${profile?.title || ''}`,
+    `ORG:${profile?.subtitle || ''}`,
+    `EMAIL;TYPE=work:${profile?.ownerEmail || ''}`,
+    profile?.phone && `TEL;TYPE=CELL:${profile.phone}`,
+    `URL:${window.location.origin}/p/${profile?.activationCode || ''}`,
+    profile?.socialLinks?.instagram &&
+      `X-SOCIALPROFILE;type=instagram:https://instagram.com/${profile.socialLinks.instagram}`,
+    profile?.socialLinks?.linkedin &&
+      `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${profile.socialLinks.linkedin}`,
+    profile?.socialLinks?.twitter &&
+      `X-SOCIALPROFILE;type=twitter:https://twitter.com/${profile.socialLinks.twitter}`,
+    profile?.website && `URL;type=work:${profile.website}`,
     'END:VCARD'
-  ].filter(Boolean).join('\n');
+  ].filter(Boolean);
+  const vCard = vCardLines.join('\n');
+
+  const downloadVCard = useCallback(() => {
+    const blob = new Blob([vCard], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(profile?.name || 'profile').replace(/\s+/g, '_')}.vcf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [vCard, profile?.name]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="animate-pulse text-gray-500">Loading profile…</div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="text-red-500">Profile not found.</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex justify-center items-start pt-8 px-4 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-900 dark:to-gray-800">
-      <div
-        className="relative w-full max-w-md rounded-2xl overflow-hidden border border-white/20 dark:border-gray-700/20 shadow-lg"
-        style={{
-          backgroundColor: 'rgba(255,255,255,0.15)',
-          backdropFilter: 'blur(20px)',
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'2\'/%3E%3CfeColorMatrix type=\'saturate\' values=\'0\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'0.03\'/%3E%3C/svg%3E")'
-        }}
-      >
-
-        {/* Theme Toggle */}
-        <div className="absolute top-3 right-3">
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:scale-110 transition"
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+      <div key={profileId} className="relative w-full max-w-md" style={{ perspective: 800 }}>
+        {!editMode ? (
+          <animated.div
+            style={{
+              transform: rotateY.to(r => `rotateY(${r}deg)`),
+              transformStyle: 'preserve-3d',
+              WebkitTransformStyle: 'preserve-3d',
+              transformOrigin: 'center center'
+            }}
+            className="relative w-full"
           >
-            {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon />}
+            {/* front face */}
+            <div
+              className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
+              <CardContent
+                API={API}
+                form={form}
+                editMode={editMode}
+                handleChange={handleChange}
+                bannerFile={bannerFile}
+                avatarFile={avatarFile}
+                setBannerFile={setBannerFile}
+                setAvatarFile={setAvatarFile}
+                uploadFile={uploadFile}
+                theme={theme}
+                setTheme={setTheme}
+              />
+            </div>
+            {/* back face */}
+            <div
+              className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
+              style={{
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)'
+              }}
+            >
+              <CardContent
+                API={API}
+                form={form}
+                editMode={editMode}
+                handleChange={handleChange}
+                bannerFile={bannerFile}
+                avatarFile={avatarFile}
+                setBannerFile={setBannerFile}
+                setAvatarFile={setAvatarFile}
+                uploadFile={uploadFile}
+                theme={theme}
+                setTheme={setTheme}
+              />
+            </div>
+          </animated.div>
+        ) : (
+          <div className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+            <CardContent
+              API={API}
+              form={form}
+              editMode={editMode}
+              handleChange={handleChange}
+              bannerFile={bannerFile}
+              avatarFile={avatarFile}
+              setBannerFile={setBannerFile}
+              setAvatarFile={setAvatarFile}
+              uploadFile={uploadFile}
+              theme={theme}
+              setTheme={setTheme}
+            />
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="px-6 pb-6 flex items-center gap-2">
+          <button
+            onClick={() => (editMode ? saveProfile() : setEditMode(true))}
+            className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg hover:bg-[#e6b200] flex items-center justify-center gap-2 text-sm font-semibold transition"
+          >
+            {editMode ? <FaSave /> : <FaEdit />} {editMode ? 'Save' : 'Edit'}
           </button>
-        </div>
-
-        {/* Banner */}
-        <div className="h-28 overflow-hidden">
-          <img
-            src={
-              profile.bannerUrl?.startsWith('http')
-                ? profile.bannerUrl
-                : API + profile.bannerUrl
-            }
-            alt="Banner"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Banner Upload */}
-        {editMode && (
-          <div className="p-2 flex justify-center gap-2">
-            <input
-              type="file"
-              accept="image/*"
-              className="text-sm"
-              onChange={e => setBannerFile(e.target.files[0])}
-            />
-            <button
-              onClick={() => uploadFile(bannerFile, 'banner')}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm"
-            >
-              Upload
-            </button>
-          </div>
-        )}
-
-        {/* Avatar */}
-        <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
-          <img
-            src={
-              profile.avatarUrl?.startsWith('http')
-                ? profile.avatarUrl
-                : API + profile.avatarUrl
-            }
-            alt="Avatar"
-            className="w-20 h-20 rounded-full border-4 border-white dark:border-gray-800 object-cover shadow-lg"
-          />
-        </div>
-
-        {/* Avatar Upload */}
-        {editMode && (
-          <div className="pt-14 pb-2 flex justify-center gap-2">
-            <input
-              type="file"
-              accept="image/*"
-              className="text-sm"
-              onChange={e => setAvatarFile(e.target.files[0])}
-            />
-            <button
-              onClick={() => uploadFile(avatarFile, 'avatar')}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm"
-            >
-              Upload
-            </button>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="pt-20 pb-4 px-4 space-y-2 text-center">
-
-          {/* Name / Titles / Tags */}
-          {editMode ? (
-            <div className="space-y-2">
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="w-full text-base font-bold text-gray-800 dark:text-gray-100 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none py-1"
-              />
-              <input
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                placeholder="Title / Role"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent focus:outline-none py-1"
-              />
-              <input
-                name="subtitle"
-                value={form.subtitle}
-                onChange={handleChange}
-                placeholder="Subtitle / Org"
-                className="w-full text-sm text-gray-600 dark:text-gray-400 bg-transparent focus:outline-none py-1"
-              />
-              <input
-                name="tags"
-                value={(form.tags || []).join(',')}
-                onChange={handleChange}
-                placeholder="Tags (comma-separated)"
-                className="w-full text-xs bg-indigo-100 dark:bg-gray-700 text-indigo-700 dark:text-indigo-200 rounded-full px-2 py-1 focus:outline-none"
-              />
-              <input
-                name="ownerEmail"
-                value={form.ownerEmail}
-                onChange={handleChange}
-                placeholder="Email"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="Phone"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <input
-                name="website"
-                value={form.website}
-                onChange={handleChange}
-                placeholder="Website URL"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <input
-                name="instagram"
-                value={form.socialLinks.instagram}
-                onChange={handleChange}
-                placeholder="Instagram username"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <input
-                name="linkedin"
-                value={form.socialLinks.linkedin}
-                onChange={handleChange}
-                placeholder="LinkedIn handle"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <input
-                name="twitter"
-                value={form.socialLinks.twitter}
-                onChange={handleChange}
-                placeholder="Twitter handle"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <input
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="Location"
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-              <textarea
-                name="bio"
-                value={form.bio}
-                onChange={handleChange}
-                placeholder="Bio"
-                rows={3}
-                className="w-full text-sm text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded py-1 px-2 focus:outline-none"
-              />
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                {profile.name}
-              </h1>
-              {profile.title && (
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  {profile.title}
-                </p>
-              )}
-              {profile.subtitle && (
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {profile.subtitle}
-                </p>
-              )}
-              {profile.tags?.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-1 mt-1">
-                  {profile.tags.map(tag => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-indigo-100 dark:bg-gray-700 text-indigo-700 dark:text-indigo-200 rounded-full text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => (editMode ? saveProfile() : setEditMode(true))}
-              className="flex items-center gap-2 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition text-sm"
-            >
-              {editMode ? <FaSave className="text-base" /> : <FaEdit className="text-base" />}{" "}
-              {editMode ? "Save" : "Edit"}
-            </button>
-            <button
-              onClick={() => setShowQR(true)}
-              className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:scale-105 transition"
-            >
-              <MdQrCode className="text-lg text-gray-800 dark:text-gray-100" />
-            </button>
-            <button
-              onClick={shareProfile}
-              className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:scale-105 transition"
-            >
-              <FaShareAlt className="text-lg text-gray-800 dark:text-gray-100" />
-            </button>
-          </div>
-
-          {/* Contact Rows (view) */}
           {!editMode && (
-            <div className="space-y-2">
-              {[
-                {
-                  icon: <FaEnvelope />,
-                  label: "Email",
-                  value: profile.ownerEmail,
-                  href: `mailto:${profile.ownerEmail}`
-                },
-                profile.phone && {
-                  icon: <FaPhone />,
-                  label: "Phone",
-                  value: profile.phone,
-                  href: `tel:${profile.phone}`
-                },
-                profile.website && {
-                  icon: <FaGlobe />,
-                  label: "Website",
-                  value: profile.website,
-                  href: profile.website
-                },
-                profile.socialLinks.instagram && {
-                  icon: <FaInstagram />,
-                  label: "Instagram",
-                  value: profile.socialLinks.instagram,
-                  href: `https://instagram.com/${profile.socialLinks.instagram}`
-                },
-                profile.socialLinks.linkedin && {
-                  icon: <FaLinkedin />,
-                  label: "LinkedIn",
-                  value: profile.socialLinks.linkedin,
-                  href: `https://linkedin.com/in/${profile.socialLinks.linkedin}`
-                },
-                profile.socialLinks.twitter && {
-                  icon: <FaTwitter />,
-                  label: "Twitter",
-                  value: profile.socialLinks.twitter,
-                  href: `https://twitter.com/${profile.socialLinks.twitter}`
-                }
-              ]
-                .filter(Boolean)
-                .map((item, i) => (
-                  <a
-                    key={i}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="text-lg text-gray-800 dark:text-gray-100">
-                        {item.icon}
-                      </div>
-                      <div className="text-left">
-                        <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
-                          {item.label}
-                        </p>
-                        <p className="truncate text-xs text-gray-600 dark:text-gray-400">
-                          {item.value}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={e => {
-                        e.preventDefault();
-                        copyToClipboard(item.value);
-                      }}
-                      className="p-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition text-sm"
-                    >
-                      <FaRegCopy className="text-sm" />
-                    </button>
-                  </a>
-                ))}
-              {profile.location && (
-                <p className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <FaMapMarkerAlt className="text-lg text-gray-800 dark:text-gray-100" />{" "}
-                  {profile.location}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Logout */}
-          <button
-            onClick={logout}
-            className="w-full mt-4 bg-red-500 text-white py-1.5 rounded-lg hover:bg-red-600 transition text-sm"
-          >
-            Logout
-          </button>
-
-          {/* QR Modal */}
-          {showQR && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div className="bg-white/90 dark:bg-gray-800/90 p-4 rounded-2xl shadow-lg text-center backdrop-blur-md">
-                <QRCode value={vCard} size={120} />
-                <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">
-                  Scan to save contact
-                </p>
-                <button
-                  onClick={() => setShowQR(false)}
-                  className="mt-2 px-3 py-1 text-gray-800 dark:text-gray-100 hover:underline text-sm"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Message */}
-          {message && (
-            <p className="text-center text-green-600 dark:text-green-400 text-sm mt-2">
-              {message}
-            </p>
+            <>
+              <button
+                onClick={() => setShowQR(true)}
+                className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
+              >
+                <MdQrCode /> QR Code
+              </button>
+              <button
+                onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
+                className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
+              >
+                <FaRegCopy />
+              </button>
+            </>
           )}
         </div>
+
+        {/* Contact Rows */}
+        {!editMode && (
+          <div className="px-6 pb-6 space-y-2">
+            {profile.ownerEmail && (
+              <ContactRow
+                icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
+                label="Email"
+                value={profile.ownerEmail}
+                href={`mailto:${profile.ownerEmail}`}
+                onCopy={() => copyToClipboard(profile.ownerEmail)}
+              />
+            )}
+            {profile.phone && (
+              <ContactRow
+                icon={<FaPhone className="text-green-500 dark:text-green-400" />}
+                label="Phone"
+                value={profile.phone}
+                href={`tel:${profile.phone}`}
+                onCopy={() => copyToClipboard(profile.phone)}
+              />
+            )}
+            {profile.website && (
+              <ContactRow
+                icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
+                label="Website"
+                value={profile.website}
+                href={profile.website}
+                onCopy={() => copyToClipboard(profile.website)}
+              />
+            )}
+            {profile.socialLinks.instagram && (
+              <ContactRow
+                icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
+                label="Instagram"
+                value={profile.socialLinks.instagram}
+                href={`https://instagram.com/${profile.socialLinks.instagram}`}
+                onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
+              />
+            )}
+            {profile.socialLinks.linkedin && (
+              <ContactRow
+                icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
+                label="LinkedIn"
+                value={profile.socialLinks.linkedin}
+                href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
+                onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
+              />
+            )}
+            {profile.socialLinks.twitter && (
+              <ContactRow
+                icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
+                label="Twitter"
+                value={profile.socialLinks.twitter}
+                href={`https://twitter.com/${profile.socialLinks.twitter}`}
+                onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
+              />
+            )}
+            {profile.location && (
+              <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+                <FaMapMarkerAlt /> {profile.location}
+              </p>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* QR Modal */}
+      {showQR && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+            <QRCode value={vCard} size={120} />
+            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to save contact</p>
+            <button onClick={() => setShowQR(false)} className="mt-3 text-blue-500 dark:text-blue-400 hover:underline">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Message */}
+      {message && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-200 dark:bg-gray-700 px-4 py-1 rounded-full text-sm shadow">
+          {message}
+        </div>
+      )}
+
+      {/* Branding Footer */}
+    <div className="mt-6 text-center">
+      <div className="text-xl font-bold text-white dark:text-white">
+        comma<span className="opacity-70">Cards</span>
+      </div>
+      <div className="text-xs text-gray-300 uppercase tracking-wide">
+       CONTINUED NETWORKING
+      </div>
+      <a
+       href="https://commacards.com"
+       className="mt-1 inline-block text-sm font-medium text-blue-400 hover:underline"
+      >
+       Learn More →
+     </a>
+    </div>
+
+
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeUp {
+          animation: fadeUp 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
