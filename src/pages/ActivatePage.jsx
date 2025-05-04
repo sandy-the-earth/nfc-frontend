@@ -25,7 +25,7 @@ export default function ActivatePage() {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/auth/activate-profile',
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/activate-profile`,
         formData
       );
       setMessage(response.data.message);
