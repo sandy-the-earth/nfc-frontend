@@ -446,11 +446,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-0 bg-[#181e29]">
-      <div className="relative w-full max-w-lg mx-auto mt-8 mb-0 flex flex-col items-center">
-        <div className="w-full rounded-2xl border border-gray-700 bg-[#232a3a] shadow-xl overflow-visible pb-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+      <div className="relative w-full max-w-md flex flex-col items-center justify-center flex-1">
+        <div className="w-full rounded-2xl border border-gray-700 bg-[#232a3a] dark:bg-gray-900 shadow-xl overflow-visible pb-8 flex flex-col items-center">
           {/* Banner & Avatar */}
-          <div className="h-32 bg-gray-700 rounded-t-2xl relative">
+          <div className="h-32 bg-gray-700 dark:bg-gray-800 rounded-t-2xl relative w-full">
             {form.bannerUrl && (
               <img
                 src={form.bannerUrl.startsWith('http') ? form.bannerUrl : `${API}${form.bannerUrl}`}
@@ -463,33 +463,33 @@ export default function DashboardPage() {
                 <img
                   src={form.avatarUrl.startsWith('http') ? form.avatarUrl : `${API}${form.avatarUrl}`}
                   alt="Avatar"
-                  className="w-24 h-24 rounded-full border-4 border-[#232a3a] object-cover shadow-lg bg-gray-900"
+                  className="w-24 h-24 rounded-full border-4 border-[#232a3a] dark:border-gray-900 object-cover shadow-lg bg-gray-900"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full border-4 border-[#232a3a] bg-gray-900 flex items-center justify-center text-gray-500 text-lg font-bold">Avatar</div>
+                <div className="w-24 h-24 rounded-full border-4 border-[#232a3a] dark:border-gray-900 bg-gray-900 flex items-center justify-center text-gray-500 text-lg font-bold">Avatar</div>
               )}
             </div>
           </div>
           {/* Profile Info */}
-          <div className="flex flex-col items-center pt-16 pb-2 px-6">
-            <h1 className="text-2xl font-bold text-white mb-1">{form.name}</h1>
-            {form.title && <p className="text-base font-semibold text-gray-200 mb-0">{form.title}</p>}
-            {form.subtitle && <p className="text-sm text-gray-400 mb-1">{form.subtitle}</p>}
+          <div className="flex flex-col items-center pt-16 pb-2 px-6 w-full">
+            <h1 className="text-2xl font-bold text-white mb-1 dark:text-white">{form.name}</h1>
+            {form.title && <p className="text-base font-semibold text-gray-200 mb-0 dark:text-gray-200">{form.title}</p>}
+            {form.subtitle && <p className="text-sm text-gray-400 mb-1 dark:text-gray-400">{form.subtitle}</p>}
             {form.tags.length > 0 && (
               <div className="flex flex-wrap justify-center gap-2 mt-2 mb-2">
                 {form.tags.map(t => (
-                  <span key={t} className="px-3 py-1 rounded-full text-xs font-semibold bg-[#31384a] text-gray-200 tracking-wide">{t}</span>
+                  <span key={t} className="px-3 py-1 rounded-full text-xs font-semibold bg-[#31384a] dark:bg-gray-800 text-gray-200 dark:text-gray-200 tracking-wide">{t}</span>
                 ))}
               </div>
             )}
           </div>
           {/* Action Buttons */}
-          <div className="flex justify-center gap-2 mt-2 mb-4 px-6">
+          <div className="flex justify-center gap-2 mt-2 mb-4 px-6 w-full">
             <button
               onClick={() => (editMode ? saveProfile() : setEditMode(true))}
               className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg font-semibold flex items-center justify-center gap-2 text-base shadow hover:bg-[#e6b200] transition"
             >
-              <FaEdit className="text-base" /> {editMode ? 'Save' : 'Edit'}
+              {editMode ? <FaSave className="text-base" /> : <FaEdit className="text-base" />} {editMode ? 'Save' : 'Edit'}
             </button>
             {!editMode && (
               <button
@@ -502,72 +502,229 @@ export default function DashboardPage() {
             {!editMode && (
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
-                className="w-12 h-12 bg-gray-700 text-gray-200 rounded-lg flex items-center justify-center shadow hover:bg-gray-600 transition"
+                className="w-12 h-12 bg-gray-700 dark:bg-gray-800 text-gray-200 rounded-lg flex items-center justify-center shadow hover:bg-gray-600 transition"
               >
                 <FaRegCopy className="text-lg" />
               </button>
             )}
           </div>
+          {/* Edit Mode Fields */}
+          {editMode && (
+            <div className="w-full px-6 space-y-4">
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Subtitle / Organization</label>
+                <input
+                  type="text"
+                  name="subtitle"
+                  value={form.subtitle}
+                  onChange={handleChange}
+                  className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  name="tags"
+                  value={form.tags.join(', ')}
+                  onChange={handleChange}
+                  className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Phone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Website</label>
+                <input
+                  type="url"
+                  name="website"
+                  value={form.website}
+                  onChange={handleChange}
+                  className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Instagram</label>
+                  <input
+                    type="text"
+                    name="instagram"
+                    value={form.socialLinks.instagram}
+                    onChange={handleChange}
+                    className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">LinkedIn</label>
+                  <input
+                    type="text"
+                    name="linkedin"
+                    value={form.socialLinks.linkedin}
+                    onChange={handleChange}
+                    className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Twitter</label>
+                  <input
+                    type="text"
+                    name="twitter"
+                    value={form.socialLinks.twitter}
+                    onChange={handleChange}
+                    className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={form.location}
+                    onChange={handleChange}
+                    className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 items-end">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Banner</label>  
+                  <input
+                    type="file"
+                    onChange={e => setBannerFile(e.target.files[0])}
+                    className="block w-full text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded focus:outline-none file:bg-gray-700 file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
+                  />
+                  {bannerFile && (
+                    <button
+                      onClick={() => uploadFile(bannerFile, 'banner')}
+                      className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm"
+                    >
+                      Upload
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Avatar</label>  
+                  <input
+                    type="file"
+                    onChange={e => setAvatarFile(e.target.files[0])}
+                    className="block w-full text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded focus:outline-none file:bg-gray-700 file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
+                  />
+                  {avatarFile && (
+                    <button
+                      onClick={() => uploadFile(avatarFile, 'avatar')}
+                      className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm"
+                    >
+                      Upload
+                    </button>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setEditMode(false)}
+                className="w-full mt-2 bg-gray-700 dark:bg-gray-800 text-gray-200 py-2 rounded-lg font-semibold hover:bg-gray-600 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {/* Contact Cards */}
+          {!editMode && (
+            <div className="w-full flex flex-col gap-4 mt-8 px-6">
+              {profile.ownerEmail && (
+                <ContactRow
+                  icon={<FaEnvelope className="text-blue-400 text-xl" />}
+                  label="Email"
+                  value={profile.ownerEmail}
+                  href={`mailto:${profile.ownerEmail}`}
+                  onCopy={() => copyToClipboard(profile.ownerEmail)}
+                />
+              )}
+              {profile.phone && (
+                <ContactRow
+                  icon={<FaPhone className="text-green-400 text-xl" />}
+                  label="Phone"
+                  value={profile.phone}
+                  href={`tel:${profile.phone}`}
+                  onCopy={() => copyToClipboard(profile.phone)}
+                />
+              )}
+              {profile.website && (
+                <ContactRow
+                  icon={<FaGlobe className="text-purple-400 text-xl" />}
+                  label="Website"
+                  value={profile.website}
+                  href={profile.website}
+                  onCopy={() => copyToClipboard(profile.website)}
+                />
+              )}
+              {profile.socialLinks.instagram && (
+                <ContactRow
+                  icon={<FaInstagram className="text-pink-400 text-xl" />}
+                  label="Instagram"
+                  value={profile.socialLinks.instagram}
+                  href={`https://instagram.com/${profile.socialLinks.instagram}`}
+                  onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
+                />
+              )}
+              {profile.socialLinks.linkedin && (
+                <ContactRow
+                  icon={<FaLinkedin className="text-blue-300 text-xl" />}
+                  label="LinkedIn"
+                  value={profile.socialLinks.linkedin}
+                  href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
+                  onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
+                />
+              )}
+              {profile.socialLinks.twitter && (
+                <ContactRow
+                  icon={<FaTwitter className="text-blue-200 text-xl" />}
+                  label="Twitter"
+                  value={profile.socialLinks.twitter}
+                  href={`https://twitter.com/${profile.socialLinks.twitter}`}
+                  onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
+                />
+              )}
+            </div>
+          )}
+          {/* Logout Button */}
+          <button
+            onClick={() => {
+              localStorage.removeItem('profileId');
+              navigate('/login', { replace: true });
+            }}
+            className="w-full mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
         </div>
-        {/* Contact Cards */}
-        {!editMode && (
-          <div className="w-full flex flex-col gap-4 mt-8">
-            {profile.ownerEmail && (
-              <ContactRow
-                icon={<FaEnvelope className="text-blue-400 text-xl" />}
-                label="Email"
-                value={profile.ownerEmail}
-                href={`mailto:${profile.ownerEmail}`}
-                onCopy={() => copyToClipboard(profile.ownerEmail)}
-              />
-            )}
-            {profile.phone && (
-              <ContactRow
-                icon={<FaPhone className="text-green-400 text-xl" />}
-                label="Phone"
-                value={profile.phone}
-                href={`tel:${profile.phone}`}
-                onCopy={() => copyToClipboard(profile.phone)}
-              />
-            )}
-            {profile.website && (
-              <ContactRow
-                icon={<FaGlobe className="text-purple-400 text-xl" />}
-                label="Website"
-                value={profile.website}
-                href={profile.website}
-                onCopy={() => copyToClipboard(profile.website)}
-              />
-            )}
-            {profile.socialLinks.instagram && (
-              <ContactRow
-                icon={<FaInstagram className="text-pink-400 text-xl" />}
-                label="Instagram"
-                value={profile.socialLinks.instagram}
-                href={`https://instagram.com/${profile.socialLinks.instagram}`}
-                onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
-              />
-            )}
-            {profile.socialLinks.linkedin && (
-              <ContactRow
-                icon={<FaLinkedin className="text-blue-300 text-xl" />}
-                label="LinkedIn"
-                value={profile.socialLinks.linkedin}
-                href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
-                onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
-              />
-            )}
-            {profile.socialLinks.twitter && (
-              <ContactRow
-                icon={<FaTwitter className="text-blue-200 text-xl" />}
-                label="Twitter"
-                value={profile.socialLinks.twitter}
-                href={`https://twitter.com/${profile.socialLinks.twitter}`}
-                onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
-              />
-            )}
-          </div>
-        )}
       </div>
       {/* Footer Branding */}
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
