@@ -447,7 +447,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between items-center p-4 overflow-x-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      <div className="relative w-full max-w-md flex flex-col items-center" style={{ perspective: 800, minHeight: '540px' }}>
+      <div className="relative w-full max-w-md flex flex-col items-center justify-center min-h-[640px]">
         {!editMode ? (
           <animated.div
             style={{
@@ -457,7 +457,7 @@ export default function DashboardPage() {
               transformOrigin: 'center center',
               minHeight: '100%'
             }}
-            className="relative w-full"
+            className="relative w-full flex flex-col justify-center"
           >
             {/* front face */}
             <div
