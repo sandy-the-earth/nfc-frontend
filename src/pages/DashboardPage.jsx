@@ -447,14 +447,15 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between items-center p-4 overflow-x-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      <div key={profileId} className="relative w-full max-w-md" style={{ perspective: 800 }}>
+      <div className="relative w-full max-w-md flex flex-col items-center" style={{ perspective: 800, minHeight: '540px' }}>
         {!editMode ? (
           <animated.div
             style={{
               transform: rotateY.to(r => `rotateY(${r}deg)`),
               transformStyle: 'preserve-3d',
               WebkitTransformStyle: 'preserve-3d',
-              transformOrigin: 'center center'
+              transformOrigin: 'center center',
+              minHeight: '100%'
             }}
             className="relative w-full"
           >
