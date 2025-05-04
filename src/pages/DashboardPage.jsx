@@ -446,7 +446,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen flex flex-col justify-between items-center p-4 overflow-x-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div key={profileId} className="relative w-full max-w-md" style={{ perspective: 800 }}>
         {!editMode ? (
           <animated.div
