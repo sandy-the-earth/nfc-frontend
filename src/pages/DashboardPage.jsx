@@ -51,7 +51,7 @@ const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }
   );
 });
 
-// Extracted CardContent to top-level to preserve input focus
+// Extracted CardContent to preserve input focus
 const CardContent = memo(function CardContent({
   API,
   form,
@@ -67,6 +67,7 @@ const CardContent = memo(function CardContent({
 }) {
   return (
     <>
+      {/* Theme toggle */}
       <div className="absolute top-3 right-3 z-10">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -76,6 +77,7 @@ const CardContent = memo(function CardContent({
         </button>
       </div>
 
+      {/* Banner & Avatar */}
       <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
         {form.bannerUrl && (
           <img
@@ -94,7 +96,7 @@ const CardContent = memo(function CardContent({
       </div>
 
       {editMode ? (
-        <div className="px-6 pt-4 pb-6 space-y-4 text-left">
+        <div className="px-6 pt-16 pb-6 space-y-4 text-left">
           {/* Name */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Name</label>
@@ -106,6 +108,7 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
             />
           </div>
+
           {/* Title */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Title</label>
@@ -117,6 +120,7 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
             />
           </div>
+
           {/* Subtitle */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Subtitle / Organization</label>
@@ -128,6 +132,7 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
             />
           </div>
+
           {/* Tags */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Tags (comma-separated)</label>
@@ -139,6 +144,7 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
             />
           </div>
+
           {/* Phone */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Phone</label>
@@ -150,6 +156,7 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
             />
           </div>
+
           {/* Website */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Website</label>
@@ -161,7 +168,8 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
             />
           </div>
-          {/* Social + Location */}
+
+          {/* Socials & Location */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Instagram</label>
@@ -204,10 +212,11 @@ const CardContent = memo(function CardContent({
               />
             </div>
           </div>
+
           {/* File uploads */}
           <div className="grid grid-cols-2 gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Banner</label>  
+              <label className="block text-sm font-medium mb-1 text-gray-300">Change Banner</label>
               <input
                 type="file"
                 onChange={e => setBannerFile(e.target.files[0])}
@@ -223,7 +232,7 @@ const CardContent = memo(function CardContent({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Avatar</label>  
+              <label className="block text-sm font-medium mb-1 text-gray-300">Change Avatar</label>
               <input
                 type="file"
                 onChange={e => setAvatarFile(e.target.files[0])}
@@ -286,7 +295,8 @@ export default function DashboardPage() {
     bio: '',
     socialLinks: { instagram: '', linkedin: '', twitter: '' },
     bannerUrl: '',
-    avatarUrl: ''
+    avatarUrl: '',
+    activationCode: ''
   });
   const [editMode, setEditMode] = useState(false);
   const [bannerFile, setBannerFile] = useState(null);
@@ -299,14 +309,12 @@ export default function DashboardPage() {
     config: { tension: 200, friction: 20 }
   });
 
-  // Auto-hide message
   useEffect(() => {
     if (!message) return;
     const t = setTimeout(() => setMessage(''), 2000);
     return () => clearTimeout(t);
   }, [message]);
 
-  // Fetch profile
   useEffect(() => {
     if (!profileId) {
       navigate('/login', { replace: true });
@@ -315,54 +323,51 @@ export default function DashboardPage() {
     axios
       .get(`${API}/api/profile/${profileId}`)
       .then(res => {
-        const data = res.data;
-        setProfile(data);
+        setProfile(res.data);
         setForm({
-          name: data.name || '',
-          title: data.title || '',
-          subtitle: data.subtitle || '',
-          tags: Array.isArray(data.tags) ? data.tags : [],
-          ownerEmail: data.ownerEmail || '',
-          phone: data.phone || '',
-          website: data.website || '',
-          location: data.location || '',
-          bio: data.bio || '',
+          name: res.data.name || '',
+          title: res.data.title || '',
+          subtitle: res.data.subtitle || '',
+          tags: Array.isArray(res.data.tags) ? res.data.tags : [],
+          ownerEmail: res.data.ownerEmail || '',
+          phone: res.data.phone || '',
+          website: res.data.website || '',
+          location: res.data.location || '',
+          bio: res.data.bio || '',
           socialLinks: {
-            instagram: data.socialLinks?.instagram || '',
-            linkedin: data.socialLinks?.linkedin || '',
-            twitter: data.socialLinks?.twitter || ''
+            instagram: res.data.socialLinks?.instagram || '',
+            linkedin: res.data.socialLinks?.linkedin || '',
+            twitter: res.data.socialLinks?.twitter || ''
           },
-          bannerUrl: data.bannerUrl || '',
-          avatarUrl: data.avatarUrl || ''
+          bannerUrl: res.data.bannerUrl || '',
+          avatarUrl: res.data.avatarUrl || '',
+          activationCode: res.data.activationCode || ''
         });
       })
       .catch(() => navigate('/login', { replace: true }))
       .finally(() => setLoading(false));
   }, [API, profileId, navigate]);
 
-  // Clipboard
   const copyToClipboard = useCallback(txt => {
     navigator.clipboard.writeText(txt);
     setMessage('Copied!');
   }, []);
 
-  // Handle changes
   const handleChange = useCallback(e => {
     const { name, value } = e.target;
     setForm(prev => {
-      const updated = { ...prev };
+      let newForm = { ...prev };
       if (name === 'tags') {
-        updated.tags = value.split(',').map(t => t.trim());
+        newForm.tags = value.split(',').map(t => t.trim());
       } else if (['instagram', 'linkedin', 'twitter'].includes(name)) {
-        updated.socialLinks = { ...prev.socialLinks, [name]: value };
+        newForm.socialLinks = { ...prev.socialLinks, [name]: value };
       } else {
-        updated[name] = value;
+        newForm[name] = value;
       }
-      return updated;
+      return newForm;
     });
   }, []);
 
-  // Save edits
   const saveProfile = useCallback(async () => {
     try {
       await axios.put(`${API}/api/profile/${profileId}`, form);
@@ -374,7 +379,6 @@ export default function DashboardPage() {
     }
   }, [API, profileId, form]);
 
-  // Upload files
   const uploadFile = useCallback(
     async (file, field) => {
       if (!file) return;
@@ -389,16 +393,14 @@ export default function DashboardPage() {
         setForm(f => ({ ...f, [`${field}Url`]: data.url }));
         setProfile(p => ({ ...p, [`${field}Url`]: data.url }));
         setMessage(`${field} uploaded`);
-        if (field === 'banner') setBannerFile(null);
-        else setAvatarFile(null);
+        field === 'banner' ? setBannerFile(null) : setAvatarFile(null);
       } catch {
         setMessage('Upload failed');
       }
     },
-    [profileId]
+    [API, profileId]
   );
 
-  // vCard
   const vCardLines = [
     'BEGIN:VCARD',
     'VERSION:3.0',
@@ -408,11 +410,11 @@ export default function DashboardPage() {
     `EMAIL;TYPE=work:${profile?.ownerEmail || ''}`,
     profile?.phone && `TEL;TYPE=CELL:${profile.phone}`,
     `URL:${window.location.origin}/p/${profile?.activationCode || ''}`,
-    profile?.socialLinks?.instagram &&
+    profile?.socialLinks.instagram &&
       `X-SOCIALPROFILE;type=instagram:https://instagram.com/${profile.socialLinks.instagram}`,
-    profile?.socialLinks?.linkedin &&
+    profile?.socialLinks.linkedin &&
       `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${profile.socialLinks.linkedin}`,
-    profile?.socialLinks?.twitter &&
+    profile?.socialLinks.twitter &&
       `X-SOCIALPROFILE;type=twitter:https://twitter.com/${profile.socialLinks.twitter}`,
     profile?.website && `URL;type=work:${profile.website}`,
     'END:VCARD'
@@ -436,7 +438,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
@@ -446,23 +447,34 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center p-4 overflow-x-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      <div key={profileId} className="relative w-full max-w-md" style={{ perspective: 800 }}>
-        {!editMode ? (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 relative">
+      {/* Logout */}
+      <div className="absolute top-4 right-4 z-50">
+        <button
+          onClick={() => {
+            localStorage.removeItem('profileId');
+            navigate('/login');
+          }}
+          className="px-3 py-1 text-sm font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Card Wrapper */}
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl">
+        {/* Flip Card */}
+        <div className="relative" style={{ perspective: 800 }}>
           <animated.div
             style={{
               transform: rotateY.to(r => `rotateY(${r}deg)`),
               transformStyle: 'preserve-3d',
-              WebkitTransformStyle: 'preserve-3d',
-              transformOrigin: 'center center'
+              WebkitTransformStyle: 'preserve-3d'
             }}
             className="relative w-full"
           >
-            {/* front face */}
-            <div
-              className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
+            {/* Front Face */}
+            <div className="relative" style={{ backfaceVisibility: 'hidden' }}>
               <CardContent
                 API={API}
                 form={form}
@@ -477,9 +489,9 @@ export default function DashboardPage() {
                 setTheme={setTheme}
               />
             </div>
-            {/* back face */}
+            {/* Back Face */}
             <div
-              className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
+              className="absolute inset-0"
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
@@ -501,23 +513,7 @@ export default function DashboardPage() {
               />
             </div>
           </animated.div>
-        ) : (
-          <div className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-            <CardContent
-              API={API}
-              form={form}
-              editMode={editMode}
-              handleChange={handleChange}
-              bannerFile={bannerFile}
-              avatarFile={avatarFile}
-              setBannerFile={setBannerFile}
-              setAvatarFile={setAvatarFile}
-              uploadFile={uploadFile}
-              theme={theme}
-              setTheme={setTheme}
-            />
-          </div>
-        )}
+        </div>
 
         {/* Actions */}
         <div className="px-6 pb-6 flex items-center gap-2">
@@ -603,7 +599,7 @@ export default function DashboardPage() {
               />
             )}
             {profile.location && (
-              <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+              <p className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <FaMapMarkerAlt /> {profile.location}
               </p>
             )}
@@ -617,7 +613,10 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
             <QRCode value={vCard} size={120} />
             <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to save contact</p>
-            <button onClick={() => setShowQR(false)} className="mt-3 text-blue-500 dark:text-blue-400 hover:underline">
+            <button
+              onClick={() => setShowQR(false)}
+              className="mt-3 text-blue-500 dark:text-blue-400 hover:underline"
+            >
               Close
             </button>
           </div>
@@ -631,32 +630,21 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Branding Footer */}
-    <div className="mt-6 text-center">
-      <div className="text-xl font-bold text-white dark:text-white">
-        comma<span className="opacity-70">Cards</span>
+      {/* Footer */}
+      <div className="mt-6 text-center">
+        <div className="text-xl font-bold dark:text-white">
+          comma<span className="opacity-70">Cards</span>
+        </div>
+        <div className="text-xs text-gray-300 uppercase tracking-wide">
+          CONTINUED NETWORKING
+        </div>
+        <a
+          href="https://commacards.com"
+          className="mt-1 inline-block text-sm font-medium text-blue-400 hover:underline"
+        >
+          Learn More →
+        </a>
       </div>
-      <div className="text-xs text-gray-300 uppercase tracking-wide">
-       CONTINUED NETWORKING
-      </div>
-      <a
-       href="https://commacards.com"
-       className="mt-1 inline-block text-sm font-medium text-blue-400 hover:underline"
-      >
-       Learn More →
-     </a>
-    </div>
-
-
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeUp {
-          animation: fadeUp 0.5s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 }
