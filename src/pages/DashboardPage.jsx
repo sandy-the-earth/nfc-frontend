@@ -446,112 +446,75 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center p-4 overflow-x-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      <div className="relative w-full max-w-md flex flex-col items-center justify-center min-h-[640px]">
-        {!editMode ? (
-          <animated.div
-            style={{
-              transform: rotateY.to(r => `rotateY(${r}deg)`),
-              transformStyle: 'preserve-3d',
-              WebkitTransformStyle: 'preserve-3d',
-              transformOrigin: 'center center',
-              minHeight: '100%'
-            }}
-            className="relative w-full flex flex-col justify-center"
-          >
-            {/* front face */}
-            <div
-              className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              <CardContent
-                API={API}
-                form={form}
-                editMode={editMode}
-                handleChange={handleChange}
-                bannerFile={bannerFile}
-                avatarFile={avatarFile}
-                setBannerFile={setBannerFile}
-                setAvatarFile={setAvatarFile}
-                uploadFile={uploadFile}
-                theme={theme}
-                setTheme={setTheme}
+    <div className="min-h-screen flex flex-col items-center justify-start p-0 bg-[#181e29]">
+      <div className="relative w-full max-w-lg mx-auto mt-8 mb-0 flex flex-col items-center">
+        <div className="w-full rounded-2xl border border-gray-700 bg-[#232a3a] shadow-xl overflow-visible pb-8">
+          {/* Banner & Avatar */}
+          <div className="h-32 bg-gray-700 rounded-t-2xl relative">
+            {form.bannerUrl && (
+              <img
+                src={form.bannerUrl.startsWith('http') ? form.bannerUrl : `${API}${form.bannerUrl}`}
+                alt="Banner"
+                className="w-full h-full object-cover rounded-t-2xl"
               />
+            )}
+            <div className="absolute left-1/2 top-[88px] -translate-x-1/2 z-10">
+              {form.avatarUrl ? (
+                <img
+                  src={form.avatarUrl.startsWith('http') ? form.avatarUrl : `${API}${form.avatarUrl}`}
+                  alt="Avatar"
+                  className="w-24 h-24 rounded-full border-4 border-[#232a3a] object-cover shadow-lg bg-gray-900"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full border-4 border-[#232a3a] bg-gray-900 flex items-center justify-center text-gray-500 text-lg font-bold">Avatar</div>
+              )}
             </div>
-            {/* back face */}
-            <div
-              className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
-              style={{
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)'
-              }}
-            >
-              <CardContent
-                API={API}
-                form={form}
-                editMode={editMode}
-                handleChange={handleChange}
-                bannerFile={bannerFile}
-                avatarFile={avatarFile}
-                setBannerFile={setBannerFile}
-                setAvatarFile={setAvatarFile}
-                uploadFile={uploadFile}
-                theme={theme}
-                setTheme={setTheme}
-              />
-            </div>
-          </animated.div>
-        ) : (
-          <div className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-            <CardContent
-              API={API}
-              form={form}
-              editMode={editMode}
-              handleChange={handleChange}
-              bannerFile={bannerFile}
-              avatarFile={avatarFile}
-              setBannerFile={setBannerFile}
-              setAvatarFile={setAvatarFile}
-              uploadFile={uploadFile}
-              theme={theme}
-              setTheme={setTheme}
-            />
           </div>
-        )}
-
-        {/* Actions */}
-        <div className="px-6 pb-6 flex items-center gap-2">
-          <button
-            onClick={() => (editMode ? saveProfile() : setEditMode(true))}
-            className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg hover:bg-[#e6b200] flex items-center justify-center gap-2 text-sm font-semibold transition"
-          >
-            {editMode ? <FaSave /> : <FaEdit />} {editMode ? 'Save' : 'Edit'}
-          </button>
-          {!editMode && (
-            <>
+          {/* Profile Info */}
+          <div className="flex flex-col items-center pt-16 pb-2 px-6">
+            <h1 className="text-2xl font-bold text-white mb-1">{form.name}</h1>
+            {form.title && <p className="text-base font-semibold text-gray-200 mb-0">{form.title}</p>}
+            {form.subtitle && <p className="text-sm text-gray-400 mb-1">{form.subtitle}</p>}
+            {form.tags.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 mt-2 mb-2">
+                {form.tags.map(t => (
+                  <span key={t} className="px-3 py-1 rounded-full text-xs font-semibold bg-[#31384a] text-gray-200 tracking-wide">{t}</span>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Action Buttons */}
+          <div className="flex justify-center gap-2 mt-2 mb-4 px-6">
+            <button
+              onClick={() => (editMode ? saveProfile() : setEditMode(true))}
+              className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg font-semibold flex items-center justify-center gap-2 text-base shadow hover:bg-[#e6b200] transition"
+            >
+              <FaEdit className="text-base" /> {editMode ? 'Save' : 'Edit'}
+            </button>
+            {!editMode && (
               <button
                 onClick={() => setShowQR(true)}
-                className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 text-base shadow hover:bg-blue-700 transition"
               >
-                <MdQrCode /> QR Code
+                <MdQrCode className="text-lg" /> QR Code
               </button>
+            )}
+            {!editMode && (
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
-                className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
+                className="w-12 h-12 bg-gray-700 text-gray-200 rounded-lg flex items-center justify-center shadow hover:bg-gray-600 transition"
               >
-                <FaRegCopy />
+                <FaRegCopy className="text-lg" />
               </button>
-            </>
-          )}
+            )}
+          </div>
         </div>
-
-        {/* Contact Rows */}
+        {/* Contact Cards */}
         {!editMode && (
-          <div className="px-6 pb-6 space-y-2">
+          <div className="w-full flex flex-col gap-4 mt-8">
             {profile.ownerEmail && (
               <ContactRow
-                icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
+                icon={<FaEnvelope className="text-blue-400 text-xl" />}
                 label="Email"
                 value={profile.ownerEmail}
                 href={`mailto:${profile.ownerEmail}`}
@@ -560,7 +523,7 @@ export default function DashboardPage() {
             )}
             {profile.phone && (
               <ContactRow
-                icon={<FaPhone className="text-green-500 dark:text-green-400" />}
+                icon={<FaPhone className="text-green-400 text-xl" />}
                 label="Phone"
                 value={profile.phone}
                 href={`tel:${profile.phone}`}
@@ -569,7 +532,7 @@ export default function DashboardPage() {
             )}
             {profile.website && (
               <ContactRow
-                icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
+                icon={<FaGlobe className="text-purple-400 text-xl" />}
                 label="Website"
                 value={profile.website}
                 href={profile.website}
@@ -578,7 +541,7 @@ export default function DashboardPage() {
             )}
             {profile.socialLinks.instagram && (
               <ContactRow
-                icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
+                icon={<FaInstagram className="text-pink-400 text-xl" />}
                 label="Instagram"
                 value={profile.socialLinks.instagram}
                 href={`https://instagram.com/${profile.socialLinks.instagram}`}
@@ -587,7 +550,7 @@ export default function DashboardPage() {
             )}
             {profile.socialLinks.linkedin && (
               <ContactRow
-                icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
+                icon={<FaLinkedin className="text-blue-300 text-xl" />}
                 label="LinkedIn"
                 value={profile.socialLinks.linkedin}
                 href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
@@ -596,23 +559,26 @@ export default function DashboardPage() {
             )}
             {profile.socialLinks.twitter && (
               <ContactRow
-                icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
+                icon={<FaTwitter className="text-blue-200 text-xl" />}
                 label="Twitter"
                 value={profile.socialLinks.twitter}
                 href={`https://twitter.com/${profile.socialLinks.twitter}`}
                 onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
               />
             )}
-            {profile.location && (
-              <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
-                <FaMapMarkerAlt /> {profile.location}
-              </p>
-            )}
           </div>
         )}
       </div>
-
-      {/* QR Modal */}
+      {/* Footer Branding */}
+      <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
+        <div className="w-full flex flex-col items-center" style={{maxWidth: 240}}>
+          <div className="text-xl font-bold text-gray-400 tracking-tight" style={{fontFamily: 'monospace', letterSpacing: '0.01em'}}>
+            <span className="text-gray-200">comma</span><span className="opacity-60">Profile</span>
+          </div>
+          <div className="text-xs text-gray-400 tracking-widest mt-1 mb-2" style={{fontFamily: 'monospace'}}>NETWORKING MADE SIMPLE</div>
+        </div>
+      </footer>
+      {/* QR Modal and Toast remain unchanged */}
       {showQR && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
@@ -631,23 +597,6 @@ export default function DashboardPage() {
           {message}
         </div>
       )}
-
-      {/* Branding Footer */}
-    <div className="mt-6 text-center">
-      <div className="text-xl font-bold text-white dark:text-white">
-        comma<span className="opacity-70">Cards</span>
-      </div>
-      <div className="text-xs text-gray-300 uppercase tracking-wide">
-       CONTINUED NETWORKING
-      </div>
-      <a
-       href="https://commacards.com"
-       className="mt-1 inline-block text-sm font-medium text-blue-400 hover:underline"
-      >
-       Learn More →
-     </a>
-    </div>
-
 
       <style>{`
         @keyframes fadeUp {
