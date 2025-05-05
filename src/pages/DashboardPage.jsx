@@ -77,14 +77,14 @@ const CardContent = memo(function CardContent({
       </div>
 
       <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
-        {form.bannerUrl && (
+        {form && form.bannerUrl && (
           <img
             src={form.bannerUrl.startsWith('http') ? form.bannerUrl : `${API}${form.bannerUrl}`}
             alt="Banner"
             className="w-full h-full object-cover"
           />
         )}
-        {form.avatarUrl && (
+        {form && form.avatarUrl && (
           <img
             src={form.avatarUrl.startsWith('http') ? form.avatarUrl : `${API}${form.avatarUrl}`}
             alt="Avatar"
