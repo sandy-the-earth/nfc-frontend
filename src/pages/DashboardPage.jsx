@@ -470,6 +470,16 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+          {/* Theme Toggle */}
+          <div className="absolute top-3 right-3 z-10">
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:scale-105 transition"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-800" />}
+            </button>
+          </div>
           {/* Profile Info */}
           <div className="flex flex-col items-center pt-16 pb-2 px-6 w-full">
             <h1 className="text-2xl font-bold text-white mb-1 dark:text-white">{form.name}</h1>
@@ -484,27 +494,27 @@ export default function DashboardPage() {
             )}
           </div>
           {/* Action Buttons */}
-          <div className="flex justify-center gap-2 mt-2 mb-4 px-6 w-full">
+          <div className="flex gap-2 justify-center mt-2 mb-4 px-6 w-full">
             <button
               onClick={() => (editMode ? saveProfile() : setEditMode(true))}
-              className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg font-semibold flex items-center justify-center gap-2 text-base shadow hover:bg-[#e6b200] transition"
+              className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow hover:bg-[#e6b200] transition"
             >
               {editMode ? <FaSave className="text-base" /> : <FaEdit className="text-base" />} {editMode ? 'Save' : 'Edit'}
             </button>
             {!editMode && (
               <button
                 onClick={() => setShowQR(true)}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 text-base shadow hover:bg-blue-700 transition"
+                className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-semibold shadow hover:bg-blue-600 transition"
               >
-                <MdQrCode className="text-lg" /> QR Code
+                <MdQrCode className="text-base" /> QR Code
               </button>
             )}
             {!editMode && (
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
-                className="w-12 h-12 bg-gray-700 dark:bg-gray-800 text-gray-200 rounded-lg flex items-center justify-center shadow hover:bg-gray-600 transition"
+                className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
               >
-                <FaRegCopy className="text-lg" />
+                <FaRegCopy className="text-base" />
               </button>
             )}
           </div>
@@ -720,7 +730,7 @@ export default function DashboardPage() {
               localStorage.removeItem('profileId');
               navigate('/login', { replace: true });
             }}
-            className="w-full mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition"
+            className="w-40 mx-auto mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition"
           >
             Logout
           </button>
