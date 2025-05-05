@@ -63,10 +63,18 @@ const CardContent = memo(function CardContent({
   setAvatarFile,
   uploadFile,
   theme,
-  setTheme
+  setTheme,
+  profile,
+  setEditMode,
+  setShowQR,
+  copyToClipboard,
+  showQR,
+  downloadVCard,
+  isDashboard
 }) {
   return (
     <>
+      {/* Theme toggle */}
       <div className="absolute top-3 right-3 z-10">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -75,7 +83,7 @@ const CardContent = memo(function CardContent({
           {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-800" />}
         </button>
       </div>
-
+      {/* Banner + Avatar */}
       <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
         {form && form.bannerUrl && (
           <img
@@ -92,8 +100,125 @@ const CardContent = memo(function CardContent({
           />
         )}
       </div>
-
-      {editMode ? (
+      {/* Main Info */}
+      <div className="px-6 pt-14 pb-2 text-center">
+        <h1 className="text-2xl font-bold dark:text-white">{form && form.name ? form.name : ''}</h1>
+        {form && form.title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{form.title}</p>}
+        {form && form.subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{form.subtitle}</p>}
+        {form && form.tags && form.tags.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-1 mt-2">
+            {form.tags.map(t => (
+              <span
+                key={t}
+                className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Actions */}
+      {!editMode && (
+        <div className="px-6 mt-2 flex gap-2">
+          <button
+            onClick={() => setEditMode(true)}
+            className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow hover:bg-[#e6b200] transition"
+          >
+            <FaEdit className="text-base" /> Edit
+          </button>
+          <button
+            onClick={() => setShowQR(true)}
+            className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-semibold shadow hover:bg-blue-600 transition"
+          >
+            <MdQrCode className="text-base" /> QR Code
+          </button>
+          <button
+            onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
+            className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+          >
+            <FaRegCopy className="text-base" />
+          </button>
+        </div>
+      )}
+      {/* Contact Rows */}
+      {!editMode && (
+        <div className="px-6 mt-4 space-y-2">
+          {profile.ownerEmail && (
+            <ContactRow
+              icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
+              label="Email"
+              value={profile.ownerEmail}
+              href={`mailto:${profile.ownerEmail}`}
+              onCopy={() => copyToClipboard(profile.ownerEmail)}
+            />
+          )}
+          {profile.phone && (
+            <ContactRow
+              icon={<FaPhone className="text-green-500 dark:text-green-400" />}
+              label="Phone"
+              value={profile.phone}
+              href={`tel:${profile.phone}`}
+              onCopy={() => copyToClipboard(profile.phone)}
+            />
+          )}
+          {profile.website && (
+            <ContactRow
+              icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
+              label="Website"
+              value={profile.website}
+              href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+              onCopy={() => copyToClipboard(profile.website)}
+            />
+          )}
+          {profile.socialLinks?.instagram && (
+            <ContactRow
+              icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
+              label="Instagram"
+              value={profile.socialLinks.instagram}
+              href={`https://instagram.com/${profile.socialLinks.instagram}`}
+              onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
+            />
+          )}
+          {profile.socialLinks?.linkedin && (
+            <ContactRow
+              icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
+              label="LinkedIn"
+              value={profile.socialLinks.linkedin}
+              href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
+              onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
+            />
+          )}
+          {profile.socialLinks?.twitter && (
+            <ContactRow
+              icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
+              label="Twitter"
+              value={profile.socialLinks.twitter}
+              href={`https://twitter.com/${profile.socialLinks.twitter}`}
+              onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
+            />
+          )}
+          {profile.location && (
+            <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+              <FaMapMarkerAlt /> {profile.location}
+            </p>
+          )}
+        </div>
+      )}
+      {/* Logout Button */}
+      {!editMode && (
+        <button
+          onClick={() => {
+            localStorage.removeItem('profileId');
+            window.location.href = '/login';
+          }}
+          className="w-40 mx-auto mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition block"
+        >
+          Logout
+        </button>
+      )}
+      {/* Edit Mode Fields (unchanged) */}
+      {editMode && (
         <div className="px-6 pt-4 pb-6 space-y-4 text-left">
           {/* Name */}
           <div className="space-y-2">
@@ -239,24 +364,6 @@ const CardContent = memo(function CardContent({
               )}
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="px-6 pt-16 pb-6 text-center space-y-2">
-          <h1 className="text-2xl font-bold dark:text-white">{form && form.name ? form.name : ''}</h1>
-          {form && form.title && <p className="text-base font-semibold text-gray-700 dark:text-gray-300">{form.title}</p>}
-          {form && form.subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{form.subtitle}</p>}
-          {form && form.tags && form.tags.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1">
-              {form.tags.map(t => (
-                <span
-                  key={t}
-                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       )}
     </>
@@ -469,101 +576,14 @@ export default function DashboardPage() {
               uploadFile={uploadFile}
               theme={theme}
               setTheme={setTheme}
+              profile={profile}
+              setEditMode={setEditMode}
+              setShowQR={setShowQR}
+              copyToClipboard={copyToClipboard}
+              showQR={showQR}
+              downloadVCard={downloadVCard}
+              isDashboard={true}
             />
-            {/* Actions and contact rows below card content */}
-            {!editMode && (
-              <div className="flex gap-2 justify-center mt-4 px-6 w-full">
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow hover:bg-[#e6b200] transition"
-                >
-                  <FaEdit className="text-base" /> Edit
-                </button>
-                <button
-                  onClick={() => setShowQR(true)}
-                  className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-semibold shadow hover:bg-blue-600 transition"
-                >
-                  <MdQrCode className="text-base" /> QR Code
-                </button>
-                <button
-                  onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
-                  className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                >
-                  <FaRegCopy className="text-base" />
-                </button>
-              </div>
-            )}
-            {/* Contact Cards */}
-            {!editMode && (
-              <div className="w-full flex flex-col gap-4 mt-8 px-6 pb-4">
-                {profile.ownerEmail && (
-                  <ContactRow
-                    icon={<FaEnvelope className="text-blue-400 text-xl" />}
-                    label="Email"
-                    value={profile.ownerEmail}
-                    href={`mailto:${profile.ownerEmail}`}
-                    onCopy={() => copyToClipboard(profile.ownerEmail)}
-                  />
-                )}
-                {profile.phone && (
-                  <ContactRow
-                    icon={<FaPhone className="text-green-400 text-xl" />}
-                    label="Phone"
-                    value={profile.phone}
-                    href={`tel:${profile.phone}`}
-                    onCopy={() => copyToClipboard(profile.phone)}
-                  />
-                )}
-                {profile.website && (
-                  <ContactRow
-                    icon={<FaGlobe className="text-purple-400 text-xl" />}
-                    label="Website"
-                    value={profile.website}
-                    href={profile.website}
-                    onCopy={() => copyToClipboard(profile.website)}
-                  />
-                )}
-                {profile.socialLinks?.instagram && (
-                  <ContactRow
-                    icon={<FaInstagram className="text-pink-400 text-xl" />}
-                    label="Instagram"
-                    value={profile.socialLinks.instagram}
-                    href={`https://instagram.com/${profile.socialLinks.instagram}`}
-                    onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
-                  />
-                )}
-                {profile.socialLinks?.linkedin && (
-                  <ContactRow
-                    icon={<FaLinkedin className="text-blue-300 text-xl" />}
-                    label="LinkedIn"
-                    value={profile.socialLinks.linkedin}
-                    href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
-                    onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
-                  />
-                )}
-                {profile.socialLinks?.twitter && (
-                  <ContactRow
-                    icon={<FaTwitter className="text-blue-200 text-xl" />}
-                    label="Twitter"
-                    value={profile.socialLinks.twitter}
-                    href={`https://twitter.com/${profile.socialLinks.twitter}`}
-                    onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
-                  />
-                )}
-              </div>
-            )}
-            {/* Logout Button */}
-            {!editMode && (
-              <button
-                onClick={() => {
-                  localStorage.removeItem('profileId');
-                  navigate('/login', { replace: true });
-                }}
-                className="w-40 mx-auto mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition block"
-              >
-                Logout
-              </button>
-            )}
           </div>
           {/* Back face (edit mode) can remain as is */}
           <div
@@ -586,6 +606,13 @@ export default function DashboardPage() {
               uploadFile={uploadFile}
               theme={theme}
               setTheme={setTheme}
+              profile={profile}
+              setEditMode={setEditMode}
+              setShowQR={setShowQR}
+              copyToClipboard={copyToClipboard}
+              showQR={showQR}
+              downloadVCard={downloadVCard}
+              isDashboard={true}
             />
             {editMode && (
               <button
