@@ -633,14 +633,6 @@ export default function DashboardPage() {
               isDashboard={true}
               saveProfile={saveProfile}
             />
-            {editMode && (
-              <button
-                onClick={() => setEditMode(false)}
-                className="w-40 mx-auto mt-6 bg-gray-700 dark:bg-gray-800 text-gray-200 py-2 rounded-lg font-semibold hover:bg-gray-600 transition block"
-              >
-                Cancel
-              </button>
-            )}
           </div>
         </animated.div>
       </div>
@@ -648,10 +640,10 @@ export default function DashboardPage() {
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
         <div className="w-full flex flex-col items-center max-w-xs">
           <div className="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-tight">
-            comma<span className="opacity-70">Profile</span>
+            comma<span className="opacity-70">Cards</span>
           </div>
           <div className="text-xs uppercase text-gray-500 dark:text-gray-500 tracking-widest mt-1 mb-2">
-            NETWORKING MADE SIMPLE
+            CONTINUED NETWORKING
           </div>
         </div>
       </footer>
