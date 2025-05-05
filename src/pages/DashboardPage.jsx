@@ -269,12 +269,7 @@ export default function DashboardPage() {
   const profileId = localStorage.getItem('profileId');
   const { theme, setTheme } = useTheme();
 
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showQR, setShowQR] = useState(false);
-  const [message, setMessage] = useState('');
-  const [darkMode, setDarkMode] = useState(theme === 'dark');
-  const [form, setForm] = useState({
+  const initialForm = {
     name: '',
     title: '',
     subtitle: '',
@@ -287,7 +282,14 @@ export default function DashboardPage() {
     socialLinks: { instagram: '', linkedin: '', twitter: '' },
     bannerUrl: '',
     avatarUrl: ''
-  });
+  };
+
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showQR, setShowQR] = useState(false);
+  const [message, setMessage] = useState('');
+  const [darkMode, setDarkMode] = useState(theme === 'dark');
+  const [form, setForm] = useState(initialForm);
   const [editMode, setEditMode] = useState(false);
   const [bannerFile, setBannerFile] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -315,22 +317,15 @@ export default function DashboardPage() {
     axios
       .get(`${API}/api/profile/${profileId}`)
       .then(res => {
-        const data = res.data;
+        const data = res.data || {};
         setProfile(data);
         setForm({
-          name: data.name || '',
-          title: data.title || '',
-          subtitle: data.subtitle || '',
+          ...initialForm,
+          ...data,
           tags: Array.isArray(data.tags) ? data.tags : [],
-          ownerEmail: data.ownerEmail || '',
-          phone: data.phone || '',
-          website: data.website || '',
-          location: data.location || '',
-          bio: data.bio || '',
           socialLinks: {
-            instagram: data.socialLinks?.instagram || '',
-            linkedin: data.socialLinks?.linkedin || '',
-            twitter: data.socialLinks?.twitter || ''
+            ...initialForm.socialLinks,
+            ...(data.socialLinks || {})
           },
           bannerUrl: data.bannerUrl || '',
           avatarUrl: data.avatarUrl || ''
