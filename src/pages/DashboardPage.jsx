@@ -70,7 +70,8 @@ const CardContent = memo(function CardContent({
   copyToClipboard,
   showQR,
   downloadVCard,
-  isDashboard
+  isDashboard,
+  saveProfile
 }) {
   return (
     <>
@@ -598,6 +599,7 @@ export default function DashboardPage() {
               showQR={showQR}
               downloadVCard={downloadVCard}
               isDashboard={true}
+              saveProfile={saveProfile}
             />
           </div>
           {/* Back face (edit mode) can remain as is */}
@@ -628,6 +630,7 @@ export default function DashboardPage() {
               showQR={showQR}
               downloadVCard={downloadVCard}
               isDashboard={true}
+              saveProfile={saveProfile}
             />
             {editMode && (
               <button
