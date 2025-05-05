@@ -454,7 +454,7 @@ export default function DashboardPage() {
         >
           {/* Front face */}
           <div
-            className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+            className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-visible"
             style={{ backfaceVisibility: 'hidden' }}
           >
             <CardContent
@@ -470,10 +470,104 @@ export default function DashboardPage() {
               theme={theme}
               setTheme={setTheme}
             />
+            {/* Actions and contact rows below card content */}
+            {!editMode && (
+              <div className="flex gap-2 justify-center mt-4 px-6 w-full">
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow hover:bg-[#e6b200] transition"
+                >
+                  <FaEdit className="text-base" /> Edit
+                </button>
+                <button
+                  onClick={() => setShowQR(true)}
+                  className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-semibold shadow hover:bg-blue-600 transition"
+                >
+                  <MdQrCode className="text-base" /> QR Code
+                </button>
+                <button
+                  onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
+                  className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                >
+                  <FaRegCopy className="text-base" />
+                </button>
+              </div>
+            )}
+            {/* Contact Cards */}
+            {!editMode && (
+              <div className="w-full flex flex-col gap-4 mt-8 px-6 pb-4">
+                {profile.ownerEmail && (
+                  <ContactRow
+                    icon={<FaEnvelope className="text-blue-400 text-xl" />}
+                    label="Email"
+                    value={profile.ownerEmail}
+                    href={`mailto:${profile.ownerEmail}`}
+                    onCopy={() => copyToClipboard(profile.ownerEmail)}
+                  />
+                )}
+                {profile.phone && (
+                  <ContactRow
+                    icon={<FaPhone className="text-green-400 text-xl" />}
+                    label="Phone"
+                    value={profile.phone}
+                    href={`tel:${profile.phone}`}
+                    onCopy={() => copyToClipboard(profile.phone)}
+                  />
+                )}
+                {profile.website && (
+                  <ContactRow
+                    icon={<FaGlobe className="text-purple-400 text-xl" />}
+                    label="Website"
+                    value={profile.website}
+                    href={profile.website}
+                    onCopy={() => copyToClipboard(profile.website)}
+                  />
+                )}
+                {profile.socialLinks?.instagram && (
+                  <ContactRow
+                    icon={<FaInstagram className="text-pink-400 text-xl" />}
+                    label="Instagram"
+                    value={profile.socialLinks.instagram}
+                    href={`https://instagram.com/${profile.socialLinks.instagram}`}
+                    onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
+                  />
+                )}
+                {profile.socialLinks?.linkedin && (
+                  <ContactRow
+                    icon={<FaLinkedin className="text-blue-300 text-xl" />}
+                    label="LinkedIn"
+                    value={profile.socialLinks.linkedin}
+                    href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
+                    onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
+                  />
+                )}
+                {profile.socialLinks?.twitter && (
+                  <ContactRow
+                    icon={<FaTwitter className="text-blue-200 text-xl" />}
+                    label="Twitter"
+                    value={profile.socialLinks.twitter}
+                    href={`https://twitter.com/${profile.socialLinks.twitter}`}
+                    onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
+                  />
+                )}
+              </div>
+            )}
+            {/* Logout Button */}
+            {!editMode && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('profileId');
+                  navigate('/login', { replace: true });
+                }}
+                className="w-40 mx-auto mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition block"
+              >
+                Logout
+              </button>
+            )}
           </div>
-          {/* Back face */}
+          {/* Back face (edit mode) can remain as is */}
           <div
-            className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+            className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-visible"
             style={{
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
@@ -493,6 +587,14 @@ export default function DashboardPage() {
               theme={theme}
               setTheme={setTheme}
             />
+            {editMode && (
+              <button
+                onClick={() => setEditMode(false)}
+                className="w-40 mx-auto mt-6 bg-gray-700 dark:bg-gray-800 text-gray-200 py-2 rounded-lg font-semibold hover:bg-gray-600 transition block"
+              >
+                Cancel
+              </button>
+            )}
           </div>
         </animated.div>
       </div>
