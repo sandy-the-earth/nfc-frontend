@@ -213,7 +213,8 @@ const CardContent = memo(function CardContent({
             localStorage.removeItem('profileId');
             window.location.href = '/login';
           }}
-          className="w-40 mx-auto mt-6 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition block"
+          className="w-40 mx-auto mt-10 mb-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition block shadow-lg"
+          style={{marginBottom: '32px'}}
         >
           Logout
         </button>
@@ -645,11 +646,13 @@ export default function DashboardPage() {
       </div>
       {/* Footer Branding */}
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
-        <div className="w-full flex flex-col items-center" style={{maxWidth: 240}}>
-          <div className="text-xl font-bold text-gray-400 tracking-tight" style={{fontFamily: 'monospace', letterSpacing: '0.01em'}}>
-            <span className="text-gray-200">comma</span><span className="opacity-60">Profile</span>
+        <div className="w-full flex flex-col items-center max-w-xs">
+          <div className="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-tight">
+            comma<span className="opacity-70">Profile</span>
           </div>
-          <div className="text-xs text-gray-400 tracking-widest mt-1 mb-2" style={{fontFamily: 'monospace'}}>NETWORKING MADE SIMPLE</div>
+          <div className="text-xs uppercase text-gray-500 dark:text-gray-500 tracking-widest mt-1 mb-2">
+            NETWORKING MADE SIMPLE
+          </div>
         </div>
       </footer>
       {/* QR Modal and Toast remain unchanged */}
