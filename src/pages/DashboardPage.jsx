@@ -457,7 +457,19 @@ export default function DashboardPage() {
             className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <CardContent />
+            <CardContent
+              API={API}
+              form={form}
+              editMode={editMode}
+              handleChange={handleChange}
+              bannerFile={bannerFile}
+              avatarFile={avatarFile}
+              setBannerFile={setBannerFile}
+              setAvatarFile={setAvatarFile}
+              uploadFile={uploadFile}
+              theme={theme}
+              setTheme={setTheme}
+            />
           </div>
           {/* Back face */}
           <div
@@ -468,7 +480,19 @@ export default function DashboardPage() {
               transform: 'rotateY(180deg)'
             }}
           >
-            <CardContent />
+            <CardContent
+              API={API}
+              form={form}
+              editMode={editMode}
+              handleChange={handleChange}
+              bannerFile={bannerFile}
+              avatarFile={avatarFile}
+              setBannerFile={setBannerFile}
+              setAvatarFile={setAvatarFile}
+              uploadFile={uploadFile}
+              theme={theme}
+              setTheme={setTheme}
+            />
           </div>
         </animated.div>
       </div>
