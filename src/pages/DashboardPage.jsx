@@ -222,110 +222,110 @@ const CardContent = memo(function CardContent({
         <div className="px-6 pt-4 pb-6 space-y-4 text-left">
           {/* Name */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Name</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Name</label>
             <input
               type="text"
               name="name"
               value={form.name}
               onChange={handleChange}
-              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
           {/* Title */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Title</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Title</label>
             <input
               type="text"
               name="title"
               value={form.title}
               onChange={handleChange}
-              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
           {/* Subtitle */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Subtitle / Organization</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Subtitle / Organization</label>
             <input
               type="text"
               name="subtitle"
               value={form.subtitle}
               onChange={handleChange}
-              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
           {/* Tags */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Tags (comma-separated)</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Tags (comma-separated)</label>
             <input
               type="text"
               name="tags"
               value={form.tags.join(', ')}
               onChange={handleChange}
-              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
           {/* Phone */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Phone</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Phone</label>
             <input
               type="tel"
               name="phone"
               value={form.phone}
               onChange={handleChange}
-              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
           {/* Website */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Website</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Website</label>
             <input
               type="url"
               name="website"
               value={form.website}
               onChange={handleChange}
-              className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
           {/* Social + Location */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Instagram</label>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Instagram</label>
               <input
                 type="text"
                 name="instagram"
                 value={form.socialLinks.instagram}
                 onChange={handleChange}
-                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">LinkedIn</label>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">LinkedIn</label>
               <input
                 type="text"
                 name="linkedin"
                 value={form.socialLinks.linkedin}
                 onChange={handleChange}
-                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Twitter</label>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Twitter</label>
               <input
                 type="text"
                 name="twitter"
                 value={form.socialLinks.twitter}
                 onChange={handleChange}
-                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-300 mb-1 ml-1">Location</label>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Location</label>
               <input
                 type="text"
                 name="location"
                 value={form.location}
                 onChange={handleChange}
-                className="w-full text-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FFC300]"
+                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
           </div>
@@ -336,7 +336,7 @@ const CardContent = memo(function CardContent({
               <input
                 type="file"
                 onChange={e => setBannerFile(e.target.files[0])}
-                className="block w-full text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded focus:outline-none file:bg-gray-700 file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
+                className="block w-full text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-900 dark:file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
               />
               {bannerFile && (
                 <button
@@ -352,7 +352,7 @@ const CardContent = memo(function CardContent({
               <input
                 type="file"
                 onChange={e => setAvatarFile(e.target.files[0])}
-                className="block w-full text-sm text-gray-100 bg-gray-800 border border-gray-700 rounded focus:outline-none file:bg-gray-700 file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
+                className="block w-full text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-900 dark:file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
               />
               {avatarFile && (
                 <button
@@ -363,6 +363,21 @@ const CardContent = memo(function CardContent({
                 </button>
               )}
             </div>
+          </div>
+          {/* Save and Cancel Buttons */}
+          <div className="flex gap-2 justify-end pt-2">
+            <button
+              onClick={() => setEditMode(false)}
+              className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={saveProfile}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+            >
+              Save
+            </button>
           </div>
         </div>
       )}
