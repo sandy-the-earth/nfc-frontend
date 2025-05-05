@@ -242,10 +242,10 @@ const CardContent = memo(function CardContent({
         </div>
       ) : (
         <div className="px-6 pt-16 pb-6 text-center space-y-2">
-          <h1 className="text-2xl font-bold dark:text-white">{form.name}</h1>
-          {form.title && <p className="text-base font-semibold text-gray-700 dark:text-gray-300">{form.title}</p>}
-          {form.subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{form.subtitle}</p>}
-          {form.tags.length > 0 && (
+          <h1 className="text-2xl font-bold dark:text-white">{form && form.name ? form.name : ''}</h1>
+          {form && form.title && <p className="text-base font-semibold text-gray-700 dark:text-gray-300">{form.title}</p>}
+          {form && form.subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{form.subtitle}</p>}
+          {form && form.tags && form.tags.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1">
               {form.tags.map(t => (
                 <span
