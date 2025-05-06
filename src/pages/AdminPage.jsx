@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.jsx
+// src/pages/AdminDashboard.tsx
 
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
@@ -11,9 +11,21 @@ import {
   FaPlus
 } from 'react-icons/fa';
 
-export default function AdminDashboard() {
-  const API = import.meta.env.VITE_API_BASE_URL;
-  const [profiles, setProfiles] = useState([]);
+interface Profile {
+  _id: string;
+  activationCode: string;
+  ownerEmail?: string;
+  name?: string;
+  status: 'active' | 'pending_activation';
+}
+
+export const AdminDashboard: React.FC = () => {
+  const API = import.meta.env.VITE_API_BASE_URL as string;
+  const [authorized, setAuthorized] = useState(false);
+  const [adminKey, setAdminKey] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -27,7 +39,24 @@ export default function AdminDashboard() {
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
-  // Fetch list
+  // Authenticate admin by attempting a protected call
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!adminKey) {
+      setAuthError('Enter the admin key');
+      return;
+    }
+    axios.defaults.headers.common['x-admin-key'] = adminKey;
+    try {
+      await axios.get(`${API}/api/admin/profiles`, { params: { page: 1, limit: 1 } });
+      setAuthorized(true);
+    } catch {
+      delete axios.defaults.headers.common['x-admin-key'];
+      setAuthError('Invalid key');
+    }
+  };
+
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
     try {
@@ -44,10 +73,9 @@ export default function AdminDashboard() {
   }, [API, search, statusFilter, page, limit]);
 
   useEffect(() => {
-    fetchProfiles();
-  }, [fetchProfiles]);
+    if (authorized) fetchProfiles();
+  }, [authorized, fetchProfiles]);
 
-  // Create new profile
   const handleCreateProfile = async () => {
     setCreating(true);
     setCreateError('');
@@ -58,15 +86,14 @@ export default function AdminDashboard() {
       setNewCode(res.data.activationCode);
       setCreateSuccess('Activation code generated!');
       fetchProfiles();
-    } catch (err) {
+    } catch (err: any) {
       setCreateError(err.response?.data?.message || 'Failed to create profile');
     } finally {
       setCreating(false);
     }
   };
 
-  // Set explicit status
-  const updateStatus = async (id, newStatus) => {
+  const updateStatus = async (id: string, newStatus: 'active' | 'pending_activation') => {
     try {
       await axios.put(`${API}/api/admin/set-status/${id}`, { status: newStatus });
       fetchProfiles();
@@ -75,8 +102,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Delete profile
-  const deleteProfile = async id => {
+  const deleteProfile = async (id: string) => {
     if (!window.confirm('Delete this profile?')) return;
     try {
       await axios.delete(`${API}/api/admin/profiles/${id}`);
@@ -86,20 +112,45 @@ export default function AdminDashboard() {
     }
   };
 
-  // Export CSV
   const exportCSV = () => {
     const qs = new URLSearchParams({ search, status: statusFilter });
     window.location.href = `${API}/api/admin/export?${qs}`;
   };
 
-  // Copy public link
-  const copyLink = code => {
+  const copyLink = (code: string) => {
     const url = `${window.location.origin}/p/${code}`;
     navigator.clipboard.writeText(url);
     alert('Copied: ' + url);
   };
 
   const totalPages = Math.ceil(total / limit);
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <form
+          onSubmit={handleAuth}
+          className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-sm space-y-4"
+        >
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Admin Login</h2>
+          <input
+            type="password"
+            placeholder="Admin Key"
+            value={adminKey}
+            onChange={e => setAdminKey(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          />
+          {authError && <p className="text-red-600">{authError}</p>}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+          >
+            Login
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
@@ -172,11 +223,11 @@ export default function AdminDashboard() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" className="p-4 text-center">Loading…</td>
+                <td colSpan={5} className="p-4 text-center">Loading…</td>
               </tr>
             ) : profiles.length === 0 ? (
               <tr>
-                <td colSpan="5" className="p-4 text-center">No profiles</td>
+                <td colSpan={5} className="p-4 text-center">No profiles</td>
               </tr>
             ) : profiles.map(p => (
               <tr key={p._id} className="border-b dark:border-gray-700">
@@ -188,16 +239,25 @@ export default function AdminDashboard() {
                 </td>
                 <td className="px-4 py-2 flex justify-center gap-3">
                   <button
-                    onClick={() => updateStatus(p._id, p.status === 'active' ? 'pending_activation' : 'active')}
+                    onClick={() =>
+                      updateStatus(
+                        p._id,
+                        p.status === 'active' ? 'pending_activation' : 'active'
+                      )
+                    }
                     title={p.status === 'active' ? 'Deactivate' : 'Activate'}
                   >
-                    {p.status === 'active' ? <FaToggleOff size={20}/> : <FaToggleOn size={20}/>}
+                    {p.status === 'active' ? (
+                      <FaToggleOff size={20} />
+                    ) : (
+                      <FaToggleOn size={20} />
+                    )}
                   </button>
                   <button onClick={() => deleteProfile(p._id)} title="Delete">
-                    <FaTrash size={20} className="text-red-600"/>
+                    <FaTrash size={20} className="text-red-600" />
                   </button>
                   <button onClick={() => copyLink(p.activationCode)} title="Copy Link">
-                    <FaCopy size={18} className="text-blue-600"/>
+                    <FaCopy size={18} className="text-blue-600" />
                   </button>
                 </td>
               </tr>
@@ -213,13 +273,19 @@ export default function AdminDashboard() {
             onClick={() => setPage(p => Math.max(p - 1, 1))}
             disabled={page === 1}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-          >Prev</button>
-          <span>{page} / {totalPages}</span>
+          >
+            Prev
+          </button>
+          <span className="px-3">
+            {page} / {totalPages}
+          </span>
           <button
             onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-          >Next</button>
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
