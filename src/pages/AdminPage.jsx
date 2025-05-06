@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.tsx
+// src/pages/AdminPage.jsx
 
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
@@ -11,21 +11,13 @@ import {
   FaPlus
 } from 'react-icons/fa';
 
-interface Profile {
-  _id: string;
-  activationCode: string;
-  ownerEmail?: string;
-  name?: string;
-  status: 'active' | 'pending_activation';
-}
-
-export const AdminDashboard: React.FC = () => {
-  const API = import.meta.env.VITE_API_BASE_URL as string;
+export default function AdminPage() {
+  const API = import.meta.env.VITE_API_BASE_URL;
   const [authorized, setAuthorized] = useState(false);
   const [adminKey, setAdminKey] = useState('');
   const [authError, setAuthError] = useState('');
 
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profiles, setProfiles] = useState([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -50,7 +42,7 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   // Authenticate admin by attempting a protected call
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setAuthError('');
     if (!adminKey) {
@@ -97,19 +89,16 @@ export const AdminDashboard: React.FC = () => {
       setNewCode(res.data.activationCode);
       setCreateSuccess('Activation code generated!');
       fetchProfiles();
-    } catch (err: any) {
+    } catch (err) {
       setCreateError(err.response?.data?.message || 'Failed to create profile');
     } finally {
       setCreating(false);
     }
   };
 
-  const toggleStatus = async (id: string) => {
+  const toggleStatus = async (id) => {
     try {
-      const profile = profiles.find(p => p._id === id);
-      if (!profile) return;
       await axios.put(`${API}/api/admin/toggle-status/${id}`);
-      // Optimistically update local state
       setProfiles(prev =>
         prev.map(p =>
           p._id === id
@@ -122,7 +111,7 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const deleteProfile = async (id: string) => {
+  const deleteProfile = async (id) => {
     if (!window.confirm('Delete this profile?')) return;
     try {
       await axios.delete(`${API}/api/admin/profiles/${id}`);
@@ -138,7 +127,7 @@ export const AdminDashboard: React.FC = () => {
     window.location.href = `${API}/api/admin/export?${qs}`;
   };
 
-  const copyLink = (code: string) => {
+  const copyLink = (code) => {
     const url = `${window.location.origin}/p/${code}`;
     navigator.clipboard.writeText(url);
     alert('Copied: ' + url);
@@ -296,7 +285,7 @@ export const AdminDashboard: React.FC = () => {
             {page} / {totalPages}
           </span>
           <button
-            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}  
             disabled={page === totalPages}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
           >
@@ -306,4 +295,4 @@ export const AdminDashboard: React.FC = () => {
       )}
     </div>
   );
-};
+}
