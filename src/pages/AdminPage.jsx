@@ -2,7 +2,14 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { FaTrash, FaToggleOn, FaToggleOff, FaCopy, FaFileCsv } from 'react-icons/fa';
+import {
+  FaTrash,
+  FaToggleOn,
+  FaToggleOff,
+  FaCopy,
+  FaFileCsv,
+  FaPlus
+} from 'react-icons/fa';
 
 export default function AdminDashboard() {
   const API = import.meta.env.VITE_API_BASE_URL;
@@ -14,6 +21,13 @@ export default function AdminDashboard() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // For create-profile
+  const [creating, setCreating] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [createSuccess, setCreateSuccess] = useState('');
+
+  // Fetch profiles list
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
     try {
@@ -32,6 +46,24 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
+
+  // Create new profile
+  const handleCreateProfile = async () => {
+    setCreating(true);
+    setCreateError('');
+    setCreateSuccess('');
+    setNewCode('');
+    try {
+      const res = await axios.post(`${API}/api/admin/create-profile`);
+      setNewCode(res.data.activationCode);
+      setCreateSuccess('Activation code generated!');
+      fetchProfiles();
+    } catch (err) {
+      setCreateError(err.response?.data?.message || 'Failed to create profile');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const toggleStatus = async id => {
     try {
@@ -53,7 +85,9 @@ export default function AdminDashboard() {
   };
 
   const exportCSV = () => {
-    window.location.href = `${API}/api/admin/export?search=${encodeURIComponent(search)}&status=${statusFilter}`;
+    window.location.href = `${API}/api/admin/export?search=${encodeURIComponent(
+      search
+    )}&status=${statusFilter}`;
   };
 
   const copyLink = code => {
@@ -66,8 +100,39 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-100">Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+        Admin Dashboard
+      </h1>
 
+      {/* Create Profile */}
+      <div className="mb-6">
+        <button
+          onClick={handleCreateProfile}
+          disabled={creating}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+        >
+          <FaPlus /> {creating ? 'Creating…' : 'Create New Profile'}
+        </button>
+        {createSuccess && (
+          <div className="mt-2 text-green-700">{createSuccess}</div>
+        )}
+        {createError && (
+          <div className="mt-2 text-red-600">{createError}</div>
+        )}
+        {newCode && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="font-mono">{newCode}</span>
+            <button
+              onClick={() => copyLink(newCode)}
+              className="text-blue-600 hover:underline"
+            >
+              Copy Link
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Filters & Export */}
       <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
@@ -93,6 +158,7 @@ export default function AdminDashboard() {
         </button>
       </div>
 
+      {/* Profiles Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-md shadow">
         <table className="min-w-full">
           <thead>
@@ -106,47 +172,68 @@ export default function AdminDashboard() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" className="p-4 text-center">Loading...</td></tr>
-            ) : profiles.length === 0 ? (
-              <tr><td colSpan="5" className="p-4 text-center">No profiles found</td></tr>
-            ) : profiles.map(p => (
-              <tr key={p._id} className="border-b dark:border-gray-700">
-                <td className="px-4 py-2 font-mono">{p.activationCode}</td>
-                <td className="px-4 py-2">{p.ownerEmail || '—'}</td>
-                <td className="px-4 py-2">{p.name || '—'}</td>
-                <td className="px-4 py-2 text-center">
-                  {p.status === 'active' ? 'Active' : 'Pending'}
-                </td>
-                <td className="px-4 py-2 flex items-center justify-center gap-2">
-                  <button onClick={() => toggleStatus(p._id)} title="Toggle status">
-                    {p.status === 'active' ? <FaToggleOff size={20} /> : <FaToggleOn size={20} />}
-                  </button>
-                  <button onClick={() => deleteProfile(p._id)} title="Delete">
-                    <FaTrash size={20} className="text-red-600" />
-                  </button>
-                  <button onClick={() => copyLink(p.activationCode)} title="Copy link">
-                    <FaCopy size={18} className="text-blue-600" />
-                  </button>
+              <tr>
+                <td colSpan="5" className="p-4 text-center">
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : profiles.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="p-4 text-center">
+                  No profiles found
+                </td>
+              </tr>
+            ) : (
+              profiles.map(p => (
+                <tr key={p._id} className="border-b dark:border-gray-700">
+                  <td className="px-4 py-2 font-mono">{p.activationCode}</td>
+                  <td className="px-4 py-2">{p.ownerEmail || '—'}</td>
+                  <td className="px-4 py-2">{p.name || '—'}</td>
+                  <td className="px-4 py-2 text-center">
+                    {p.status === 'active' ? 'Active' : 'Pending'}
+                  </td>
+                  <td className="px-4 py-2 flex items-center justify-center gap-2">
+                    <button onClick={() => toggleStatus(p._id)}>
+                      {p.status === 'active' ? (
+                        <FaToggleOff size={20} />
+                      ) : (
+                        <FaToggleOn size={20} />
+                      )}
+                    </button>
+                    <button onClick={() => deleteProfile(p._id)}>
+                      <FaTrash size={20} className="text-red-600" />
+                    </button>
+                    <button onClick={() => copyLink(p.activationCode)}>
+                      <FaCopy size={18} className="text-blue-600" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-4">
           <button
             onClick={() => setPage(p => Math.max(p - 1, 1))}
             disabled={page === 1}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-          >Prev</button>
-          <span className="px-3">{page} / {totalPages}</span>
+          >
+            Prev
+          </button>
+          <span className="px-3">
+            {page} / {totalPages}
+          </span>
           <button
             onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-          >Next</button>
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
