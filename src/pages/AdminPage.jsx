@@ -21,13 +21,13 @@ export default function AdminDashboard() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // For create-profile
+  // Create-profile state
   const [creating, setCreating] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
-  // Fetch profiles list
+  // Fetch list
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
     try {
@@ -37,7 +37,7 @@ export default function AdminDashboard() {
       setProfiles(res.data.data);
       setTotal(res.data.meta.total);
     } catch (err) {
-      console.error('Fetch profiles error', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -65,31 +65,34 @@ export default function AdminDashboard() {
     }
   };
 
-  const toggleStatus = async id => {
+  // Set explicit status
+  const updateStatus = async (id, newStatus) => {
     try {
-      await axios.put(`${API}/api/admin/toggle-status/${id}`);
+      await axios.put(`${API}/api/admin/set-status/${id}`, { status: newStatus });
       fetchProfiles();
     } catch (err) {
-      console.error('Toggle status error', err);
+      console.error(err);
     }
   };
 
+  // Delete profile
   const deleteProfile = async id => {
     if (!window.confirm('Delete this profile?')) return;
     try {
       await axios.delete(`${API}/api/admin/profiles/${id}`);
       fetchProfiles();
     } catch (err) {
-      console.error('Delete profile error', err);
+      console.error(err);
     }
   };
 
+  // Export CSV
   const exportCSV = () => {
-    window.location.href = `${API}/api/admin/export?search=${encodeURIComponent(
-      search
-    )}&status=${statusFilter}`;
+    const qs = new URLSearchParams({ search, status: statusFilter });
+    window.location.href = `${API}/api/admin/export?${qs}`;
   };
 
+  // Copy public link
   const copyLink = code => {
     const url = `${window.location.origin}/p/${code}`;
     navigator.clipboard.writeText(url);
@@ -100,12 +103,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">
         Admin Dashboard
       </h1>
 
       {/* Create Profile */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <button
           onClick={handleCreateProfile}
           disabled={creating}
@@ -113,15 +116,11 @@ export default function AdminDashboard() {
         >
           <FaPlus /> {creating ? 'Creating…' : 'Create New Profile'}
         </button>
-        {createSuccess && (
-          <div className="mt-2 text-green-700">{createSuccess}</div>
-        )}
-        {createError && (
-          <div className="mt-2 text-red-600">{createError}</div>
-        )}
+        {createSuccess && <span className="text-green-600">{createSuccess}</span>}
+        {createError && <span className="text-red-600">{createError}</span>}
         {newCode && (
-          <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono">{newCode}</span>
+          <div className="flex items-center gap-2">
+            <code className="font-mono">{newCode}</code>
             <button
               onClick={() => copyLink(newCode)}
               className="text-blue-600 hover:underline"
@@ -136,7 +135,7 @@ export default function AdminDashboard() {
       <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
-          placeholder="Search by code, email, or name"
+          placeholder="Search code, email or name"
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           className="px-3 py-2 border rounded-md flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -159,57 +158,50 @@ export default function AdminDashboard() {
       </div>
 
       {/* Profiles Table */}
-      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-md shadow">
+      <div className="overflow-auto bg-white dark:bg-gray-800 rounded-md shadow">
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
               <th className="px-4 py-2 text-left">Code</th>
               <th className="px-4 py-2 text-left">Email</th>
               <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Actions</th>
+              <th className="px-4 py-2 text-center">Status</th>
+              <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" className="p-4 text-center">
-                  Loading...
-                </td>
+                <td colSpan="5" className="p-4 text-center">Loading…</td>
               </tr>
             ) : profiles.length === 0 ? (
               <tr>
-                <td colSpan="5" className="p-4 text-center">
-                  No profiles found
+                <td colSpan="5" className="p-4 text-center">No profiles</td>
+              </tr>
+            ) : profiles.map(p => (
+              <tr key={p._id} className="border-b dark:border-gray-700">
+                <td className="px-4 py-2 font-mono">{p.activationCode}</td>
+                <td className="px-4 py-2">{p.ownerEmail || '—'}</td>
+                <td className="px-4 py-2">{p.name || '—'}</td>
+                <td className="px-4 py-2 text-center">
+                  {p.status === 'active' ? 'Active' : 'Pending'}
+                </td>
+                <td className="px-4 py-2 flex justify-center gap-3">
+                  <button
+                    onClick={() => updateStatus(p._id, p.status === 'active' ? 'pending_activation' : 'active')}
+                    title={p.status === 'active' ? 'Deactivate' : 'Activate'}
+                  >
+                    {p.status === 'active' ? <FaToggleOff size={20}/> : <FaToggleOn size={20}/>}
+                  </button>
+                  <button onClick={() => deleteProfile(p._id)} title="Delete">
+                    <FaTrash size={20} className="text-red-600"/>
+                  </button>
+                  <button onClick={() => copyLink(p.activationCode)} title="Copy Link">
+                    <FaCopy size={18} className="text-blue-600"/>
+                  </button>
                 </td>
               </tr>
-            ) : (
-              profiles.map(p => (
-                <tr key={p._id} className="border-b dark:border-gray-700">
-                  <td className="px-4 py-2 font-mono">{p.activationCode}</td>
-                  <td className="px-4 py-2">{p.ownerEmail || '—'}</td>
-                  <td className="px-4 py-2">{p.name || '—'}</td>
-                  <td className="px-4 py-2 text-center">
-                    {p.status === 'active' ? 'Active' : 'Pending'}
-                  </td>
-                  <td className="px-4 py-2 flex items-center justify-center gap-2">
-                    <button onClick={() => toggleStatus(p._id)}>
-                      {p.status === 'active' ? (
-                        <FaToggleOff size={20} />
-                      ) : (
-                        <FaToggleOn size={20} />
-                      )}
-                    </button>
-                    <button onClick={() => deleteProfile(p._id)}>
-                      <FaTrash size={20} className="text-red-600" />
-                    </button>
-                    <button onClick={() => copyLink(p.activationCode)}>
-                      <FaCopy size={18} className="text-blue-600" />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -221,19 +213,13 @@ export default function AdminDashboard() {
             onClick={() => setPage(p => Math.max(p - 1, 1))}
             disabled={page === 1}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-          >
-            Prev
-          </button>
-          <span className="px-3">
-            {page} / {totalPages}
-          </span>
+          >Prev</button>
+          <span>{page} / {totalPages}</span>
           <button
             onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-          >
-            Next
-          </button>
+          >Next</button>
         </div>
       )}
     </div>
