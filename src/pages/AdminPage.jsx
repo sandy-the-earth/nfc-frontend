@@ -39,6 +39,16 @@ export const AdminDashboard: React.FC = () => {
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
+  // Persist adminKey between reloads
+  useEffect(() => {
+    const stored = sessionStorage.getItem('adminKey');
+    if (stored) {
+      axios.defaults.headers.common['x-admin-key'] = stored;
+      setAdminKey(stored);
+      setAuthorized(true);
+    }
+  }, []);
+
   // Authenticate admin by attempting a protected call
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +60,7 @@ export const AdminDashboard: React.FC = () => {
     axios.defaults.headers.common['x-admin-key'] = adminKey;
     try {
       await axios.get(`${API}/api/admin/profiles`, { params: { page: 1, limit: 1 } });
+      sessionStorage.setItem('adminKey', adminKey);
       setAuthorized(true);
     } catch {
       delete axios.defaults.headers.common['x-admin-key'];
@@ -93,10 +104,19 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const updateStatus = async (id: string, newStatus: 'active' | 'pending_activation') => {
+  const toggleStatus = async (id: string) => {
     try {
-      await axios.put(`${API}/api/admin/set-status/${id}`, { status: newStatus });
-      fetchProfiles();
+      const profile = profiles.find(p => p._id === id);
+      if (!profile) return;
+      await axios.put(`${API}/api/admin/toggle-status/${id}`);
+      // Optimistically update local state
+      setProfiles(prev =>
+        prev.map(p =>
+          p._id === id
+            ? { ...p, status: p.status === 'active' ? 'pending_activation' : 'active' }
+            : p
+        )
+      );
     } catch (err) {
       console.error(err);
     }
@@ -106,7 +126,8 @@ export const AdminDashboard: React.FC = () => {
     if (!window.confirm('Delete this profile?')) return;
     try {
       await axios.delete(`${API}/api/admin/profiles/${id}`);
-      fetchProfiles();
+      setProfiles(prev => prev.filter(p => p._id !== id));
+      setTotal(t => t - 1);
     } catch (err) {
       console.error(err);
     }
@@ -239,12 +260,7 @@ export const AdminDashboard: React.FC = () => {
                 </td>
                 <td className="px-4 py-2 flex justify-center gap-3">
                   <button
-                    onClick={() =>
-                      updateStatus(
-                        p._id,
-                        p.status === 'active' ? 'pending_activation' : 'active'
-                      )
-                    }
+                    onClick={() => toggleStatus(p._id)}
                     title={p.status === 'active' ? 'Deactivate' : 'Activate'}
                   >
                     {p.status === 'active' ? (
@@ -290,4 +306,4 @@ export const AdminDashboard: React.FC = () => {
       )}
     </div>
   );
-}
+};
