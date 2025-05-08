@@ -52,7 +52,7 @@ function ContactRow({ icon, label, value, href, onCopy }) {
 
 export default function PublicProfilePage() {
   const { activationCode } = useParams();
-  const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const API = import.meta.env.VITE_API_BASE_URL || 'https://nfc-backend-9c1q.onrender.com';
   const FRONTEND = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin;
   const { theme, setTheme } = useTheme();
 
@@ -60,8 +60,19 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
   const [msg, setMsg] = useState('');
-  const [darkMode, setDarkMode] = useState(theme === 'dark');
 
+  // Contact form state
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    event: '',
+    date: '',
+    place: '',
+    message: ''
+  });
+  const [formStatus, setFormStatus] = useState({ loading: false, error: '', success: '' });
+
+  const [darkMode, setDarkMode] = useState(theme === 'dark');
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
 
   const { rotateY } = useSpring({
@@ -83,6 +94,26 @@ export default function PublicProfilePage() {
     setTimeout(() => setMsg(''), 1500);
   };
 
+  // Contact form handlers
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setFormStatus({ loading: true, error: '', success: '' });
+    try {
+      await axios.post(`${API}/api/contact/${activationCode}`, form);
+      setFormStatus({ loading: false, error: '', success: 'Message sent!' });
+      setForm({ name: '', email: '', event: '', date: '', place: '', message: '' });
+    } catch (err) {
+      setFormStatus({
+        loading: false,
+        error: err.response?.data?.message || 'Send failed',
+        success: ''
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
@@ -90,7 +121,6 @@ export default function PublicProfilePage() {
       </div>
     );
   }
-
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
@@ -114,6 +144,7 @@ export default function PublicProfilePage() {
     createdAt
   } = profile;
 
+  // vCard generation
   const vCard = [
     'BEGIN:VCARD',
     'VERSION:3.0',
@@ -142,9 +173,9 @@ export default function PublicProfilePage() {
     URL.revokeObjectURL(url);
   };
 
+  // Card content component
   const CardContent = () => (
     <>
-      {/* Theme toggle */}
       <div className="absolute top-3 right-3 z-10">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -154,7 +185,6 @@ export default function PublicProfilePage() {
         </button>
       </div>
 
-      {/* Banner + Avatar */}
       <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
         {bannerUrl && (
           <img
@@ -172,7 +202,6 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      {/* Main Info (refined spacing) */}
       <div className="px-6 pt-14 pb-2 text-center">
         <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
         {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
@@ -191,7 +220,6 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      {/* Actions */}
       <div className="px-6 mt-2 flex gap-2">
         <button
           onClick={() => setShowQR(true)}
@@ -213,7 +241,6 @@ export default function PublicProfilePage() {
         </button>
       </div>
 
-      {/* Contact Rows */}
       <div className="px-6 mt-4 space-y-2">
         {email && (
           <ContactRow
@@ -276,7 +303,6 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      {/* Member Since */}
       <div className="px-6 pt-4 pb-6 text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           Member since {new Date(createdAt).toLocaleDateString()}
@@ -287,15 +313,6 @@ export default function PublicProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      {/* Background ellipses */}
-      <div className="absolute inset-0 pointer-events-none">
-        <svg viewBox="0 0 800 600" className="w-full h-full">
-          <ellipse cx="650" cy="100" rx="180" ry="120" fill="#FFC300" fillOpacity="0.10" />
-          <ellipse cx="200" cy="500" rx="220" ry="140" fill="#ffffff" fillOpacity="0.07" />
-          <ellipse cx="400" cy="300" rx="160" ry="80" fill="#FFC300" fillOpacity="0.08" />
-        </svg>
-      </div>
-
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
         <animated.div
           style={{
@@ -306,14 +323,12 @@ export default function PublicProfilePage() {
           }}
           className="relative w-full"
         >
-          {/* Front face */}
           <div
             className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
             style={{ backfaceVisibility: 'hidden' }}
           >
             <CardContent />
           </div>
-          {/* Back face */}
           <div
             className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
             style={{
@@ -327,37 +342,95 @@ export default function PublicProfilePage() {
         </animated.div>
       </div>
 
-      {/* Footer */}
-      <footer className="w-full flex flex-col items-center justify-center mt-6 mb-2">
-        <div className="w-full flex flex-col items-center max-w-xs">
-          <div className="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-tight">
-            comma<span className="opacity-70">Cards</span>
-          </div>
-          <div className="text-xs uppercase text-gray-500 dark:text-gray-500 tracking-widest mt-1 mb-2">
-            CONTINUED NETWORKING
-          </div>
-          <a href="#" className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-            Learn More →
-          </a>
-        </div>
-      </footer>
+      {/* Embedded Contact Form */}
+      <div className="w-full max-w-md mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+          Send a Contact / Meeting Request
+        </h2>
 
-      {/* QR Modal */}
-      {showQR && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-            <QRCode value={vCard} size={120} />
-            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to save contact</p>
-            <button onClick={() => setShowQR(false)} className="mt-3 text-blue-500 dark:text-blue-400 hover:underline">
-              Close
-            </button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
+              <input
+                name="event"
+                value={form.event}
+                onChange={handleChange}
+                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
+              <input
+                name="date"
+                type="date"
+                value={form.date}
+                onChange={handleChange}
+                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
+            <input
+              name="place"
+              value={form.place}
+              onChange={handleChange}
+              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
+            <textarea
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              rows="3"
+              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+            />
+          </div>
 
-      {/* Flash message */}
+          {formStatus.error && (
+            <p className="text-red-600">{formStatus.error}</p>
+          )}
+          {formStatus.success && (
+            <p className="text-green-600">{formStatus.success}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={formStatus.loading}
+            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {formStatus.loading ? 'Sending…' : 'Send Request'}
+          </button>
+        </form>
+      </div>
+
+      {/* Flash copy message */}
       {msg && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-200 dark:bg-gray-700 px-4 py-1 rounded-full text-sm shadow">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-full text-sm shadow">
           {msg}
         </div>
       )}
