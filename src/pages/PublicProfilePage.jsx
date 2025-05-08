@@ -19,7 +19,7 @@ import {
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
-import { useSpring, animated } from '@react-spring/web';
+import { useSpring, useTransition, animated } from '@react-spring/web';
 
 // Reusable ContactRow component
 function ContactRow({ icon, label, value, href, onCopy }) {
@@ -73,12 +73,22 @@ export default function PublicProfilePage() {
   });
   const [formStatus, setFormStatus] = useState({ loading: false, error: '', success: '' });
 
+  // Dark mode detection
   const [darkMode, setDarkMode] = useState(theme === 'dark');
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
 
+  // Card flip animation
   const { rotateY } = useSpring({
     rotateY: darkMode ? 180 : 0,
     config: { tension: 200, friction: 20 }
+  });
+
+  // Modal fade animation
+  const modalTransition = useTransition(modalOpen, {
+    from: { opacity: 0, transform: 'scale(0.9)' },
+    enter: { opacity: 1, transform: 'scale(1)' },
+    leave: { opacity: 0, transform: 'scale(0.9)' },
+    config: { tension: 300, friction: 25 }
   });
 
   // Fetch public profile
@@ -98,9 +108,7 @@ export default function PublicProfilePage() {
   };
 
   // Contact form handlers
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
   const handleSubmit = async e => {
     e.preventDefault();
     setFormStatus({ loading: true, error: '', success: '' });
@@ -124,7 +132,6 @@ export default function PublicProfilePage() {
       </div>
     );
   }
-
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
@@ -148,7 +155,7 @@ export default function PublicProfilePage() {
     createdAt
   } = profile;
 
-  // Generate vCard for download
+  // Generate vCard
   const vCard = [
     'BEGIN:VCARD',
     'VERSION:3.0',
@@ -166,7 +173,6 @@ export default function PublicProfilePage() {
   ]
     .filter(Boolean)
     .join('\n');
-
   const downloadVCard = () => {
     const blob = new Blob([vCard], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
@@ -227,29 +233,29 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      {/* Actions */}
+      {/* Action Buttons */}
       <div className="px-6 mt-2 flex gap-2">
         <button
           onClick={() => setShowQR(true)}
-          className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition text-sm"
+          className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
         >
           <MdQrCode /> QR Code
         </button>
         <button
           onClick={downloadVCard}
-          className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition text-sm"
+          className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
         >
           <FaSave /> Save to Contact
         </button>
         <button
           onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
-          className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
+          className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
         >
           <FaRegCopy />
         </button>
       </div>
 
-      {/* Contact rows */}
+      {/* Contact Rows */}
       <div className="px-6 mt-4 space-y-2">
         {email && (
           <ContactRow
@@ -312,14 +318,11 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      {/* Exchange Contact Button */}
-      <div className="px-6 pb-6">
-        <button
-          onClick={() => setModalOpen(true)}
-          className="w-full bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 py-3 rounded-lg hover:opacity-90 transition"
-        >
-          Exchange Contact
-        </button>
+      {/* Member Since */}
+      <div className="px-6 pt-4 pb-6 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Member since {new Date(createdAt).toLocaleDateString()}
+        </p>
       </div>
     </>
   );
@@ -336,14 +339,14 @@ export default function PublicProfilePage() {
           }}
           className="relative w-full"
         >
-          {/* front face */}
+          {/* Front Face */}
           <div
             className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
             style={{ backfaceVisibility: 'hidden' }}
           >
             <CardContent />
           </div>
-          {/* back face */}
+          {/* Back Face */}
           <div
             className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
             style={{
@@ -357,93 +360,105 @@ export default function PublicProfilePage() {
         </animated.div>
       </div>
 
-      {/* Modal for Exchange Contact Form */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <button
-              onClick={() => setModalOpen(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              ✕
-            </button>
-            <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
-              Send a Contact / Meeting Request
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
-                  <input
-                    name="event"
-                    value={form.event}
-                    onChange={handleChange}
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
-                  <input
-                    name="date"
-                    type="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
-                <input
-                  name="place"
-                  value={form.place}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
-                <textarea
-                  name="message"
-                  value={form.message}
-                  onChange={handleChange}
-                  rows="3"
-                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-              {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
-              {formStatus.success && <p className="text-green-600">{formStatus.success}</p>}
+      {/* Exchange Contact Button Below Card */}
+      <div className="mt-4 w-full max-w-md px-6 pb-6">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="w-full bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 py-3 rounded-lg hover:opacity-90 transition"
+        >
+          Exchange Contact
+        </button>
+      </div>
+
+      {/* Modal with Fade In/Out */}
+      {modalTransition((style, item) =>
+        item && (
+          <animated.div style={style} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <animated.div style={style} className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
               <button
-                type="submit"
-                disabled={formStatus.loading}
-                className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                onClick={() => setModalOpen(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                {formStatus.loading ? 'Sending…' : 'Send Request'}
+                ✕
               </button>
-            </form>
-          </div>
-        </div>
+              <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
+                Send a Contact / Meeting Request
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
+                    <input
+                      name="event"
+                      value={form.event}
+                      onChange={handleChange}
+                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
+                    <input
+                      name="date"
+                      type="date"
+                      value={form.date}
+                      onChange={handleChange}
+                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
+                  <input
+                    name="place"
+                    value={form.place}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
+                  <textarea
+                    name="message"
+                    value={form.message}
+                    onChange={handleChange}
+                    rows="3"
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
+                {formStatus.success && <p className="text-green-600">{formStatus.success}</p>}
+                <button
+                  type="submit"
+                  disabled={formStatus.loading}
+                  className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {formStatus.loading ? 'Sending…' : 'Send Request'}
+                </button>
+              </form>
+            </animated.div>
+          </animated.div>
+        )
       )}
 
       {/* QR Modal */}
