@@ -14,14 +14,15 @@ import {
   FaRegCopy,
   FaMoon,
   FaSun,
-  FaSave
+  FaSave,
+  FaShareAlt
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
 import { useSpring, animated } from '@react-spring/web';
 
-// Reusable ContactRow
+// Reusable ContactRow component
 function ContactRow({ icon, label, value, href, onCopy }) {
   return (
     <a
@@ -60,6 +61,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
   const [msg, setMsg] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   // Contact form state
   const [form, setForm] = useState({
@@ -80,6 +82,7 @@ export default function PublicProfilePage() {
     config: { tension: 200, friction: 20 }
   });
 
+  // Fetch public profile
   useEffect(() => {
     axios
       .get(`${API}/api/public/${activationCode}`)
@@ -88,6 +91,7 @@ export default function PublicProfilePage() {
       .finally(() => setLoading(false));
   }, [activationCode, API]);
 
+  // Copy helper
   const copyToClipboard = txt => {
     navigator.clipboard.writeText(txt);
     setMsg('Copied!');
@@ -121,6 +125,7 @@ export default function PublicProfilePage() {
       </div>
     );
   }
+
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
@@ -144,7 +149,7 @@ export default function PublicProfilePage() {
     createdAt
   } = profile;
 
-  // vCard generation
+  // Generate vCard for download
   const vCard = [
     'BEGIN:VCARD',
     'VERSION:3.0',
@@ -173,7 +178,7 @@ export default function PublicProfilePage() {
     URL.revokeObjectURL(url);
   };
 
-  // Card content component
+  // Card content JSX
   const CardContent = () => (
     <>
       <div className="absolute top-3 right-3 z-10">
@@ -239,8 +244,15 @@ export default function PublicProfilePage() {
         >
           <FaRegCopy />
         </button>
+        <button
+          onClick={() => setShowForm(prev => !prev)}
+          className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
+        >
+          <FaShareAlt />
+        </button>
       </div>
 
+      {/* Contact rows */}
       <div className="px-6 mt-4 space-y-2">
         {email && (
           <ContactRow
@@ -323,12 +335,14 @@ export default function PublicProfilePage() {
           }}
           className="relative w-full"
         >
+          {/* front face */}
           <div
             className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
             style={{ backfaceVisibility: 'hidden' }}
           >
             <CardContent />
           </div>
+          {/* back face */}
           <div
             className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
             style={{
@@ -343,90 +357,88 @@ export default function PublicProfilePage() {
       </div>
 
       {/* Embedded Contact Form */}
-      <div className="w-full max-w-md mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-          Send a Contact / Meeting Request
-        </h2>
+      {showForm && (
+        <div className="w-full max-w-md mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            Send a Contact / Meeting Request
+          </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
+              <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
               <input
-                name="event"
-                value={form.event}
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
+                <input
+                  name="event"
+                  value={form.event}
+                  onChange={handleChange}
+                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
+                <input
+                  name="date"
+                  type="date"
+                  value={form.date}
+                  onChange={handleChange}
+                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
+              <input
+                name="place"
+                value={form.place}
                 onChange={handleChange}
                 className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
-              <input
-                name="date"
-                type="date"
-                value={form.date}
+              <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
+              <textarea
+                name="message"
+                value={form.message}
                 onChange={handleChange}
+                rows="3"
                 className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
-            <input
-              name="place"
-              value={form.place}
-              onChange={handleChange}
-              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
-            <textarea
-              name="message"
-              value={form.message}
-              onChange={handleChange}
-              rows="3"
-              className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-            />
-          </div>
 
-          {formStatus.error && (
-            <p className="text-red-600">{formStatus.error}</p>
-          )}
-          {formStatus.success && (
-            <p className="text-green-600">{formStatus.success}</p>
-          )}
+            {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
+            {formStatus.success && <p className="text-green-600">{formStatus.success}</p>}
 
-          <button
-            type="submit"
-            disabled={formStatus.loading}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            {formStatus.loading ? 'Sending…' : 'Send Request'}
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              disabled={formStatus.loading}
+              className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {formStatus.loading ? 'Sending…' : 'Send Request'}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Flash copy message */}
       {msg && (
