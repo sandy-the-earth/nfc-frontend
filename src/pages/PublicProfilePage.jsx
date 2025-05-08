@@ -308,7 +308,7 @@ export default function PublicProfilePage() {
             label="Twitter"
             value={socialLinks.twitter}
             href={`https://twitter.com/${socialLinks.twitter}`}
-            onCopy={() => copyToClipboard(socialLinks.twitter)}
+            onCopy={() => copyToClipboard(socialLinks.twitter)}   
           />
         )}
         {location && (
@@ -328,7 +328,7 @@ export default function PublicProfilePage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
         <animated.div
           style={{
@@ -370,6 +370,22 @@ export default function PublicProfilePage() {
         </button>
       </div>
 
+      {/* Branding Footer */}
+      <footer className="w-full flex flex-col items-center justify-center mt-auto py-4">
+        <div className="text-xl font-bold text-gray-800 dark:text-gray-200">
+          comma<span className="opacity-70">Cards</span>
+        </div>
+        <div className="text-xs uppercase text-gray-500 dark:text-gray-500 tracking-widest mt-1">
+          CONTINUED NETWORKING
+        </div>
+        <a
+          href="https://commacards.com"
+          className="mt-1 inline-block text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          Learn More →
+        </a>
+      </footer>
+
       {/* Modal with Fade In/Out */}
       {modalTransition((style, item) =>
         item && (
@@ -381,9 +397,7 @@ export default function PublicProfilePage() {
               >
                 ✕
               </button>
-              <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
-                Send a Contact / Meeting Request
-              </h2>
+              <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">Send a Contact / Meeting Request</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
@@ -396,54 +410,54 @@ export default function PublicProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
+                  <label className="block text-sm text-gray-700 dark:text_GRAY_300">Your Email</label>
                   <input
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
                     required
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
+                    <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Event</label>
                     <input
                       name="event"
                       value={form.event}
                       onChange={handleChange}
-                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg_GRAY_700 text-gray-900 dark:text-gray-100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
+                    <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Date</label>
                     <input
                       name="date"
                       type="date"
                       value={form.date}
                       onChange={handleChange}
-                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                      className="w-full mt-1 px-3 py-2 bg_GRAY_50 dark:bg_GRAY_700 text-gray-900 dark:text_GRAY_100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
+                  <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Place</label>
                   <input
                     name="place"
                     value={form.place}
                     onChange={handleChange}
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg_GRAY_50 dark:bg_GRAY_700 text-gray-900 dark:text_GRAY_100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
+                  <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Message</label>
                   <textarea
                     name="message"
                     value={form.message}
                     onChange={handleChange}
                     rows="3"
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg_GRAY_50 dark:bg_GRAY_700 text-gray-900 dark:text_GRAY_100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
                   />
                 </div>
                 {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
