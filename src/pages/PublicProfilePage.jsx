@@ -14,8 +14,7 @@ import {
   FaRegCopy,
   FaMoon,
   FaSun,
-  FaSave,
-  FaShareAlt
+  FaSave
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
@@ -61,7 +60,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
   const [msg, setMsg] = useState('');
-  const [showForm, setShowForm] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Contact form state
   const [form, setForm] = useState({
@@ -181,6 +180,7 @@ export default function PublicProfilePage() {
   // Card content JSX
   const CardContent = () => (
     <>
+      {/* Theme toggle */}
       <div className="absolute top-3 right-3 z-10">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -190,6 +190,7 @@ export default function PublicProfilePage() {
         </button>
       </div>
 
+      {/* Banner & Avatar */}
       <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
         {bannerUrl && (
           <img
@@ -207,6 +208,7 @@ export default function PublicProfilePage() {
         )}
       </div>
 
+      {/* Main Info */}
       <div className="px-6 pt-14 pb-2 text-center">
         <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
         {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
@@ -225,6 +227,7 @@ export default function PublicProfilePage() {
         )}
       </div>
 
+      {/* Actions */}
       <div className="px-6 mt-2 flex gap-2">
         <button
           onClick={() => setShowQR(true)}
@@ -243,12 +246,6 @@ export default function PublicProfilePage() {
           className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
         >
           <FaRegCopy />
-        </button>
-        <button
-          onClick={() => setShowForm(prev => !prev)}
-          className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center shadow hover:-translate-y-0.5 hover:scale-105 active:scale-95 transition"
-        >
-          <FaShareAlt />
         </button>
       </div>
 
@@ -315,16 +312,20 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      <div className="px-6 pt-4 pb-6 text-center">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Member since {new Date(createdAt).toLocaleDateString()}
-        </p>
+      {/* Exchange Contact Button */}
+      <div className="px-6 pb-6">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="w-full bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 py-3 rounded-lg hover:opacity-90 transition"
+        >
+          Exchange Contact
+        </button>
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
         <animated.div
           style={{
@@ -356,87 +357,108 @@ export default function PublicProfilePage() {
         </animated.div>
       </div>
 
-      {/* Embedded Contact Form */}
-      {showForm && (
-        <div className="w-full max-w-md mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-            Send a Contact / Meeting Request
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
-                <input
-                  name="event"
-                  value={form.event}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
-                <input
-                  name="date"
-                  type="date"
-                  value={form.date}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
-              <input
-                name="place"
-                value={form.place}
-                onChange={handleChange}
-                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
-              <textarea
-                name="message"
-                value={form.message}
-                onChange={handleChange}
-                rows="3"
-                className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
-              />
-            </div>
-
-            {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
-            {formStatus.success && <p className="text-green-600">{formStatus.success}</p>}
-
+      {/* Modal for Exchange Contact Form */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
             <button
-              type="submit"
-              disabled={formStatus.loading}
-              className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              onClick={() => setModalOpen(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             >
-              {formStatus.loading ? 'Sending…' : 'Send Request'}
+              ✕
             </button>
-          </form>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
+              Send a Contact / Meeting Request
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300">Your Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300">Event</label>
+                  <input
+                    name="event"
+                    value={form.event}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300">Date</label>
+                  <input
+                    name="date"
+                    type="date"
+                    value={form.date}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300">Place</label>
+                <input
+                  name="place"
+                  value={form.place}
+                  onChange={handleChange}
+                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300">Message</label>
+                <textarea
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
+                  rows="3"
+                  className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+              {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
+              {formStatus.success && <p className="text-green-600">{formStatus.success}</p>}
+              <button
+                type="submit"
+                disabled={formStatus.loading}
+                className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {formStatus.loading ? 'Sending…' : 'Send Request'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QR Modal */}
+      {showQR && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+            <QRCode value={vCard} size={120} />
+            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to save contact</p>
+            <button
+              onClick={() => setShowQR(false)}
+              className="mt-3 text-blue-500 dark:text-blue-400 hover:underline"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
 
