@@ -33,7 +33,7 @@ function ContactRow({ icon, label, value, href, onCopy }) {
       <div className="flex items-center gap-3">
         <div className="text-xl text-[#FFC300]">{icon}</div>
         <div className="text-left">
-          <p className="font-medium text-sm text-gray-900 dark:text-white">{label}</p>
+          <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{label}</p>
           <p className="text-xs text-gray-700 dark:text-gray-400 truncate">{value}</p>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function PublicProfilePage() {
             label="Twitter"
             value={socialLinks.twitter}
             href={`https://twitter.com/${socialLinks.twitter}`}
-            onCopy={() => copyToClipboard(socialLinks.twitter)}   
+            onCopy={() => copyToClipboard(socialLinks.twitter)}
           />
         )}
         {location && (
@@ -390,74 +390,77 @@ export default function PublicProfilePage() {
       {modalTransition((style, item) =>
         item && (
           <animated.div style={style} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <animated.div style={style} className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+            <animated.div
+              style={style}
+              className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-gray-900 dark:text-gray-100"
+            >
               <button
                 onClick={() => setModalOpen(false)}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
                 ✕
               </button>
-              <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">Send a Contact / Meeting Request</h2>
+              <h2 className="mb-4 text-xl font-semibold">Send a Contact / Meeting Request</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300">Your Name</label>
+                  <label className="block text-sm">Your Name</label>
                   <input
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     required
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 dark:text_GRAY_300">Your Email</label>
+                  <label className="block text-sm">Your Email</label>
                   <input
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
                     required
-                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Event</label>
+                    <label className="block text-sm">Event</label>
                     <input
                       name="event"
                       value={form.event}
                       onChange={handleChange}
-                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg_GRAY_700 text-gray-900 dark:text-gray-100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
+                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Date</label>
+                    <label className="block text-sm">Date</label>
                     <input
                       name="date"
                       type="date"
                       value={form.date}
                       onChange={handleChange}
-                      className="w-full mt-1 px-3 py-2 bg_GRAY_50 dark:bg_GRAY_700 text-gray-900 dark:text_GRAY_100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
+                      className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Place</label>
+                  <label className="block text-sm">Place</label>
                   <input
                     name="place"
                     value={form.place}
                     onChange={handleChange}
-                    className="w-full mt-1 px-3 py-2 bg_GRAY_50 dark:bg_GRAY_700 text-gray-900 dark:text_GRAY_100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text_GRAY_700 dark:text_GRAY_300">Message</label>
+                  <label className="block text-sm">Message</label>
                   <textarea
                     name="message"
                     value={form.message}
                     onChange={handleChange}
                     rows="3"
-                    className="w-full mt-1 px-3 py-2 bg_GRAY_50 dark:bg_GRAY_700 text-gray-900 dark:text_GRAY_100 border border_GRAY_300 dark:border_GRAY_600 rounded-lg"
+                    className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
                 {formStatus.error && <p className="text-red-600">{formStatus.error}</p>}
@@ -465,7 +468,7 @@ export default function PublicProfilePage() {
                 <button
                   type="submit"
                   disabled={formStatus.loading}
-                  className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="w-full py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
                 >
                   {formStatus.loading ? 'Sending…' : 'Send Request'}
                 </button>
