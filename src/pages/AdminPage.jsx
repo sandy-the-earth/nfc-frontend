@@ -164,7 +164,7 @@ export default function AdminPage() {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 text-gray-100">
         Admin Dashboard
       </h1>
 
@@ -173,18 +173,18 @@ export default function AdminPage() {
         <button
           onClick={handleCreateProfile}
           disabled={creating}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 shadow-lg"
         >
           <FaPlus /> {creating ? 'Creating…' : 'Create New Profile'}
         </button>
-        {createSuccess && <span className="text-green-600">{createSuccess}</span>}
-        {createError && <span className="text-red-600">{createError}</span>}
+        {createSuccess && <span className="text-green-400 font-semibold">{createSuccess}</span>}
+        {createError && <span className="text-red-400 font-semibold">{createError}</span>}
         {newCode && (
           <div className="flex items-center gap-2">
-            <code className="font-mono">{newCode}</code>
+            <code className="font-mono text-blue-400 bg-gray-900 px-2 py-1 rounded">{newCode}</code>
             <button
               onClick={() => copyLink(newCode)}
-              className="text-blue-600 hover:underline"
+              className="text-blue-400 hover:underline"
             >
               Copy Link
             </button>
@@ -199,12 +199,12 @@ export default function AdminPage() {
           placeholder="Search code, email or name"
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
-          className="px-3 py-2 border rounded-md flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="px-3 py-2 border border-gray-700 rounded-md flex-1 bg-gray-800 text-gray-100 placeholder-gray-400"
         />
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="px-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-gray-100"
         >
           <option value="">All Statuses</option>
           <option value="active">Active</option>
@@ -212,17 +212,17 @@ export default function AdminPage() {
         </select>
         <button
           onClick={exportCSV}
-          className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 shadow-lg"
         >
           <FaFileCsv className="mr-2" /> Export CSV
         </button>
       </div>
 
       {/* Profiles Table */}
-      <div className="overflow-auto bg-white dark:bg-gray-800 rounded-md shadow">
+      <div className="overflow-auto bg-gray-900 rounded-md shadow-lg">
         <table className="min-w-full">
           <thead>
-            <tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+            <tr className="bg-gray-800 text-gray-100">
               <th className="px-4 py-2 text-left">Code</th>
               <th className="px-4 py-2 text-left">Email</th>
               <th className="px-4 py-2 text-left">Name</th>
@@ -233,36 +233,34 @@ export default function AdminPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="p-4 text-center">Loading…</td>
+                <td colSpan={5} className="p-4 text-center text-gray-400">Loading…</td>
               </tr>
             ) : profiles.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-4 text-center">No profiles</td>
+                <td colSpan={5} className="p-4 text-center text-gray-400">No profiles</td>
               </tr>
             ) : profiles.map(p => (
-              <tr key={p._id} className="border-b dark:border-gray-700">
-                <td className="px-4 py-2 font-mono">{p.activationCode}</td>
-                <td className="px-4 py-2">{p.ownerEmail || '—'}</td>
-                <td className="px-4 py-2">{p.name || '—'}</td>
-                <td className="px-4 py-2 text-center">
-                  {p.status === 'active' ? 'Active' : 'Pending'}
-                </td>
+              <tr key={p._id} className="border-b border-gray-800 hover:bg-gray-800 transition">
+                <td className="px-4 py-2 font-mono text-blue-400">{p.activationCode}</td>
+                <td className="px-4 py-2 text-gray-100">{p.ownerEmail || '—'}</td>
+                <td className="px-4 py-2 text-gray-100">{p.name || '—'}</td>
+                <td className="px-4 py-2 text-center text-green-400 font-semibold">{p.status === 'active' ? 'Active' : 'Pending'}</td>
                 <td className="px-4 py-2 flex justify-center gap-3">
                   <button
                     onClick={() => toggleStatus(p._id)}
                     title={p.status === 'active' ? 'Deactivate' : 'Activate'}
                   >
                     {p.status === 'active' ? (
-                      <FaToggleOff size={20} />
+                      <FaToggleOff size={20} className="text-yellow-400" />
                     ) : (
-                      <FaToggleOn size={20} />
+                      <FaToggleOn size={20} className="text-green-400" />
                     )}
                   </button>
                   <button onClick={() => deleteProfile(p._id)} title="Delete">
-                    <FaTrash size={20} className="text-red-600" />
+                    <FaTrash size={20} className="text-red-500" />
                   </button>
                   <button onClick={() => copyLink(p.activationCode)} title="Copy Link">
-                    <FaCopy size={18} className="text-blue-600" />
+                    <FaCopy size={18} className="text-blue-400" />
                   </button>
                 </td>
               </tr>
