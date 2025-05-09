@@ -80,7 +80,7 @@ export default function HomePage() {
             >
               {/* Top comma logo */}
               <div className="flex justify-center">
-                <span className="text-6xl text-[#D4AF37] font-extrabold leading-none">,</span>
+                <span className="text-6xl text-[#D4AF37] font-californiafb leading-none">,</span>
               </div>
 
               {/* Center content */}
