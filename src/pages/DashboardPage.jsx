@@ -643,7 +643,7 @@ export default function DashboardPage() {
             comma<span className="opacity-70">Cards</span>
           </div>
           <div className="text-xs uppercase text-gray-500 dark:text-gray-500 tracking-widest mt-1 mb-2">
-            CONTINUED NETWORKING
+            CONTINUED RELATIONSHIPS
           </div>
         </div>
       </footer>

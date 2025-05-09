@@ -101,7 +101,7 @@ export default function LoginPage() {
             comma<span className="opacity-70">Cards</span>
           </p>
           <p className="text-center text-xs uppercase font-medium text-gray-500 dark:text-gray-400">
-            CONTINUED NETWORKING
+            CONTINUED RELATIONSHIPS
           </p>
         </div>
       </div>

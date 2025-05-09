@@ -48,10 +48,7 @@ export default function ActivatePage() {
         <form onSubmit={handleActivate} className="space-y-5">
           {/* Activation Code */}
           <div>
-            <label
-              htmlFor="activationCode"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+            <label htmlFor="activationCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Activation Code
             </label>
             <input
@@ -67,10 +64,7 @@ export default function ActivatePage() {
 
           {/* Email */}
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email Address
             </label>
             <input
@@ -86,10 +80,7 @@ export default function ActivatePage() {
 
           {/* Password */}
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Create Password
             </label>
             <input
@@ -125,13 +116,26 @@ export default function ActivatePage() {
           </div>
         )}
 
-        {/* commaCards footer */}
+        {/* Existing User Login */}
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-center text-sm text-gray-600 dark:text-gray-300">
+            Already have an account?
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="mt-2 mx-auto block text-blue-600 dark:text-blue-400 font-medium hover:underline"
+          >
+            Log in here
+          </button>
+        </div>
+
+        {/* Footer Branding */}
         <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
           <p className="text-center text-xl font-extrabold text-gray-800 dark:text-gray-100">
             comma<span className="opacity-70">Cards</span>
           </p>
           <p className="text-center text-xs uppercase font-medium text-gray-500 dark:text-gray-400">
-            CONTINUED NETWORKING
+            CONTINUED RELATIONSHIPS
           </p>
         </div>
       </div>

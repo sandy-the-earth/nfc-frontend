@@ -376,7 +376,7 @@ export default function PublicProfilePage() {
           comma<span className="opacity-70">Cards</span>
         </div>
         <div className="text-xs uppercase text-gray-500 dark:text-gray-500 tracking-widest mt-1">
-          CONTINUED NETWORKING
+          CONTINUED RELATIONSHIPS
         </div>
         <a
           href="https://commacards.com"
