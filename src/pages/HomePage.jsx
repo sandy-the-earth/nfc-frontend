@@ -50,9 +50,7 @@ export default function HomePage() {
       <main className="flex-grow flex items-center justify-center w-full z-10">
         <animated.div
           style={entry}
-          className="gradient-border rounded-3xl overflow-hidden
-                     w-full max-w-xs sm:max-w-sm md:max-w-md
-                     aspect-[5/3]"
+          className="gradient-border rounded-3xl overflow-hidden w-full max-w-2xl md:max-w-3xl lg:max-w-4xl aspect-[5/3] sm:aspect-[16/7]"
         >
           <div className="card-container rounded-3xl relative w-full h-full">
             {/* reflection only on md+ so no overflow on small */}
@@ -68,25 +66,22 @@ export default function HomePage() {
                 tiltApi.start({ xys: calc(e.clientX-r.left, e.clientY-r.top, r) });
               }}
               onMouseLeave={() => tiltApi.start({ xys: [0,0,1] })}
-              className="bg-black w-full h-full
-                         p-4 sm:p-6 md:p-8
-                         rounded-3xl shadow-xl
-                         flex flex-col justify-between"
+              className="bg-black w-full h-full p-4 sm:p-8 md:p-12 rounded-3xl shadow-xl flex flex-col justify-between"
             >
               <div className="flex justify-center mt-1">
                 <span
                   style={{ fontFamily: 'California FB' }}
-                  className="text-5xl sm:text-6xl text-[#D4AF37] font-extrabold leading-none"
+                  className="text-5xl sm:text-6xl md:text-7xl text-[#D4AF37] font-extrabold leading-none"
                 >
                   ’
                 </span>
               </div>
 
               <div className="text-center space-y-2 sm:space-y-3">
-                <animated.h1 style={trail[0]} className="text-lg sm:text-xl md:text-2xl font-bold text-gray-100">
+                <animated.h1 style={trail[0]} className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-100">
                   Digital Networking Continued,
                 </animated.h1>
-                <animated.p style={trail[1]} className="text-xs sm:text-sm text-gray-300 max-w-prose mx-auto">
+                <animated.p style={trail[1]} className="text-sm sm:text-base md:text-lg text-gray-300 max-w-2xl mx-auto">
                   Tap your Comma card to connect instantly and continue valuable conversations,
                 </animated.p>
               </div>
@@ -97,13 +92,13 @@ export default function HomePage() {
               >
                 <button
                   onClick={() => navigate('/activate')}
-                  className="flex items-center justify-center gap-2 px-5 py-2 sm:px-6 sm:py-3 bg-gray-900 text-[#D4AF37] rounded-full text-sm sm:text-base font-medium hover:bg-gray-800 transition"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
                 >
-                  <FaBolt size={18} /> Activate
+                  <FaBolt size={20} /> Activate
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-5 py-2 sm:px-6 sm:py-3 bg-gray-900 text-gray-200 rounded-full text-sm sm:text-base font-medium hover:bg-gray-800 transition"
+                  className="px-6 py-3 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
                 >
                   Login
                 </button>
