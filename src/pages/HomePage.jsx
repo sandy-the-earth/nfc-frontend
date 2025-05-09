@@ -18,7 +18,7 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Parallax tilt
+  // Parallax tilt logic
   const [{ xys }, tiltApi] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
@@ -29,7 +29,7 @@ export default function HomePage() {
     1.02,
   ];
 
-  // Trail
+  // Trail for text/buttons
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0)' : 'translateY(20px)',
@@ -39,12 +39,12 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center relative">
+    <div className="min-h-screen bg-black flex flex-col items-center relative px-4">
       {/* Background glow */}
       <div className="background-glow" />
 
       {/* Header */}
-      <header className="w-full max-w-4xl px-6 py-4 flex justify-between items-center bg-black z-10">
+      <header className="w-full max-w-4xl py-4 flex justify-between items-center z-10">
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
@@ -57,71 +57,75 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-grow flex items-center justify-center px-6 z-10 mt-8">
-        <animated.div style={entry} className="gradient-border rounded-3xl overflow-hidden">
-          <div className="card-container rounded-3xl relative">
-            {/* Floor reflection */}
+      <main className="flex-grow flex items-center justify-center w-full z-10">
+        <animated.div
+          style={entry}
+          className="gradient-border rounded-3xl overflow-hidden w-full max-w-md sm:max-w-xl lg:max-w-2xl aspect-[640/384]"
+        >
+          <div className="card-container rounded-3xl relative w-full h-full">
+            {/* Reflection */}
             <div className="card-reflection" />
 
-            {/* Card (640×384) */}
-            <div className="w-[640px] h-[384px]">
+            {/* Actual card */}
+            <animated.div
+              ref={cardRef}
+              style={{
+                transform: xys.to((x, y, s) =>
+                  `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
+                ),
+              }}
+              onMouseMove={e => {
+                const rect = cardRef.current.getBoundingClientRect();
+                tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
+              }}
+              onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
+              className="bg-black w-full h-full p-6 sm:p-8 rounded-3xl shadow-xl relative flex flex-col justify-between"
+            >
+              {/* Top comma logo */}
+              <div className="flex justify-center mt-2">
+                <span
+                  style={{ fontFamily: 'California FB' }}
+                  className="text-6xl sm:text-7xl text-[#D4AF37] font-extrabold leading-none"
+                >
+                  ’
+                </span>
+              </div>
+
+              {/* Center content */}
+              <div className="text-center space-y-3 sm:space-y-4">
+                <animated.h1 style={trail[0]} className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-100">
+                  Digital Networking Continued,
+                </animated.h1>
+                <animated.p style={trail[1]} className="text-sm sm:text-base text-gray-300 max-w-prose mx-auto">
+                  Tap your Comma card to connect instantly and continue valuable conversations,
+                </animated.p>
+              </div>
+
+              {/* Bottom buttons */}
               <animated.div
-                ref={cardRef}
-                style={{
-                  transform: xys.to((x, y, s) =>
-                    `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
-                  ),
-                }}
-                onMouseMove={e => {
-                  const rect = cardRef.current.getBoundingClientRect();
-                  tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
-                }}
-                onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
-                className="bg-black w-full h-full p-8 rounded-3xl shadow-xl relative flex flex-col justify-between"
+                style={trail[2]}
+                className="flex flex-col sm:flex-row justify-center gap-4 mt-6 mb-2"
               >
-                {/* Top comma logo */}
-                <div className="flex justify-center">
-                  <span
-                    style={{ fontFamily: 'California FB' }}
-                    className="text-6xl text-[#D4AF37] font-extrabold leading-none"
-                  >
-                    ’
-                  </span>
-                </div>
-
-                {/* Center content */}
-                <div className="text-center space-y-4">
-                  <animated.h1 style={trail[0]} className="text-2xl md:text-3xl font-bold text-gray-100">
-                    Digital Networking Continued,
-                  </animated.h1>
-                  <animated.p style={trail[1]} className="text-base text-gray-300 max-w-lg mx-auto">
-                    Tap your Comma card to connect instantly and continue valuable conversations,
-                  </animated.p>
-                </div>
-
-                {/* Bottom buttons */}
-                <animated.div style={trail[2]} className="flex justify-center gap-6">
-                  <button
-                    onClick={() => navigate('/activate')}
-                    className="flex items-center gap-2 px-8 py-4 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
-                  >
-                    <FaBolt size={20} /> Activate
-                  </button>
-                  <button
-                    onClick={() => navigate('/login')}
-                    className="px-8 py-4 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
-                  >
-                    Login
-                  </button>
-                </animated.div>
+                <button
+                  onClick={() => navigate('/activate')}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
+                >
+                  <FaBolt size={20} /> Activate
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-6 py-3 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
+                >
+                  Login
+                </button>
               </animated.div>
-            </div>
+            </animated.div>
           </div>
         </animated.div>
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-4xl py-4 text-center text-sm text-gray-500 bg-black z-10">
+      <footer className="w-full max-w-4xl py-4 text-center text-sm text-gray-500 z-10">
         &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
