@@ -12,14 +12,14 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const cardAnimation = useSpring({
-    from: { opacity: 0, transform: 'scale(0.7) rotateY(-90deg)' },
-    to: { opacity: 1, transform: 'scale(1) rotateY(0deg)' },
-    config: config.gentle,
-    delay: 300,
+  const cardEntrance = useSpring({
+    from: { opacity: 0, transform: 'scale(0.6) rotateX(-30deg)' },
+    to: { opacity: 1, transform: 'scale(1) rotateX(0deg)' },
+    config: config.slow,
+    delay: 400,
   });
 
-  const trail = useTrail(3, {
+  const textTrail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0px)' : 'translateY(20px)',
     config: config.slow,
@@ -44,22 +44,32 @@ export default function HomePage() {
       {/* Hero Section */}
       <main className="flex-grow flex items-center justify-center text-center px-6">
         <animated.div
-          style={cardAnimation}
+          style={cardEntrance}
           className="w-full max-w-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl shadow-xl"
         >
           <div className="space-y-6">
-            <animated.div style={trail[0]}>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">
+            {/* CARD IMAGE */}
+            <div className="flex justify-center">
+              <img
+                src="https://i.imgur.com/nD0H8pJ.png" // ✅ Replace this with your actual card mockup
+                alt="NFC Card Preview"
+                className="w-full max-w-sm rounded-xl shadow-lg dark:shadow-2xl"
+              />
+            </div>
+
+            {/* Animated Texts */}
+            <animated.div style={textTrail[0]}>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-4">
                 Digital Networking, Reimagined.
               </h1>
             </animated.div>
-            <animated.div style={trail[1]}>
+            <animated.div style={textTrail[1]}>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
                 Welcome to commaCards — the future of NFC-based professional identity.
                 Activate your card and unlock seamless networking in one tap.
               </p>
             </animated.div>
-            <animated.div style={trail[2]}>
+            <animated.div style={textTrail[2]}>
               <div className="flex flex-col md:flex-row justify-center gap-4 pt-2">
                 <button
                   onClick={() => navigate('/activate')}
