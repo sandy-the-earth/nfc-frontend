@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaBolt } from 'react-icons/fa';
 import { useSpring, useTrail, animated, config } from '@react-spring/web';
-import '../index.css'; // make sure this is imported so .gradient-border is available
+import '../index.css'; // load .gradient-border styles
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
 
-  // Entry fade+scale
+  // entry fade+scale
   const entry = useSpring({
     from: { opacity: 0, transform: 'scale(0.9)' },
     to: { opacity: 1, transform: 'scale(1)' },
@@ -16,7 +16,7 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Trail for heading, subtext, buttons
+  // trail for heading, subtext, buttons
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0)' : 'translateY(20px)',
@@ -45,22 +45,25 @@ export default function HomePage() {
 
       {/* Hero */}
       <main className="flex-grow flex items-center justify-center px-6">
+        {/* Animated wrapper that fades + scales in */}
         <animated.div style={entry} className="gradient-border rounded-3xl">
           <div className="bg-black p-8 rounded-3xl shadow-xl text-center">
-            {/* Centurion accent circle */}
+            {/* Accent circle */}
             <div className="flex justify-center mb-6">
               <div className="w-12 h-12 bg-gray-800 rounded-full border-2 border-gray-400" />
             </div>
 
-            {/* Animated Text */}
+            {/* Headline */}
             <animated.h1 style={trail[0]} className="text-3xl font-bold text-gray-100">
               Digital Networking
             </animated.h1>
+
+            {/* Subtext */}
             <animated.p style={trail[1]} className="mt-2 text-sm text-gray-300 max-w-sm mx-auto">
               Reimagined. Unlock seamless connections with a single tap on your NFC Centurion card.
             </animated.p>
 
-            {/* Animated Buttons */}
+            {/* Buttons */}
             <animated.div style={trail[2]} className="mt-6 flex flex-col md:flex-row justify-center gap-4">
               <button
                 onClick={() => navigate('/activate')}
@@ -81,7 +84,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="py-4 text-center text-sm text-gray-500 bg-black">
-        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Networking.
+        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
   );

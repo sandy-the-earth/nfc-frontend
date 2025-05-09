@@ -18,17 +18,19 @@
   }
   /* index.css */
 
-@keyframes spinBorder {
-  to { transform: rotate(360deg); }
+/* index.css */
+
+/* Shimmer animation: moves a highlight around the border */
+@keyframes borderShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* Gradient‐border wrapper */
 .gradient-border {
   position: relative;
-  border-radius: 1rem;    /* match card radius */
-  padding: 3px;           /* thickness of border */
+  border-radius: 1rem;    /* match your card radius */
+  padding: 3px;           /* border thickness */
   display: inline-block;
-  /* ensure the pseudo-element covers the whole wrapper */
   overflow: visible;
 }
 .gradient-border::before {
@@ -36,27 +38,28 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background:
-    conic-gradient(
-      from 0deg,
-      #ccc 0%,
-      #777 25%,
-      #ccc 50%,
-      #777 75%,
-      #ccc 100%
+  /* create a long horizontal gradient: dark-to-light-to-dark */
+  background: 
+    linear-gradient(
+      90deg,
+      #444 0%,
+      #ccc 25%,
+      #777 50%,
+      #ccc 75%,
+      #444 100%
     );
-  /* mask center so only border shows */
+  background-size: 200% 100%;
+  /* mask center so only border remains visible */
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
           mask-composite: exclude;
   mask-mode: alpha;
-  padding: 3px;           /* same as wrapper padding */
-  animation: spinBorder 5s linear infinite;
+  padding: 3px;           /* same as .gradient-border padding */
+  animation: borderShimmer 4s linear infinite;
   z-index: 0;
 }
-/* Ensure inner card sits above the border layer */
 .gradient-border > * {
   position: relative;
   z-index: 1;
