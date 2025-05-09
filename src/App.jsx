@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import AdminPage from "./pages/AdminPage";
+import HomePage from './pages/HomePage';
 
 // Theme context for dark/light mode
 const ThemeContext = createContext();
