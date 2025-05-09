@@ -39,9 +39,12 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col relative">
+      {/* Background glow */}
+      <div className="background-glow" />
+
       {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center bg-black">
+      <header className="px-6 py-4 flex justify-between items-center bg-black z-10">
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
@@ -54,14 +57,13 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-grow flex items-center justify-center px-6">
-        <animated.div
-          style={entry}
-          className="gradient-border rounded-3xl"
-        >
-          {/* Outer wrapper now 640×384px */}
+      <main className="flex-grow flex items-center justify-center px-6 z-10">
+        <animated.div style={entry} className="card-container gradient-border rounded-3xl">
+          {/* Floor reflection */}
+          <div className="card-reflection" />
+
+          {/* Inner wrapper now 640×384px */}
           <div className="w-[640px] h-[384px]">
-            {/* Inner card with parallax */}
             <animated.div
               ref={cardRef}
               style={{
@@ -71,16 +73,10 @@ export default function HomePage() {
               }}
               onMouseMove={e => {
                 const rect = cardRef.current.getBoundingClientRect();
-                tiltApi.start({
-                  xys: calc(
-                    e.clientX - rect.left,
-                    e.clientY - rect.top,
-                    rect
-                  )
-                });
+                tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
               }}
               onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
-              className="bg-black w-full h-full p-8 rounded-3xl shadow-xl flex flex-col justify-between"
+              className="bg-black w-full h-full p-8 rounded-3xl shadow-none relative flex flex-col justify-between"
             >
               {/* Top accent circle */}
               <div className="flex justify-center">
@@ -118,7 +114,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 text-center text-sm text-gray-500 bg-black">
+      <footer className="py-4 text-center text-sm text-gray-500 bg-black z-10">
         &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
