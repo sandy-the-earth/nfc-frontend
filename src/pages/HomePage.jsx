@@ -10,7 +10,6 @@ export default function HomePage() {
   const cardRef = useRef(null);
   const [mounted, setMounted] = useState(false);
 
-  // Entry fade+scale
   const entry = useSpring({
     from: { opacity: 0, transform: 'scale(0.9)' },
     to: { opacity: 1, transform: 'scale(1)' },
@@ -18,18 +17,12 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Parallax tilt logic
   const [{ xys }, tiltApi] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
   }));
-  const calc = (x, y, rect) => [
-    -(y - rect.height / 2) / 20,
-    (x - rect.width / 2) / 20,
-    1.02,
-  ];
+  const calc = (x, y, r) => [-(y - r.height/2)/20, (x - r.width/2)/20, 1.02];
 
-  // Trail for text/buttons
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0)' : 'translateY(20px)',
@@ -39,11 +32,9 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center relative px-4">
-      {/* Background glow */}
+    <div className="min-h-screen bg-black flex flex-col items-center px-4 relative">
       <div className="background-glow" />
 
-      {/* Header */}
       <header className="w-full max-w-4xl py-4 flex justify-between items-center z-10">
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
@@ -56,65 +47,63 @@ export default function HomePage() {
         </button>
       </header>
 
-      {/* Hero */}
       <main className="flex-grow flex items-center justify-center w-full z-10">
         <animated.div
           style={entry}
-          className="gradient-border rounded-3xl overflow-hidden w-full max-w-md sm:max-w-xl lg:max-w-2xl aspect-[640/384]"
+          className="gradient-border rounded-3xl overflow-hidden
+                     w-full max-w-xs sm:max-w-sm md:max-w-md
+                     aspect-[5/3]"
         >
           <div className="card-container rounded-3xl relative w-full h-full">
-            {/* Reflection */}
-            <div className="card-reflection" />
+            {/* reflection only on md+ so no overflow on small */}
+            <div className="hidden md:block card-reflection" />
 
-            {/* Actual card */}
             <animated.div
               ref={cardRef}
-              style={{
-                transform: xys.to((x, y, s) =>
-                  `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
-                ),
-              }}
+              style={{ transform: xys.to((x,y,s) =>
+                `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
+              )}}
               onMouseMove={e => {
-                const rect = cardRef.current.getBoundingClientRect();
-                tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
+                const r = cardRef.current.getBoundingClientRect();
+                tiltApi.start({ xys: calc(e.clientX-r.left, e.clientY-r.top, r) });
               }}
-              onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
-              className="bg-black w-full h-full p-6 sm:p-8 rounded-3xl shadow-xl relative flex flex-col justify-between"
+              onMouseLeave={() => tiltApi.start({ xys: [0,0,1] })}
+              className="bg-black w-full h-full
+                         p-4 sm:p-6 md:p-8
+                         rounded-3xl shadow-xl
+                         flex flex-col justify-between"
             >
-              {/* Top comma logo */}
-              <div className="flex justify-center mt-2">
+              <div className="flex justify-center mt-1">
                 <span
                   style={{ fontFamily: 'California FB' }}
-                  className="text-6xl sm:text-7xl text-[#D4AF37] font-extrabold leading-none"
+                  className="text-5xl sm:text-6xl text-[#D4AF37] font-extrabold leading-none"
                 >
                   ’
                 </span>
               </div>
 
-              {/* Center content */}
-              <div className="text-center space-y-3 sm:space-y-4">
-                <animated.h1 style={trail[0]} className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-100">
+              <div className="text-center space-y-2 sm:space-y-3">
+                <animated.h1 style={trail[0]} className="text-lg sm:text-xl md:text-2xl font-bold text-gray-100">
                   Digital Networking Continued,
                 </animated.h1>
-                <animated.p style={trail[1]} className="text-sm sm:text-base text-gray-300 max-w-prose mx-auto">
+                <animated.p style={trail[1]} className="text-xs sm:text-sm text-gray-300 max-w-prose mx-auto">
                   Tap your Comma card to connect instantly and continue valuable conversations,
                 </animated.p>
               </div>
 
-              {/* Bottom buttons */}
               <animated.div
                 style={trail[2]}
-                className="flex flex-col sm:flex-row justify-center gap-4 mt-6 mb-2"
+                className="flex flex-col sm:flex-row justify-center gap-3 mt-4 mb-2"
               >
                 <button
                   onClick={() => navigate('/activate')}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
+                  className="flex items-center justify-center gap-2 px-5 py-2 sm:px-6 sm:py-3 bg-gray-900 text-[#D4AF37] rounded-full text-sm sm:text-base font-medium hover:bg-gray-800 transition"
                 >
-                  <FaBolt size={20} /> Activate
+                  <FaBolt size={18} /> Activate
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-6 py-3 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
+                  className="px-5 py-2 sm:px-6 sm:py-3 bg-gray-900 text-gray-200 rounded-full text-sm sm:text-base font-medium hover:bg-gray-800 transition"
                 >
                   Login
                 </button>
@@ -124,7 +113,6 @@ export default function HomePage() {
         </animated.div>
       </main>
 
-      {/* Footer */}
       <footer className="w-full max-w-4xl py-4 text-center text-sm text-gray-500 z-10">
         &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
