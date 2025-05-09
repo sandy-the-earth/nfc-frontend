@@ -55,6 +55,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/p/:activationCode" element={<PublicProfilePage />} />
+          <Route path="/" element={<HomePage />} />
 
           {/* Protected customer dashboard */}
           <Route
