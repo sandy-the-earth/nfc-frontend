@@ -50,9 +50,9 @@ export default function HomePage() {
       <main className="flex-grow flex items-center justify-center w-full z-10">
         <animated.div
           style={entry}
-          className="gradient-border rounded-3xl overflow-hidden w-full max-w-2xl md:max-w-3xl lg:max-w-4xl aspect-[5/3] sm:aspect-[16/7] flex items-center justify-center"
+          className="gradient-border rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-2xl md:max-w-3xl lg:max-w-4xl aspect-[4/5] sm:aspect-[16/7] flex items-center justify-center border-2 border-gray-400/60 shadow-2xl bg-black"
         >
-          <div className="card-container rounded-3xl relative w-full h-full flex flex-col justify-between">
+          <div className="card-container relative w-full h-full flex flex-col justify-between p-4 sm:p-8 md:p-12">
             {/* reflection only on md+ so no overflow on small */}
             <div className="hidden md:block card-reflection" />
 
@@ -66,9 +66,9 @@ export default function HomePage() {
                 tiltApi.start({ xys: calc(e.clientX-r.left, e.clientY-r.top, r) });
               }}
               onMouseLeave={() => tiltApi.start({ xys: [0,0,1] })}
-              className="bg-black w-full h-full p-3 sm:p-8 md:p-12 rounded-3xl shadow-xl flex flex-col justify-between items-center"
+              className="bg-black w-full h-full rounded-2xl sm:rounded-3xl flex flex-col justify-between items-center"
             >
-              <div className="flex justify-center mt-1">
+              <div className="flex justify-center mt-2 mb-4">
                 <span
                   style={{ fontFamily: 'California FB' }}
                   className="text-5xl sm:text-6xl md:text-7xl text-[#D4AF37] font-extrabold leading-none"
@@ -88,17 +88,17 @@ export default function HomePage() {
 
               <animated.div
                 style={trail[2]}
-                className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-4 mb-2 w-full"
+                className="flex flex-col gap-3 mt-8 mb-2 w-full"
               >
                 <button
                   onClick={() => navigate('/activate')}
-                  className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
+                  className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-[#181C23] text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition border border-[#D4AF37]"
                 >
                   <FaBolt size={20} /> Activate
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="w-full sm:w-auto px-6 py-3 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
+                  className="w-full px-6 py-3 bg-[#181C23] text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition border border-gray-500"
                 >
                   Login
                 </button>
