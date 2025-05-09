@@ -18,7 +18,7 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Parallax tilt for inner card
+  // Parallax tilt
   const [{ xys }, tiltApi] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
@@ -39,9 +39,12 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative">
+      {/* Background glow */}
+      <div className="background-glow" />
+
       {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center bg-black">
+      <header className="absolute top-0 left-0 right-0 px-6 py-4 flex justify-between items-center bg-black">
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
@@ -53,73 +56,70 @@ export default function HomePage() {
         </button>
       </header>
 
-      {/* Hero */}
-      <main className="flex-grow flex items-center justify-center px-6">
-        <animated.div
-          style={entry}
-          className="gradient-border rounded-3xl"
-        >
-          {/* Outer wrapper now 640×384px */}
-          <div className="w-[640px] h-[384px]">
-            {/* Inner card with parallax */}
-            <animated.div
-              ref={cardRef}
-              style={{
-                transform: xys.to((x, y, s) =>
-                  `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
-                ),
-              }}
-              onMouseMove={e => {
-                const rect = cardRef.current.getBoundingClientRect();
-                tiltApi.start({
-                  xys: calc(
-                    e.clientX - rect.left,
-                    e.clientY - rect.top,
-                    rect
-                  )
-                });
-              }}
-              onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
-              className="bg-black w-full h-full p-8 rounded-3xl shadow-xl flex flex-col justify-between"
-            >
-              {/* Top accent circle */}
-              <div className="flex justify-center">
-                <div className="w-16 h-16 bg-gray-800 rounded-full border-2 border-gray-400" />
-              </div>
+      {/* Hero Card */}
+      <animated.div style={entry} className="card-container">
+        <div className="relative gradient-border rounded-3xl w-[640px] h-[384px]">
+          {/* Floor reflection */}
+          <div className="card-reflection" />
 
-              {/* Center content */}
-              <div className="text-center space-y-4">
-                <animated.h1 style={trail[0]} className="text-2xl md:text-3xl font-bold text-gray-100">
-                  Digital Networking
-                </animated.h1>
-                <animated.p style={trail[1]} className="text-base text-gray-300 max-w-lg mx-auto">
-                  Reimagined. Tap your NFC Centurion card to connect instantly.
-                </animated.p>
-              </div>
+          {/* Parallax inner card */}
+          <animated.div
+            ref={cardRef}
+            style={{
+              transform: xys.to((x, y, s) =>
+                `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
+              )
+            }}
+            onMouseMove={e => {
+              const rect = cardRef.current.getBoundingClientRect();
+              tiltApi.start({
+                xys: calc(
+                  e.clientX - rect.left,
+                  e.clientY - rect.top,
+                  rect
+                )
+              });
+            }}
+            onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
+            className="absolute inset-0 bg-black p-8 rounded-3xl shadow-xl flex flex-col justify-between z-10"
+          >
+            {/* Centurion accent */}
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-gray-800 rounded-full border-2 border-gray-400" />
+            </div>
 
-              {/* Bottom buttons */}
-              <animated.div style={trail[2]} className="flex justify-center gap-6">
-                <button
-                  onClick={() => navigate('/activate')}
-                  className="flex items-center gap-2 px-8 py-4 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
-                >
-                  <FaBolt size={20} /> Activate
-                </button>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-8 py-4 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
-                >
-                  Login
-                </button>
-              </animated.div>
+            {/* Center content */}
+            <div className="text-center space-y-4">
+              <animated.h1 style={trail[0]} className="text-2xl md:text-3xl font-bold text-gray-100">
+                Digital Networking
+              </animated.h1>
+              <animated.p style={trail[1]} className="text-base text-gray-300 max-w-lg mx-auto">
+                Reimagined. Tap your NFC Centurion card to connect instantly.
+              </animated.p>
+            </div>
+
+            {/* Buttons */}
+            <animated.div style={trail[2]} className="flex justify-center gap-6">
+              <button
+                onClick={() => navigate('/activate')}
+                className="flex items-center gap-2 px-8 py-4 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
+              >
+                <FaBolt size={20} /> Activate
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-8 py-4 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
+              >
+                Login
+              </button>
             </animated.div>
-          </div>
-        </animated.div>
-      </main>
+          </animated.div>
+        </div>
+      </animated.div>
 
       {/* Footer */}
-      <footer className="py-4 text-center text-sm text-gray-500 bg-black">
-        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
+      <footer className="mt-12 text-center text-sm text-gray-500 w-full bg-black">
+        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Networking.
       </footer>
     </div>
   );
