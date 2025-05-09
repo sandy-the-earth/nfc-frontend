@@ -9,31 +9,39 @@ export default function HomePage() {
   const cardRef = useRef(null);
   const [mounted, setMounted] = useState(false);
 
-  // Fade-in for the entire card stack
-  const entryStyle = useSpring({
-    from: { opacity: 0 },
-    to: { opacity: 1 },
+  // Fade-in for the whole card
+  const entry = useSpring({
+    from: { opacity: 0, scale: 0.9 },
+    to: { opacity: 1, scale: 1 },
     config: config.molasses,
     delay: 200,
   });
 
-  // Parallax tilt spring: [rotateX, rotateY, scale]
-  const [{ xys }, api] = useSpring(() => ({
+  // Parallax tilt
+  const [{ xys }, tiltApi] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
   }));
   const calc = (x, y, rect) => [
     -(y - rect.height / 2) / 20,
     (x - rect.width / 2) / 20,
-    1.05,
+    1.02,
   ];
 
-  // Trail for text & buttons
+  // Text & button trail
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0px)' : 'translateY(20px)',
     config: config.stiff,
-    delay: 800,
+    delay: 600,
+  });
+
+  // Rotating border animation (0 → 360° loop)
+  const borderAni = useSpring({
+    from: { rotate: 0 },
+    to: { rotate: 360 },
+    loop: true,
+    config: { duration: 10000 },
   });
 
   useEffect(() => {
@@ -41,30 +49,38 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col justify-between">
+    <div className="min-h-screen bg-black flex flex-col">
       {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center shadow-lg shadow-black/50">
-        <div className="text-2xl font-extrabold text-gray-200 tracking-tight">
+      <header className="px-6 py-4 flex justify-between items-center bg-black">
+        <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
         <button
           onClick={() => navigate('/login')}
-          className="px-4 py-2 bg-[#D4AF37] text-gray-900 rounded-lg font-semibold hover:bg-[#b4972a] transition"
+          className="px-4 py-2 bg-[#D4AF37] text-black rounded-lg font-semibold hover:bg-[#b4972a] transition"
         >
           Login
         </button>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <main className="flex-grow flex items-center justify-center px-6">
         <animated.div
-          style={entryStyle}
+          style={{
+            ...entry,
+            transform: entry.scale.to(s => `scale(${s})`),
+          }}
           className="relative w-full max-w-md"
         >
-          {/* Background card */}
-          <div className="absolute inset-0 bg-black border border-white rounded-3xl shadow-2xl" />
+          {/* Rotating silver border */}
+          <animated.div
+            style={{
+              transform: borderAni.rotate.to(r => `rotate(${r}deg)`),
+            }}
+            className="absolute inset-0 rounded-3xl border-2 border-gray-400 pointer-events-none"
+          />
 
-          {/* Foreground content card with tilt */}
+          {/* Content card */}
           <animated.div
             ref={cardRef}
             style={{
@@ -74,18 +90,18 @@ export default function HomePage() {
             }}
             onMouseMove={e => {
               const rect = cardRef.current.getBoundingClientRect();
-              api.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
+              tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
             }}
-            onMouseLeave={() => api.start({ xys: [0, 0, 1] })}
-            className="relative bg-gray-800 p-8 rounded-3xl shadow-xl"
+            onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
+            className="relative bg-black p-8 rounded-3xl shadow-xl"
           >
             <div className="space-y-6 text-center">
-              {/* Centurion-style accent */}
+              {/* Centurion accent circle */}
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-gray-700 rounded-full border-2 border-[#D4AF37] shadow-md" />
+                <div className="w-12 h-12 bg-gray-800 rounded-full border-2 border-gray-400" />
               </div>
 
-              {/* Text & Buttons */}
+              {/* Animated texts/buttons */}
               <animated.h1 style={trail[0]} className="text-3xl font-bold text-gray-100">
                 Digital Networking
               </animated.h1>
@@ -95,13 +111,13 @@ export default function HomePage() {
               <animated.div style={trail[2]} className="flex flex-col md:flex-row justify-center gap-4">
                 <button
                   onClick={() => navigate('/activate')}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-[#D4AF37] rounded-full font-medium hover:bg-gray-600 transition"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-[#D4AF37] rounded-full font-medium hover:bg-gray-800 transition"
                 >
                   <FaBolt /> Activate NFC
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-6 py-3 bg-gray-700 text-gray-200 rounded-full font-medium hover:bg-gray-600 transition"
+                  className="px-6 py-3 bg-gray-900 text-gray-200 rounded-full font-medium hover:bg-gray-800 transition"
                 >
                   Existing User Login
                 </button>
@@ -112,8 +128,8 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 border-t border-gray-700 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Networking.
+      <footer className="py-4 text-center text-sm text-gray-500 bg-black">
+        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
   );
