@@ -16,4 +16,7 @@
       transform: translateY(0);
     }
   }
+  @keyframes borderSpin {
+    to { transform: rotate(360deg); }
+  }  
 }

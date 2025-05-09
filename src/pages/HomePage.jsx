@@ -9,7 +9,7 @@ export default function HomePage() {
   const cardRef = useRef(null);
   const [mounted, setMounted] = useState(false);
 
-  // Fade-in for the whole card
+  // 1) Fade + scale in
   const entry = useSpring({
     from: { opacity: 0, scale: 0.9 },
     to: { opacity: 1, scale: 1 },
@@ -17,36 +17,25 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Parallax tilt
+  // 2) Parallax tilt
   const [{ xys }, tiltApi] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
   }));
   const calc = (x, y, rect) => [
-    -(y - rect.height / 2) / 20,
-    (x - rect.width / 2) / 20,
+    -(y - rect.height/2) / 20,
+    ( x - rect.width/2) / 20,
     1.02,
   ];
 
-  // Text & button trail
+  // 3) Trail for headline, text, buttons
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0px)' : 'translateY(20px)',
     config: config.stiff,
     delay: 600,
   });
-
-  // Rotating border animation (0 → 360° loop)
-  const borderAni = useSpring({
-    from: { rotate: 0 },
-    to: { rotate: 360 },
-    loop: true,
-    config: { duration: 10000 },
-  });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true) }, []);
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
@@ -72,19 +61,23 @@ export default function HomePage() {
           }}
           className="relative w-full max-w-md"
         >
-          {/* Rotating silver border */}
+          {/* Reflective border */}
           <animated.div
+            style={{ transform: entry.scale.to(s => `scale(${s})`), animation: 'borderSpin 6s linear infinite' }}
+            className="absolute inset-0 rounded-3xl border-4 border-transparent"
+            // use border-image for conic-gradient
+            // border-image-slice:1 makes the gradient fill the border exactly
             style={{
-              transform: borderAni.rotate.to(r => `rotate(${r}deg)`),
+              borderImage: 'conic-gradient(#ccc, #777, #ccc, #777) 1',
+              animation: 'borderSpin 6s linear infinite',
             }}
-            className="absolute inset-0 rounded-3xl border-2 border-gray-400 pointer-events-none"
           />
 
           {/* Content card */}
           <animated.div
             ref={cardRef}
             style={{
-              transform: xys.to((x, y, s) =>
+              transform: xys.to((x,y,s) =>
                 `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
               ),
             }}
@@ -92,11 +85,11 @@ export default function HomePage() {
               const rect = cardRef.current.getBoundingClientRect();
               tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
             }}
-            onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
+            onMouseLeave={() => tiltApi.start({ xys: [0,0,1] })}
             className="relative bg-black p-8 rounded-3xl shadow-xl"
           >
             <div className="space-y-6 text-center">
-              {/* Centurion accent circle */}
+              {/* Centurion accent */}
               <div className="flex justify-center">
                 <div className="w-12 h-12 bg-gray-800 rounded-full border-2 border-gray-400" />
               </div>
