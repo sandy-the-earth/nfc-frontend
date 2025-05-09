@@ -9,7 +9,7 @@ export default function HomePage() {
   const cardRef = useRef(null);
   const [mounted, setMounted] = useState(false);
 
-  // Entry fade-in
+  // 1) Fade in the card container
   const entryStyle = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -17,19 +17,18 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Parallax tilt spring: [rotateX, rotateY, scale]
+  // 2) Parallax tilt: rotateX, rotateY, scale
   const [{ xys }, api] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
   }));
-
   const calc = (x, y, rect) => [
     -(y - rect.height / 2) / 20,
     (x - rect.width / 2) / 20,
     1.05,
   ];
 
-  // Text & buttons trail
+  // 3) Trail for headline, subtext, and buttons
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0px)' : 'translateY(20px)',
@@ -71,30 +70,31 @@ export default function HomePage() {
             api.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
           }}
           onMouseLeave={() => api.start({ xys: [0, 0, 1] })}
-          className="w-full max-w-2xl bg-gray-800 p-8 rounded-2xl shadow-2xl shadow-black/60"
+          className="w-full max-w-md bg-gray-800 border-2 border-[#D4AF37] p-8 rounded-3xl shadow-2xl shadow-black/70"
         >
           <div className="space-y-6 text-center">
-            {/* Premium Card Placeholder */}
-            <div className="h-48 bg-gray-700 rounded-xl border-2 border-gray-600" />
+            {/* Top accent circle to mimic centurion card element */}
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-gray-700 rounded-full border-2 border-[#D4AF37] shadow-md" />
+            </div>
 
             {/* Animated Texts & Buttons */}
-            <animated.h1 style={trail[0]} className="text-4xl md:text-5xl font-bold text-gray-100">
-              Digital Networking, Reimagined.
+            <animated.h1 style={trail[0]} className="text-3xl font-bold text-gray-100">
+              Digital Networking
             </animated.h1>
-            <animated.p style={trail[1]} className="text-lg text-gray-300 max-w-xl mx-auto">
-              Welcome to commaCards — the future of NFC-based professional identity.  
-              Activate your card and unlock seamless networking in one tap.
+            <animated.p style={trail[1]} className="text-sm text-gray-300 max-w-sm mx-auto">
+              Reimagined. Unlock seamless connections with a single tap on your NFC Centurion card.
             </animated.p>
             <animated.div style={trail[2]} className="flex flex-col md:flex-row justify-center gap-4">
               <button
                 onClick={() => navigate('/activate')}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-[#D4AF37] rounded-lg font-medium hover:bg-gray-600 transition"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-[#D4AF37] rounded-full font-medium hover:bg-gray-600 transition"
               >
                 <FaBolt /> Activate NFC
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="px-6 py-3 bg-gray-600 text-gray-200 rounded-lg font-medium hover:bg-gray-500 transition"
+                className="px-6 py-3 bg-gray-700 text-gray-200 rounded-full font-medium hover:bg-gray-600 transition"
               >
                 Existing User Login
               </button>
