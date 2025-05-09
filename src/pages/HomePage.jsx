@@ -9,7 +9,7 @@ export default function HomePage() {
   const cardRef = useRef(null);
   const [mounted, setMounted] = useState(false);
 
-  // 1) Entry fade-in
+  // Entry fade-in
   const entryStyle = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -17,20 +17,19 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // 2) Parallax tilt spring: [rotateX, rotateY, scale]
+  // Parallax tilt spring: [rotateX, rotateY, scale]
   const [{ xys }, api] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
   }));
 
-  // calc tilt based on mouse coords
   const calc = (x, y, rect) => [
-    -(y - rect.height / 2) / 20, // rotateX
-    (x - rect.width / 2) / 20,   // rotateY
-    1.05,                        // scale
+    -(y - rect.height / 2) / 20,
+    (x - rect.width / 2) / 20,
+    1.05,
   ];
 
-  // 3) Text & buttons trail
+  // Text & buttons trail
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0px)' : 'translateY(20px)',
@@ -38,21 +37,20 @@ export default function HomePage() {
     delay: 800,
   });
 
-  // trigger trail after initial mount
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex flex-col justify-between">
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-between">
       {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center shadow-sm dark:shadow-md">
-        <div className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          comma<span className="opacity-70">Cards</span>
+      <header className="px-6 py-4 flex justify-between items-center shadow-lg shadow-black/50">
+        <div className="text-2xl font-extrabold text-gray-200 tracking-tight">
+          comma<span className="text-[#D4AF37]">Cards</span>
         </div>
         <button
           onClick={() => navigate('/login')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-[#D4AF37] text-gray-900 rounded-lg font-semibold hover:bg-[#b4972a] transition"
         >
           Login
         </button>
@@ -68,42 +66,35 @@ export default function HomePage() {
               `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
             ),
           }}
-          onMouseMove={(e) => {
+          onMouseMove={e => {
             const rect = cardRef.current.getBoundingClientRect();
             api.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
           }}
           onMouseLeave={() => api.start({ xys: [0, 0, 1] })}
-          className="w-full max-w-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl shadow-2xl"
+          className="w-full max-w-2xl bg-gray-800 p-8 rounded-2xl shadow-2xl shadow-black/60"
         >
-          {/* Card Content */}
           <div className="space-y-6 text-center">
-            {/* NFC Card Mockup */}
-            <div className="flex justify-center">
-              <img
-                src="https://i.imgur.com/nD0H8pJ.png" // replace with your own
-                alt="NFC Card Preview"
-                className="w-full max-w-sm rounded-xl shadow-lg dark:shadow-2xl"
-              />
-            </div>
+            {/* Premium Card Placeholder */}
+            <div className="h-48 bg-gray-700 rounded-xl border-2 border-gray-600" />
 
             {/* Animated Texts & Buttons */}
-            <animated.h1 style={trail[0]} className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">
+            <animated.h1 style={trail[0]} className="text-4xl md:text-5xl font-bold text-gray-100">
               Digital Networking, Reimagined.
             </animated.h1>
-            <animated.p style={trail[1]} className="text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
-              Welcome to commaCards — the future of NFC-based professional identity.
+            <animated.p style={trail[1]} className="text-lg text-gray-300 max-w-xl mx-auto">
+              Welcome to commaCards — the future of NFC-based professional identity.  
               Activate your card and unlock seamless networking in one tap.
             </animated.p>
             <animated.div style={trail[2]} className="flex flex-col md:flex-row justify-center gap-4">
               <button
                 onClick={() => navigate('/activate')}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-[#D4AF37] rounded-lg font-medium hover:bg-gray-600 transition"
               >
                 <FaBolt /> Activate NFC
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                className="px-6 py-3 bg-gray-600 text-gray-200 rounded-lg font-medium hover:bg-gray-500 transition"
               >
                 Existing User Login
               </button>
@@ -113,8 +104,8 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} commaCards — Continued Relationships.
+      <footer className="py-4 border-t border-gray-700 text-center text-sm text-gray-500">
+        &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
   );
