@@ -55,7 +55,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <main className="flex-grow flex items-center justify-center px-6">
-        <animated.div style={entry} className="gradient-border rounded-3xl w-80 h-48">
+        <animated.div style={entry} className="gradient-border rounded-3xl w-160 h-96">
           {/* Inner card with parallax */}
           <animated.div
             ref={cardRef}
