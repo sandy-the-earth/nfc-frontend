@@ -18,7 +18,7 @@ export default function HomePage() {
     delay: 200,
   });
 
-  // Parallax tilt for inner card
+  // Parallax tilt
   const [{ xys }, tiltApi] = useSpring(() => ({
     xys: [0, 0, 1],
     config: { mass: 5, tension: 350, friction: 40 },
@@ -29,7 +29,7 @@ export default function HomePage() {
     1.02,
   ];
 
-  // Text & button trail
+  // Trail
   const trail = useTrail(3, {
     opacity: mounted ? 1 : 0,
     transform: mounted ? 'translateY(0)' : 'translateY(20px)',
@@ -39,12 +39,12 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col relative">
+    <div className="min-h-screen bg-black flex flex-col items-center relative">
       {/* Background glow */}
       <div className="background-glow" />
 
       {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center bg-black z-10">
+      <header className="w-full max-w-4xl px-6 py-4 flex justify-between items-center bg-black z-10">
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
@@ -57,13 +57,13 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-grow flex items-center justify-center px-6 z-10">
-        <animated.div style={entry} className="gradient-border rounded-3xl inline-block">
-          <div className="card-container rounded-3xl overflow-visible relative">
+      <main className="flex-grow flex items-center justify-center px-6 z-10 mt-8">
+        <animated.div style={entry} className="gradient-border rounded-3xl overflow-hidden">
+          <div className="card-container rounded-3xl relative">
             {/* Floor reflection */}
             <div className="card-reflection" />
 
-            {/* Inner wrapper now 640×384px */}
+            {/* Card (640×384) */}
             <div className="w-[640px] h-[384px]">
               <animated.div
                 ref={cardRef}
@@ -77,11 +77,16 @@ export default function HomePage() {
                   tiltApi.start({ xys: calc(e.clientX - rect.left, e.clientY - rect.top, rect) });
                 }}
                 onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
-                className="bg-black w-full h-full p-8 rounded-3xl shadow-none relative flex flex-col justify-between"
+                className="bg-black w-full h-full p-8 rounded-3xl shadow-xl relative flex flex-col justify-between"
               >
                 {/* Top comma logo */}
                 <div className="flex justify-center">
-                  <span className="text-6xl text-[#D4AF37] font-extrabold leading-none">’</span>
+                  <span
+                    style={{ fontFamily: 'California FB' }}
+                    className="text-6xl text-[#D4AF37] font-extrabold leading-none"
+                  >
+                    ’
+                  </span>
                 </div>
 
                 {/* Center content */}
@@ -116,7 +121,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 text-center text-sm text-gray-500 bg-black z-10">
+      <footer className="w-full max-w-4xl py-4 text-center text-sm text-gray-500 bg-black z-10">
         &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
