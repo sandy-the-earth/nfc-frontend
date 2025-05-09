@@ -78,9 +78,9 @@ export default function HomePage() {
               onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
               className="bg-black w-full h-full p-8 rounded-3xl shadow-none relative flex flex-col justify-between"
             >
-              {/* Top accent circle */}
+              {/* Top comma logo */}
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-gray-800 rounded-full border-2 border-gray-400" />
+                <span className="text-6xl text-[#D4AF37] font-extrabold leading-none">,</span>
               </div>
 
               {/* Center content */}
