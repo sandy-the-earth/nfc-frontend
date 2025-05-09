@@ -55,57 +55,65 @@ export default function HomePage() {
 
       {/* Hero */}
       <main className="flex-grow flex items-center justify-center px-6">
-        <animated.div style={entry} className="gradient-border rounded-3xl w-160 h-96">
-          {/* Inner card with parallax */}
-          <animated.div
-            ref={cardRef}
-            style={{
-              transform: xys.to((x, y, s) =>
-                `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
-              ),
-            }}
-            onMouseMove={e => {
-              const rect = cardRef.current.getBoundingClientRect();
-              tiltApi.start({ xys: calc(
-                e.clientX - rect.left,
-                e.clientY - rect.top,
-                rect
-              ) });
-            }}
-            onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
-            className="bg-black w-full h-full p-6 rounded-3xl shadow-xl flex flex-col justify-between"
-          >
-            {/* Top accent circle */}
-            <div className="flex justify-center">
-              <div className="w-10 h-10 bg-gray-800 rounded-full border-2 border-gray-400" />
-            </div>
+        <animated.div
+          style={entry}
+          className="gradient-border rounded-3xl"
+        >
+          {/* Outer wrapper now 640×384px */}
+          <div className="w-[640px] h-[384px]">
+            {/* Inner card with parallax */}
+            <animated.div
+              ref={cardRef}
+              style={{
+                transform: xys.to((x, y, s) =>
+                  `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`
+                ),
+              }}
+              onMouseMove={e => {
+                const rect = cardRef.current.getBoundingClientRect();
+                tiltApi.start({
+                  xys: calc(
+                    e.clientX - rect.left,
+                    e.clientY - rect.top,
+                    rect
+                  )
+                });
+              }}
+              onMouseLeave={() => tiltApi.start({ xys: [0, 0, 1] })}
+              className="bg-black w-full h-full p-8 rounded-3xl shadow-xl flex flex-col justify-between"
+            >
+              {/* Top accent circle */}
+              <div className="flex justify-center">
+                <div className="w-16 h-16 bg-gray-800 rounded-full border-2 border-gray-400" />
+              </div>
 
-            {/* Center content */}
-            <div className="text-center space-y-2">
-              <animated.h1 style={trail[0]} className="text-xl font-bold text-gray-100">
-                Digital Networking
-              </animated.h1>
-              <animated.p style={trail[1]} className="text-xs text-gray-300 px-2">
-                Reimagined. Tap your NFC Centurion card to connect instantly.
-              </animated.p>
-            </div>
+              {/* Center content */}
+              <div className="text-center space-y-4">
+                <animated.h1 style={trail[0]} className="text-2xl md:text-3xl font-bold text-gray-100">
+                  Digital Networking
+                </animated.h1>
+                <animated.p style={trail[1]} className="text-base text-gray-300 max-w-lg mx-auto">
+                  Reimagined. Tap your NFC Centurion card to connect instantly.
+                </animated.p>
+              </div>
 
-            {/* Bottom buttons */}
-            <animated.div style={trail[2]} className="flex justify-center gap-3">
-              <button
-                onClick={() => navigate('/activate')}
-                className="flex items-center gap-1 px-4 py-2 bg-gray-900 text-[#D4AF37] rounded-full text-xs font-medium hover:bg-gray-800 transition"
-              >
-                <FaBolt /> Activate
-              </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="px-4 py-2 bg-gray-900 text-gray-200 rounded-full text-xs font-medium hover:bg-gray-800 transition"
-              >
-                Login
-              </button>
+              {/* Bottom buttons */}
+              <animated.div style={trail[2]} className="flex justify-center gap-6">
+                <button
+                  onClick={() => navigate('/activate')}
+                  className="flex items-center gap-2 px-8 py-4 bg-gray-900 text-[#D4AF37] rounded-full text-base font-medium hover:bg-gray-800 transition"
+                >
+                  <FaBolt size={20} /> Activate
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-8 py-4 bg-gray-900 text-gray-200 rounded-full text-base font-medium hover:bg-gray-800 transition"
+                >
+                  Login
+                </button>
+              </animated.div>
             </animated.div>
-          </animated.div>
+          </div>
         </animated.div>
       </main>
 
