@@ -48,8 +48,6 @@ export default function App() {
     <ThemeProvider>
       <Router>
         <Routes>
-          {/* Home → Activate */}
-          <Route path="/" element={<Navigate to="/activate" replace />} />
 
           {/* Public pages */}
           <Route path="/activate" element={<ActivatePage />} />
