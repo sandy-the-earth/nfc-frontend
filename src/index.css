@@ -16,42 +16,49 @@
       transform: translateY(0);
     }
   }
-  @keyframes spinBorder {
-    to { transform: rotate(360deg); }
-  }
-  
-  /* This class will create a conic-gradient border and spin it */
-  .gradient-border {
-    position: relative;
-    display: inline-block;
-    border-radius: 1rem; /* match your card’s radius */
-    padding: 2px;        /* thickness of the visible border */
-  }
-  .gradient-border::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: 
-      conic-gradient(
-        from 0deg,
-        #ccc 0%,
-        #777 25%,
-        #ccc 50%,
-        #777 75%,
-        #ccc 100%
-      );
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: destination-out;
-            mask-composite: exclude;
-    padding: 2px;  /* same as .gradient-border padding */
-    animation: spinBorder 6s linear infinite;
-    z-index: 0;
-  }
-  .gradient-border > * {
-    position: relative;
-    z-index: 1;
-  }    
+  /* index.css */
+
+@keyframes spinBorder {
+  to { transform: rotate(360deg); }
+}
+
+/* Gradient‐border wrapper */
+.gradient-border {
+  position: relative;
+  border-radius: 1rem;    /* match card radius */
+  padding: 3px;           /* thickness of border */
+  display: inline-block;
+  /* ensure the pseudo-element covers the whole wrapper */
+  overflow: visible;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    conic-gradient(
+      from 0deg,
+      #ccc 0%,
+      #777 25%,
+      #ccc 50%,
+      #777 75%,
+      #ccc 100%
+    );
+  /* mask center so only border shows */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+          mask-composite: exclude;
+  mask-mode: alpha;
+  padding: 3px;           /* same as wrapper padding */
+  animation: spinBorder 5s linear infinite;
+  z-index: 0;
+}
+/* Ensure inner card sits above the border layer */
+.gradient-border > * {
+  position: relative;
+  z-index: 1;
+}
 }
