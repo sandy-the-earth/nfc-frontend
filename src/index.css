@@ -16,7 +16,42 @@
       transform: translateY(0);
     }
   }
-  @keyframes borderSpin {
+  @keyframes spinBorder {
     to { transform: rotate(360deg); }
-  }  
+  }
+  
+  /* This class will create a conic-gradient border and spin it */
+  .gradient-border {
+    position: relative;
+    display: inline-block;
+    border-radius: 1rem; /* match your card’s radius */
+    padding: 2px;        /* thickness of the visible border */
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: 
+      conic-gradient(
+        from 0deg,
+        #ccc 0%,
+        #777 25%,
+        #ccc 50%,
+        #777 75%,
+        #ccc 100%
+      );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+    padding: 2px;  /* same as .gradient-border padding */
+    animation: spinBorder 6s linear infinite;
+    z-index: 0;
+  }
+  .gradient-border > * {
+    position: relative;
+    z-index: 1;
+  }    
 }
