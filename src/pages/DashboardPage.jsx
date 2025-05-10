@@ -73,6 +73,8 @@ const CardContent = memo(function CardContent({
   isDashboard,
   saveProfile
 }) {
+  // Use customSlug if present, else activationCode
+  const profileSlug = profile.customSlug || profile.activationCode;
   return (
     <>
       {/* Theme toggle */}
@@ -135,7 +137,7 @@ const CardContent = memo(function CardContent({
             <MdQrCode className="text-base" /> QR Code
           </button>
           <button
-            onClick={() => copyToClipboard(`${window.location.origin}/p/${profile.activationCode}`)}
+            onClick={() => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
             className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
           >
             <FaRegCopy className="text-base" />
@@ -435,13 +437,16 @@ export default function DashboardPage() {
   // Fetch profile
   useEffect(() => {
     if (!profileId) {
+      console.log('No profileId in localStorage');
       navigate('/login', { replace: true });
       return;
     }
+    console.log('Fetching profile for profileId:', profileId);
     axios
       .get(`${API}/api/profile/${profileId}`)
       .then(res => {
         const data = res.data || {};
+        console.log('Profile API response:', data);
         setProfile(data);
         setForm({
           ...initialForm,
@@ -455,7 +460,10 @@ export default function DashboardPage() {
           avatarUrl: data.avatarUrl || ''
         });
       })
-      .catch(() => navigate('/login', { replace: true }))
+      .catch((err) => {
+        console.error('Profile API error:', err);
+        navigate('/login', { replace: true });
+      })
       .finally(() => setLoading(false));
   }, [API, profileId, navigate]);
 
@@ -607,7 +615,7 @@ export default function DashboardPage() {
               profile={profile}
               setEditMode={setEditMode}
               setShowQR={setShowQR}
-              copyToClipboard={txt => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
+              copyToClipboard={copyToClipboard}
               showQR={showQR}
               downloadVCard={downloadVCard}
               isDashboard={true}
@@ -638,7 +646,7 @@ export default function DashboardPage() {
               profile={profile}
               setEditMode={setEditMode}
               setShowQR={setShowQR}
-              copyToClipboard={txt => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
+              copyToClipboard={copyToClipboard}
               showQR={showQR}
               downloadVCard={downloadVCard}
               isDashboard={true}
