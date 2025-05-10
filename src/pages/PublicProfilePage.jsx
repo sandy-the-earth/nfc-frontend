@@ -321,7 +321,7 @@ export default function PublicProfilePage() {
       {/* Member Since */}
       <div className="px-6 pt-4 pb-6 text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Member since {new Date(createdAt).toLocaleDateString()}
+          Member since {createdAt ? new Date(createdAt).toLocaleDateString('en-GB') : ''}
         </p>
       </div>
     </>
