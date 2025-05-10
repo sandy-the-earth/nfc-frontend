@@ -465,6 +465,17 @@ export default function DashboardPage() {
     setMessage('Copied!');
   }, []);
 
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="text-red-500">Profile not found.</div>
+      </div>
+    );
+  }
+
+  // Use customSlug if present, else activationCode
+  const profileSlug = profile.customSlug || profile.activationCode;
+
   // Handle changes
   const handleChange = useCallback(e => {
     const { name, value } = e.target;
@@ -596,7 +607,7 @@ export default function DashboardPage() {
               profile={profile}
               setEditMode={setEditMode}
               setShowQR={setShowQR}
-              copyToClipboard={copyToClipboard}
+              copyToClipboard={txt => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
               showQR={showQR}
               downloadVCard={downloadVCard}
               isDashboard={true}
@@ -627,7 +638,7 @@ export default function DashboardPage() {
               profile={profile}
               setEditMode={setEditMode}
               setShowQR={setShowQR}
-              copyToClipboard={copyToClipboard}
+              copyToClipboard={txt => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
               showQR={showQR}
               downloadVCard={downloadVCard}
               isDashboard={true}

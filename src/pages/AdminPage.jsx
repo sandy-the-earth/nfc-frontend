@@ -131,8 +131,11 @@ export default function AdminPage() {
     window.location.href = `${API}/api/admin/export?${qs}`;
   };
 
-  const copyLink = (code) => {
-    const url = `${window.location.origin}/p/${code}`;
+  // Use customSlug if present, else activationCode
+  const getProfileSlug = (p) => p.customSlug || p.activationCode;
+
+  const copyLink = (codeOrSlug) => {
+    const url = `${window.location.origin}/p/${codeOrSlug}`;
     navigator.clipboard.writeText(url);
     alert('Copied: ' + url);
   };
@@ -275,8 +278,8 @@ export default function AdminPage() {
             ) : profiles.map(p => (
               <tr key={p._id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 <td className="px-4 py-2 font-mono text-blue-600 dark:text-blue-400">
-                  <a href={`/p/${p.activationCode}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {p.activationCode}
+                  <a href={`/p/${getProfileSlug(p)}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {getProfileSlug(p)}
                   </a>
                 </td>
                 <td className="px-4 py-2 text-gray-800 dark:text-gray-100">{p.ownerEmail || '—'}</td>
@@ -322,7 +325,7 @@ export default function AdminPage() {
                   <button onClick={() => deleteProfile(p._id)} title="Delete">
                     <FaTrash size={20} className="text-red-500" />
                   </button>
-                  <button onClick={() => copyLink(p.activationCode)} title="Copy Link">
+                  <button onClick={() => copyLink(getProfileSlug(p))} title="Copy Link">
                     <FaCopy size={18} className="text-blue-600 dark:text-blue-400" />
                   </button>
                 </td>
