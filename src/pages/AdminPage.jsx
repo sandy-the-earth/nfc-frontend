@@ -25,6 +25,10 @@ export default function AdminPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // custom slug inputs & feedback
+  const [slugInputs, setSlugInputs] = useState({});       // { [profileId]: inputValue }
+  const [slugFeedback, setSlugFeedback] = useState({});   // { [profileId]: { type, message } }
+
   // Create-profile state
   const [creating, setCreating] = useState(false);
   const [newCode, setNewCode] = useState('');
@@ -135,6 +139,34 @@ export default function AdminPage() {
 
   const totalPages = Math.ceil(total / limit);
 
+  // assign custom slug
+  const assignCustomSlug = async (id) => {
+    const customSlug = (slugInputs[id] || '').trim();
+    if (!/^[a-z0-9_-]{3,30}$/.test(customSlug)) {
+      setSlugFeedback(fb => ({
+        ...fb,
+        [id]: { type: 'error', message: 'Invalid format' }
+      }));
+      return;
+    }
+    try {
+      await axios.patch(`${API}/api/profile/${id}/custom-slug`, { customSlug });
+      setSlugFeedback(fb => ({
+        ...fb,
+        [id]: { type: 'success', message: 'Slug set!' }
+      }));
+      fetchProfiles();
+    } catch (err) {
+      let msg = 'Error';
+      if (err.response?.status === 409) msg = 'Already taken';
+      else if (err.response?.status === 403) msg = 'Reserved';
+      setSlugFeedback(fb => ({
+        ...fb,
+        [id]: { type: 'error', message: msg }
+      }));
+    }
+  };
+
   if (!authorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -226,6 +258,7 @@ export default function AdminPage() {
               <th className="px-4 py-2 text-left">Code</th>
               <th className="px-4 py-2 text-left">Email</th>
               <th className="px-4 py-2 text-left">Name</th>
+              <th className="px-4 py-2 text-left">Custom URL</th>
               <th className="px-4 py-2 text-center">Status</th>
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
@@ -233,23 +266,53 @@ export default function AdminPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-gray-400">Loading…</td>
+                <td colSpan={6} className="p-4 text-center text-gray-400">Loading…</td>
               </tr>
             ) : profiles.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-gray-400">No profiles</td>
+                <td colSpan={6} className="p-4 text-center text-gray-400">No profiles</td>
               </tr>
             ) : profiles.map(p => (
               <tr key={p._id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                <td className="px-4 py-2 font-mono text-blue-600 dark:text-blue-400"><a href={`/p/${p.activationCode}`} target="_blank" rel="noopener noreferrer" className="hover:underline">{p.activationCode}</a></td>
+                <td className="px-4 py-2 font-mono text-blue-600 dark:text-blue-400">
+                  <a href={`/p/${p.activationCode}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {p.activationCode}
+                  </a>
+                </td>
                 <td className="px-4 py-2 text-gray-800 dark:text-gray-100">{p.ownerEmail || '—'}</td>
                 <td className="px-4 py-2 text-gray-800 dark:text-gray-100">{p.name || '—'}</td>
-                <td className="px-4 py-2 text-center text-green-600 dark:text-green-400 font-semibold">{p.status === 'active' ? 'Active' : 'Pending'}</td>
+
+                {/* Custom URL Editor */}
+                <td className="px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="your-slug"
+                      value={slugInputs[p._id] ?? p.customSlug ?? ''}
+                      onChange={e => setSlugInputs(si => ({ ...si, [p._id]: e.target.value }))}
+                      className="w-32 px-2 py-1 border rounded text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    />
+                    <button
+                      onClick={() => assignCustomSlug(p._id)}
+                      className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                    >
+                      Set
+                    </button>
+                  </div>
+                  {slugFeedback[p._id] && (
+                    <p className={`mt-1 text-xs ${slugFeedback[p._id].type === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+                      {slugFeedback[p._id].message}
+                    </p>
+                  )}
+                </td>
+
+                <td className="px-4 py-2 text-center">
+                  <span className={`font-semibold ${p.status === 'active' ? 'text-green-600 dark:text-green-400' : 'text-yellow-500 dark:text-yellow-300'}`}>
+                    {p.status === 'active' ? 'Active' : 'Pending'}
+                  </span>
+                </td>
                 <td className="px-4 py-2 flex justify-center gap-3">
-                  <button
-                    onClick={() => toggleStatus(p._id)}
-                    title={p.status === 'active' ? 'Deactivate' : 'Activate'}
-                  >
+                  <button onClick={() => toggleStatus(p._id)} title={p.status === 'active' ? 'Deactivate' : 'Activate'}>
                     {p.status === 'active' ? (
                       <FaToggleOff size={20} className="text-yellow-400" />
                     ) : (
@@ -275,7 +338,7 @@ export default function AdminPage() {
           <button
             onClick={() => setPage(p => Math.max(p - 1, 1))}
             disabled={page === 1}
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
+            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50"
           >
             Prev
           </button>
@@ -283,9 +346,9 @@ export default function AdminPage() {
             {page} / {totalPages}
           </span>
           <button
-            onClick={() => setPage(p => Math.min(p + 1, totalPages))}  
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
+            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50"
           >
             Next
           </button>
