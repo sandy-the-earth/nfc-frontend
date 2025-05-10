@@ -400,7 +400,7 @@ export default function PublicProfilePage() {
               >
                 ✕
               </button>
-              <h2 className="mb-4 text-xl font-semibold">Send a Contact / Meeting Request</h2>
+              <h2 className="mb-4 text-xl font-semibold">Send a Connection Message - With Meeting Details</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm">Your Name</label>
@@ -425,7 +425,7 @@ export default function PublicProfilePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm">Event</label>
+                    <label className="block text-sm">Event We Met At</label>
                     <input
                       name="event"
                       value={form.event}

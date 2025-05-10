@@ -113,3 +113,53 @@
   .text-2xl { font-size: 1.25rem !important; }
   .text-xl  { font-size: 1rem !important; }
 }
+
+/* Particle burst overlay */
+.particle-burst-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Individual particles */
+.particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #D4AF37;
+  border-radius: 50%;
+  animation: particleMove 0.8s ease-out forwards;
+}
+
+/* Generate random directions per particle via inline CSS variables */
+.particle:nth-child(odd)   { --dx:  -1; --dy: -1; }
+.particle:nth-child(2n)    { --dx:   1; --dy: -1; }
+.particle:nth-child(3n)    { --dx:  -1; --dy:  1; }
+.particle:nth-child(4n)    { --dx:   1; --dy:  1; }
+/* and so on for more variation... */
+
+@keyframes particleMove {
+  to {
+    transform: translate(
+      calc(var(--dx) * (20px + random(10px))),
+      calc(var(--dy) * (20px + random(10px)))
+    ) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Fallback if browser doesn’t support random(): just use fixed distances */
+@supports not (animation: particleMove) {
+  @keyframes particleMove {
+    to {
+      transform: translate(
+        calc(var(--dx) * 30px),
+        calc(var(--dy) * 30px)
+      ) scale(0);
+      opacity: 0;
+    }
+  }
+}
