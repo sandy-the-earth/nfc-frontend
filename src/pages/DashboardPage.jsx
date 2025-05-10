@@ -73,8 +73,8 @@ const CardContent = memo(function CardContent({
   isDashboard,
   saveProfile
 }) {
-  // Use customSlug if present, else activationCode
-  const profileSlug = profile.customSlug || profile.activationCode;
+  // Use backend-provided slug for all links
+  const profileSlug = profile.slug || profile.customSlug || profile.activationCode;
   return (
     <>
       {/* Theme toggle */}
