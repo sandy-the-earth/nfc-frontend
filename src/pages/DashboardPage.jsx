@@ -579,9 +579,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Use the backend-provided slug for all links
-  const profileSlug = profile.slug;
-
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="relative w-full max-w-md flex-1 flex flex-col justify-center">
