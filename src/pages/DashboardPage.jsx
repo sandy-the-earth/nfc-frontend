@@ -414,6 +414,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [darkMode, setDarkMode] = useState(theme === 'dark');
   const [form, setForm] = useState(initialForm);
   const [editMode, setEditMode] = useState(false);
@@ -437,16 +438,13 @@ export default function DashboardPage() {
   // Fetch profile
   useEffect(() => {
     if (!profileId) {
-      console.log('No profileId in localStorage');
       navigate('/login', { replace: true });
       return;
     }
-    console.log('Fetching profile for profileId:', profileId);
     axios
       .get(`${API}/api/profile/${profileId}`)
       .then(res => {
         const data = res.data || {};
-        console.log('Profile API response:', data);
         setProfile(data);
         setForm({
           ...initialForm,
@@ -461,8 +459,8 @@ export default function DashboardPage() {
         });
       })
       .catch((err) => {
-        console.error('Profile API error:', err);
-        navigate('/login', { replace: true });
+        setError('Profile not found or server error.');
+        setProfile(null);
       })
       .finally(() => setLoading(false));
   }, [API, profileId, navigate]);
@@ -473,6 +471,22 @@ export default function DashboardPage() {
     setMessage('Copied!');
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="animate-pulse text-gray-500">Loading profile…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
@@ -481,8 +495,8 @@ export default function DashboardPage() {
     );
   }
 
-  // Use customSlug if present, else activationCode
-  const profileSlug = profile.customSlug || profile.activationCode;
+  // Use the backend-provided slug for all links
+  const profileSlug = profile.slug;
 
   // Handle changes
   const handleChange = useCallback(e => {
@@ -545,7 +559,7 @@ export default function DashboardPage() {
     `ORG:${profile?.subtitle || ''}`,
     `EMAIL;TYPE=work:${profile?.ownerEmail || ''}`,
     profile?.phone && `TEL;TYPE=CELL:${profile.phone}`,
-    `URL:${window.location.origin}/p/${profile?.activationCode || ''}`,
+    `URL:${window.location.origin}/p/${profileSlug || ''}`,
     profile?.socialLinks?.instagram &&
       `X-SOCIALPROFILE;type=instagram:https://instagram.com/${profile.socialLinks.instagram}`,
     profile?.socialLinks?.linkedin &&
@@ -612,7 +626,7 @@ export default function DashboardPage() {
               uploadFile={uploadFile}
               theme={theme}
               setTheme={setTheme}
-              profile={profile}
+              profile={{ ...profile, slug: profileSlug }}
               setEditMode={setEditMode}
               setShowQR={setShowQR}
               copyToClipboard={copyToClipboard}
@@ -643,7 +657,7 @@ export default function DashboardPage() {
               uploadFile={uploadFile}
               theme={theme}
               setTheme={setTheme}
-              profile={profile}
+              profile={{ ...profile, slug: profileSlug }}
               setEditMode={setEditMode}
               setShowQR={setShowQR}
               copyToClipboard={copyToClipboard}
