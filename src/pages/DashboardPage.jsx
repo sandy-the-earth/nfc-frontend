@@ -428,75 +428,11 @@ export default function DashboardPage() {
     config: { tension: 200, friction: 20 }
   });
 
-  // Auto-hide message
-  useEffect(() => {
-    if (!message) return;
-    const t = setTimeout(() => setMessage(''), 2000);
-    return () => clearTimeout(t);
-  }, [message]);
-
-  // Fetch profile
-  useEffect(() => {
-    if (!profileId) {
-      navigate('/login', { replace: true });
-      return;
-    }
-    axios
-      .get(`${API}/api/profile/${profileId}`)
-      .then(res => {
-        const data = res.data || {};
-        setProfile(data);
-        setForm({
-          ...initialForm,
-          ...data,
-          tags: Array.isArray(data.tags) ? data.tags : [],
-          socialLinks: {
-            ...initialForm.socialLinks,
-            ...(data.socialLinks || {})
-          },
-          bannerUrl: data.bannerUrl || '',
-          avatarUrl: data.avatarUrl || ''
-        });
-      })
-      .catch((err) => {
-        setError('Profile not found or server error.');
-        setProfile(null);
-      })
-      .finally(() => setLoading(false));
-  }, [API, profileId, navigate]);
-
   // Clipboard
   const copyToClipboard = useCallback(txt => {
     navigator.clipboard.writeText(txt);
     setMessage('Copied!');
   }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="animate-pulse text-gray-500">Loading profile…</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="text-red-500">Profile not found.</div>
-      </div>
-    );
-  }
-
-  // Use the backend-provided slug for all links
-  const profileSlug = profile.slug;
 
   // Handle changes
   const handleChange = useCallback(e => {
@@ -551,6 +487,7 @@ export default function DashboardPage() {
   );
 
   // vCard
+  const profileSlug = profile?.slug;
   const vCardLines = [
     'BEGIN:VCARD',
     'VERSION:3.0',
@@ -581,10 +518,55 @@ export default function DashboardPage() {
     URL.revokeObjectURL(url);
   }, [vCard, profile?.name]);
 
+  // Auto-hide message
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(''), 2000);
+    return () => clearTimeout(t);
+  }, [message]);
+
+  // Fetch profile
+  useEffect(() => {
+    if (!profileId) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    axios
+      .get(`${API}/api/profile/${profileId}`)
+      .then(res => {
+        const data = res.data || {};
+        setProfile(data);
+        setForm({
+          ...initialForm,
+          ...data,
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          socialLinks: {
+            ...initialForm.socialLinks,
+            ...(data.socialLinks || {})
+          },
+          bannerUrl: data.bannerUrl || '',
+          avatarUrl: data.avatarUrl || ''
+        });
+      })
+      .catch((err) => {
+        setError('Profile not found or server error.');
+        setProfile(null);
+      })
+      .finally(() => setLoading(false));
+  }, [API, profileId, navigate]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
         <div className="animate-pulse text-gray-500">Loading profile…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="text-red-500">{error}</div>
       </div>
     );
   }
@@ -596,6 +578,9 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  // Use the backend-provided slug for all links
+  const profileSlug = profile.slug;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
