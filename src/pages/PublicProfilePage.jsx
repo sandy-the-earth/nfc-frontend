@@ -470,7 +470,7 @@ export default function PublicProfilePage() {
                   disabled={formStatus.loading}
                   className="w-full py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
                 >
-                  {formStatus.loading ? 'Sending…' : 'Send Request'}
+                  {formStatus.loading ? 'Sending…' : 'Connect'}
                 </button>
               </form>
             </animated.div>
