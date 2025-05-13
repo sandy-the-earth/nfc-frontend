@@ -21,6 +21,7 @@ import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
 import { useSpring, animated } from '@react-spring/web';
+import ImageCropper from '../components/ImageCropper';
 
 // Reusable ContactRow
 const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }) {
@@ -71,7 +72,8 @@ const CardContent = memo(function CardContent({
   showQR,
   downloadVCard,
   isDashboard,
-  saveProfile
+  saveProfile,
+  handleFileInput
 }) {
   // Use backend-provided slug for all links
   const profileSlug = profile.slug || profile.customSlug || profile.activationCode;
@@ -349,7 +351,8 @@ const CardContent = memo(function CardContent({
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Banner</label>  
               <input
                 type="file"
-                onChange={e => setBannerFile(e.target.files[0])}
+                accept="image/*"
+                onChange={e => handleFileInput(e, 'banner')}
                 className="block w-full text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-900 dark:file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
               />
               {bannerFile && (
@@ -365,7 +368,8 @@ const CardContent = memo(function CardContent({
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Avatar</label>  
               <input
                 type="file"
-                onChange={e => setAvatarFile(e.target.files[0])}
+                accept="image/*"
+                onChange={e => handleFileInput(e, 'avatar')}
                 className="block w-full text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-900 dark:file:text-gray-100 file:border-0 file:rounded file:px-3 file:py-1 file:mr-2 file:cursor-pointer"
               />
               {avatarFile && (
@@ -430,6 +434,10 @@ export default function DashboardPage() {
   const [editMode, setEditMode] = useState(false);
   const [bannerFile, setBannerFile] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperImage, setCropperImage] = useState(null);
+  const [cropperAspect, setCropperAspect] = useState(3); // Default to banner aspect
+  const [cropperField, setCropperField] = useState('banner');
 
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
 
@@ -495,6 +503,29 @@ export default function DashboardPage() {
     },
     [profileId]
   );
+
+  // Handle file input for cropping
+  const handleFileInput = useCallback((e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      setCropperImage(ev.target.result);
+      setCropperAspect(field === 'avatar' ? 1 : 3); // 1:1 for avatar, 3:1 for banner
+      setCropperField(field);
+      setCropperOpen(true);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Handle crop complete
+  const handleCropComplete = useCallback(async (croppedBlob) => {
+    setCropperOpen(false);
+    if (!croppedBlob) return;
+    const croppedFile = new File([croppedBlob], `${cropperField}.jpg`, { type: 'image/jpeg' });
+    if (cropperField === 'banner') setBannerFile(croppedFile);
+    else setAvatarFile(croppedFile);
+  }, [cropperField]);
 
   // vCard
   const profileSlug = profile?.slug;
@@ -626,6 +657,7 @@ export default function DashboardPage() {
               downloadVCard={downloadVCard}
               isDashboard={true}
               saveProfile={saveProfile}
+              handleFileInput={handleFileInput}
             />
           </div>
           {/* Back face (edit mode) can remain as is */}
@@ -657,6 +689,7 @@ export default function DashboardPage() {
               downloadVCard={downloadVCard}
               isDashboard={true}
               saveProfile={saveProfile}
+              handleFileInput={handleFileInput}
             />
           </div>
         </animated.div>
@@ -690,6 +723,16 @@ export default function DashboardPage() {
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-200 dark:bg-gray-700 px-4 py-1 rounded-full text-sm shadow">
           {message}
         </div>
+      )}
+
+      {/* Image Cropper Modal */}
+      {cropperOpen && (
+        <ImageCropper
+          imageSrc={cropperImage}
+          aspect={cropperAspect}
+          onCancel={() => setCropperOpen(false)}
+          onCropComplete={handleCropComplete}
+        />
       )}
 
       <style>{`
