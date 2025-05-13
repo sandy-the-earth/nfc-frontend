@@ -676,7 +676,7 @@ export default function DashboardPage() {
       {showQR && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-            <QRCode value={vCard} size={120} />
+            <QRCode value={vCard} size={120} fgColor="#D4AF37" bgColor="transparent" />
             <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to save contact</p>
             <button onClick={() => setShowQR(false)} className="mt-3 text-blue-500 dark:text-blue-400 hover:underline">
               Close
