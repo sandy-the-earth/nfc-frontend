@@ -409,6 +409,7 @@ export default function PublicProfilePage() {
                     value={form.name}
                     onChange={handleChange}
                     required
+                    placeholder="e.g. Jane Doe"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
@@ -420,6 +421,7 @@ export default function PublicProfilePage() {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    placeholder="e.g. jane@email.com"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
@@ -430,6 +432,7 @@ export default function PublicProfilePage() {
                       name="event"
                       value={form.event}
                       onChange={handleChange}
+                      placeholder="e.g. Tech Conference 2025"
                       className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                     />
                   </div>
@@ -450,6 +453,7 @@ export default function PublicProfilePage() {
                     name="place"
                     value={form.place}
                     onChange={handleChange}
+                    placeholder="e.g. San Francisco"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
@@ -460,6 +464,7 @@ export default function PublicProfilePage() {
                     value={form.message}
                     onChange={handleChange}
                     rows="3"
+                    placeholder="e.g. It was great meeting you at the event!"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>

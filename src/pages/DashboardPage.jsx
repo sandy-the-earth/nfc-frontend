@@ -232,6 +232,7 @@ const CardContent = memo(function CardContent({
               name="name"
               value={form.name}
               onChange={handleChange}
+              placeholder="e.g. Jane Doe"
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
@@ -243,6 +244,7 @@ const CardContent = memo(function CardContent({
               name="title"
               value={form.title}
               onChange={handleChange}
+              placeholder="e.g. CEO"
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
@@ -254,6 +256,7 @@ const CardContent = memo(function CardContent({
               name="subtitle"
               value={form.subtitle}
               onChange={handleChange}
+              placeholder="e.g. Acme Inc."
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
@@ -265,6 +268,7 @@ const CardContent = memo(function CardContent({
               name="tags"
               value={form.tags.join(', ')}
               onChange={handleChange}
+              placeholder="e.g. Marketing, Networking, SaaS"
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
@@ -276,6 +280,7 @@ const CardContent = memo(function CardContent({
               name="phone"
               value={form.phone}
               onChange={handleChange}
+              placeholder="e.g. +91 9876543210"
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
@@ -287,6 +292,7 @@ const CardContent = memo(function CardContent({
               name="website"
               value={form.website}
               onChange={handleChange}
+              placeholder="e.g. https://yourcompany.com"
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             />
           </div>
@@ -299,6 +305,7 @@ const CardContent = memo(function CardContent({
                 name="instagram"
                 value={form.socialLinks.instagram}
                 onChange={handleChange}
+                placeholder="e.g. yourhandle"
                 className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
@@ -309,6 +316,7 @@ const CardContent = memo(function CardContent({
                 name="linkedin"
                 value={form.socialLinks.linkedin}
                 onChange={handleChange}
+                placeholder="e.g. your-linkedin-url-id"
                 className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
@@ -319,6 +327,7 @@ const CardContent = memo(function CardContent({
                 name="twitter"
                 value={form.socialLinks.twitter}
                 onChange={handleChange}
+                placeholder="e.g. yourhandle"
                 className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
@@ -329,6 +338,7 @@ const CardContent = memo(function CardContent({
                 name="location"
                 value={form.location}
                 onChange={handleChange}
+                placeholder="e.g. San Francisco, CA"
                 className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
               />
             </div>
