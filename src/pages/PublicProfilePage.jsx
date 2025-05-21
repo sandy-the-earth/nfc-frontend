@@ -332,11 +332,12 @@ export default function PublicProfilePage() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
-        {/* Exclusive Badge Strip */}
+        {/* Premium Exclusive Badge in top left corner */}
         {exclusiveBadge && exclusiveBadge.text && (
-          <div className="absolute left-0 top-0 z-20">
-            <div className="flex items-center gap-1 px-3 py-1 bg-yellow-400 text-xs font-bold text-gray-900 rounded-br-2xl shadow-lg" style={{borderTopLeftRadius:'1rem'}}>
-              <FaStar className="text-yellow-700" /> {exclusiveBadge.text}
+          <div className="absolute -left-3 -top-3 z-30">
+            <div className="flex items-center gap-1 px-4 py-1 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 text-xs font-extrabold text-gray-900 rounded-br-2xl rounded-tl-2xl shadow-2xl border-2 border-yellow-500" style={{letterSpacing:'0.05em', fontSize:'1rem', minWidth:'64px'}}>
+              <FaStar className="text-yellow-700 mr-1" />
+              <span className="tracking-widest">{exclusiveBadge.text}</span>
             </div>
           </div>
         )}
