@@ -14,7 +14,8 @@ import {
   FaRegCopy,
   FaMoon,
   FaSun,
-  FaSave
+  FaSave,
+  FaStar // <-- add star icon for badge
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
@@ -152,7 +153,8 @@ export default function PublicProfilePage() {
     phone,
     website,
     socialLinks = {},
-    createdAt
+    createdAt,
+    exclusiveBadge // <-- get badge from profile
   } = profile;
 
   // Generate vCard
@@ -330,6 +332,14 @@ export default function PublicProfilePage() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
+        {/* Exclusive Badge Strip */}
+        {exclusiveBadge && exclusiveBadge.text && (
+          <div className="absolute left-0 top-0 z-20">
+            <div className="flex items-center gap-1 px-3 py-1 bg-yellow-400 text-xs font-bold text-gray-900 rounded-br-2xl shadow-lg" style={{borderTopLeftRadius:'1rem'}}>
+              <FaStar className="text-yellow-700" /> {exclusiveBadge.text}
+            </div>
+          </div>
+        )}
         <animated.div
           style={{
             transform: rotateY.to(r => `rotateY(${r}deg)`),

@@ -8,7 +8,9 @@ import {
   FaToggleOff,
   FaCopy,
   FaFileCsv,
-  FaPlus
+  FaPlus,
+  FaStar,
+  FaTimes
 } from 'react-icons/fa';
 
 export default function AdminPage() {
@@ -34,6 +36,11 @@ export default function AdminPage() {
   const [newCode, setNewCode] = useState('');
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
+
+  // Exclusive badge state
+  const [badgeInputs, setBadgeInputs] = useState({}); // { [profileId]: inputValue }
+  const [badgeEditMode, setBadgeEditMode] = useState({}); // { [profileId]: boolean }
+  const [badgeFeedback, setBadgeFeedback] = useState({}); // { [profileId]: { type, message } }
 
   // Persist adminKey between reloads
   useEffect(() => {
@@ -170,6 +177,18 @@ export default function AdminPage() {
     }
   };
 
+  // Set or remove exclusive badge
+  const setExclusiveBadge = async (id, text) => {
+    try {
+      await axios.patch(`${API}/api/profile/${id}/exclusive-badge`, { text });
+      setBadgeFeedback(fb => ({ ...fb, [id]: { type: 'success', message: text ? 'Badge set!' : 'Badge removed' } }));
+      setBadgeEditMode(em => ({ ...em, [id]: false }));
+      fetchProfiles();
+    } catch (err) {
+      setBadgeFeedback(fb => ({ ...fb, [id]: { type: 'error', message: 'Error saving badge' } }));
+    }
+  };
+
   if (!authorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -262,6 +281,7 @@ export default function AdminPage() {
               <th className="px-4 py-2 text-left">Email</th>
               <th className="px-4 py-2 text-left">Name</th>
               <th className="px-4 py-2 text-left">Custom URL</th>
+              <th className="px-4 py-2 text-left">Exclusive Badge</th>
               <th className="px-4 py-2 text-center">Status</th>
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
@@ -305,6 +325,71 @@ export default function AdminPage() {
                   {slugFeedback[p._id] && (
                     <p className={`mt-1 text-xs ${slugFeedback[p._id].type === 'error' ? 'text-red-500' : 'text-green-500'}`}>
                       {slugFeedback[p._id].message}
+                    </p>
+                  )}
+                </td>
+
+                {/* Exclusive Badge Column */}
+                <td className="px-4 py-2 relative">
+                  {p.exclusiveBadge && p.exclusiveBadge.text && !badgeEditMode[p._id] && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-400 text-xs font-bold text-gray-900 rounded shadow relative">
+                      <FaStar className="text-yellow-700" /> {p.exclusiveBadge.text}
+                      <button
+                        className="ml-1 text-gray-700 hover:text-red-600"
+                        title="Edit badge"
+                        onClick={() => {
+                          setBadgeEditMode(em => ({ ...em, [p._id]: true }));
+                          setBadgeInputs(bi => ({ ...bi, [p._id]: p.exclusiveBadge.text }));
+                        }}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        className="ml-1 text-gray-700 hover:text-red-600"
+                        title="Remove badge"
+                        onClick={() => setExclusiveBadge(p._id, null)}
+                      >
+                        <FaTimes />
+                      </button>
+                    </span>
+                  )}
+                  {badgeEditMode[p._id] ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        placeholder="#001"
+                        value={badgeInputs[p._id] || ''}
+                        onChange={e => setBadgeInputs(bi => ({ ...bi, [p._id]: e.target.value }))}
+                        className="w-20 px-2 py-1 border rounded text-xs bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        maxLength={12}
+                      />
+                      <button
+                        className="px-2 py-1 bg-yellow-400 text-xs font-bold rounded hover:bg-yellow-500"
+                        onClick={() => setExclusiveBadge(p._id, badgeInputs[p._id])}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="px-2 py-1 bg-gray-200 text-xs rounded hover:bg-gray-300"
+                        onClick={() => setBadgeEditMode(em => ({ ...em, [p._id]: false }))}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : !p.exclusiveBadge?.text && (
+                    <button
+                      className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded hover:bg-yellow-200"
+                      onClick={() => {
+                        setBadgeEditMode(em => ({ ...em, [p._id]: true }));
+                        setBadgeInputs(bi => ({ ...bi, [p._id]: '' }));
+                      }}
+                    >
+                      Set Badge
+                    </button>
+                  )}
+                  {badgeFeedback[p._id] && (
+                    <p className={`mt-1 text-xs ${badgeFeedback[p._id].type === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+                      {badgeFeedback[p._id].message}
                     </p>
                   )}
                 </td>
