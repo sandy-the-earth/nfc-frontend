@@ -56,21 +56,23 @@ function FoundersStackBadge({ badgeText }) {
   return (
     <div className="absolute" style={{ left: '1rem', top: '1rem', zIndex: 9999 }}>
       <div
-        className="flex items-center gap-2 px-4 py-1 rounded-full shadow-lg"
+        className="flex items-center px-3 py-1 rounded-full shadow-md"
         style={{
-          background: 'rgba(24, 24, 24, 0.7)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(24,24,24,0.72)',
           border: '1.5px solid #FFD700',
           color: '#FFD700',
           fontWeight: 700,
-          fontSize: '0.98rem',
-          letterSpacing: '0.08em',
-          boxShadow: '0 2px 12px 0 rgba(0,0,0,0.18)',
-          minWidth: '120px',
+          fontSize: '0.95rem',
+          letterSpacing: '0.04em',
+          minWidth: 'auto',
+          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.15)',
         }}
       >
-        <FaStar style={{ color: '#FFD700', marginRight: 4, fontSize: '1em' }} />
-        <span>Founders' Stack {badgeText && <span style={{marginLeft: 6}}>{badgeText}</span>}</span>
+        <span className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-black border border-yellow-400 mr-2" style={{boxShadow:'0 1px 4px #000', position:'relative'}}>
+          <FaStar style={{ color: '#FFD700', fontSize: '1em', marginBottom: '-1px', lineHeight:1 }} />
+          {badgeText && <span style={{fontSize:'0.78em', fontWeight:700, color:'#FFD700', opacity:0.98, position:'absolute', bottom:3, left:0, right:0, textAlign:'center', letterSpacing:'0.04em'}}>{badgeText.replace(/^#?/, '')}</span>}
+        </span>
+        <span style={{fontWeight:800, fontSize:'1.05em', color:'#FFD700', whiteSpace:'nowrap', letterSpacing:'0.04em', lineHeight:1}}>Founders&apos; Stack</span>
       </div>
     </div>
   );
