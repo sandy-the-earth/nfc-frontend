@@ -51,6 +51,31 @@ function ContactRow({ icon, label, value, href, onCopy }) {
   );
 }
 
+// Badge component for both faces
+function FoundersStackBadge({ badgeText }) {
+  return (
+    <div className="absolute" style={{ left: '1rem', top: '1rem', zIndex: 9999 }}>
+      <div
+        className="flex items-center gap-2 px-4 py-1 rounded-full shadow-lg"
+        style={{
+          background: 'rgba(24, 24, 24, 0.7)',
+          backdropFilter: 'blur(6px)',
+          border: '1.5px solid #FFD700',
+          color: '#FFD700',
+          fontWeight: 700,
+          fontSize: '0.98rem',
+          letterSpacing: '0.08em',
+          boxShadow: '0 2px 12px 0 rgba(0,0,0,0.18)',
+          minWidth: '120px',
+        }}
+      >
+        <FaStar style={{ color: '#FFD700', marginRight: 4, fontSize: '1em' }} />
+        <span>Founders' Stack {badgeText && <span style={{marginLeft: 6}}>{badgeText}</span>}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const { activationCode } = useParams();
   const API = import.meta.env.VITE_API_BASE_URL || 'https://nfc-backend-9c1q.onrender.com';
@@ -349,31 +374,10 @@ export default function PublicProfilePage() {
         >
           {/* Front Face */}
           <div
-            className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+            className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-visible"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            {/* Exclusive Badge absolutely inside card */}
-            {exclusiveBadge && exclusiveBadge.text && (
-              <div className="absolute z-30" style={{ left: '1rem', top: '1rem' }}>
-                <div
-                  className="flex items-center gap-1 px-4 py-1 rounded-full shadow-lg"
-                  style={{
-                    background: 'rgba(24, 24, 24, 0.7)',
-                    backdropFilter: 'blur(6px)',
-                    border: '1.5px solid #FFD700',
-                    color: '#FFD700',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    letterSpacing: '0.08em',
-                    boxShadow: '0 2px 12px 0 rgba(0,0,0,0.18)',
-                    minWidth: '48px'
-                  }}
-                >
-                  <FaStar style={{ color: '#FFD700', marginRight: 4 }} />
-                  <span>{exclusiveBadge.text}</span>
-                </div>
-              </div>
-            )}
+            <FoundersStackBadge badgeText={exclusiveBadge?.text} />
             <CardContent />
           </div>
           {/* Back Face */}
@@ -385,6 +389,7 @@ export default function PublicProfilePage() {
               transform: 'rotateY(180deg)'
             }}
           >
+            <FoundersStackBadge badgeText={exclusiveBadge?.text} />
             <CardContent />
           </div>
         </animated.div>
