@@ -185,6 +185,12 @@ export default function PublicProfilePage() {
     URL.revokeObjectURL(url);
   };
 
+  // Helper to get the correct profile URL (customSlug or activationCode)
+  const getProfileUrl = () => {
+    const slug = profile.customSlug || activationCode;
+    return `${FRONTEND.replace(/\/$/, '')}/p/${slug}`;
+  };
+
   // Card content JSX
   const CardContent = () => (
     <>
@@ -332,15 +338,6 @@ export default function PublicProfilePage() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
-        {/* Exclusive Badge absolutely above the card */}
-        {exclusiveBadge && exclusiveBadge.text && (
-          <div className="absolute left-0 top-0 z-40" style={{transform: 'translateY(-60%) translateX(0)'}}>
-            <div className="flex items-center gap-1 px-4 py-1 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 text-xs font-extrabold text-gray-900 rounded-br-2xl rounded-tl-2xl shadow-2xl border-2 border-yellow-500" style={{letterSpacing:'0.05em', fontSize:'1rem', minWidth:'64px'}}>
-              <FaStar className="text-yellow-700 mr-1" />
-              <span className="tracking-widest">{exclusiveBadge.text}</span>
-            </div>
-          </div>
-        )}
         <animated.div
           style={{
             transform: rotateY.to(r => `rotateY(${r}deg)`),
@@ -355,6 +352,28 @@ export default function PublicProfilePage() {
             className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
             style={{ backfaceVisibility: 'hidden' }}
           >
+            {/* Exclusive Badge absolutely inside card */}
+            {exclusiveBadge && exclusiveBadge.text && (
+              <div className="absolute z-30" style={{ left: '1rem', top: '1rem' }}>
+                <div
+                  className="flex items-center gap-1 px-4 py-1 rounded-full shadow-lg"
+                  style={{
+                    background: 'rgba(24, 24, 24, 0.7)',
+                    backdropFilter: 'blur(6px)',
+                    border: '1.5px solid #FFD700',
+                    color: '#FFD700',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    letterSpacing: '0.08em',
+                    boxShadow: '0 2px 12px 0 rgba(0,0,0,0.18)',
+                    minWidth: '48px'
+                  }}
+                >
+                  <FaStar style={{ color: '#FFD700', marginRight: 4 }} />
+                  <span>{exclusiveBadge.text}</span>
+                </div>
+              </div>
+            )}
             <CardContent />
           </div>
           {/* Back Face */}
@@ -498,8 +517,8 @@ export default function PublicProfilePage() {
       {showQR && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-            <QRCode value={vCard} size={120} fgColor={theme === 'dark' ? '#D4AF37' : '#000000'} bgColor="transparent" />
-            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to save contact</p>
+            <QRCode value={getProfileUrl()} size={120} fgColor={theme === 'dark' ? '#D4AF37' : '#000000'} bgColor="transparent" />
+            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to open profile</p>
             <button
               onClick={() => setShowQR(false)}
               className="mt-3 text-blue-500 dark:text-blue-400 hover:underline"
