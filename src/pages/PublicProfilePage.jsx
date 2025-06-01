@@ -52,27 +52,34 @@ function ContactRow({ icon, label, value, href, onCopy }) {
 }
 
 // Badge component for both faces
-function FoundersStackBadge({ badgeText }) {
+function FoundersStackBadge({ number }) {
+  if (!number) return null;
   return (
-    <div className="absolute" style={{ left: '1rem', top: '1rem', zIndex: 9999 }}>
+    <div className="absolute" style={{ left: '0.5rem', top: '0.5rem', zIndex: 9999 }}>
       <div
-        className="flex items-center px-3 py-1 rounded-full shadow-md"
+        className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-yellow-400 shadow-sm backdrop-blur-md"
         style={{
-          background: 'rgba(24,24,24,0.72)',
-          border: '1.5px solid #FFD700',
-          color: '#FFD700',
-          fontWeight: 700,
-          fontSize: '0.95rem',
-          letterSpacing: '0.04em',
-          minWidth: 'auto',
-          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.15)',
+          background: 'linear-gradient(120deg, rgba(255,255,255,0.18) 60%, rgba(255,215,0,0.13) 100%)',
+          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.10)',
+          fontWeight: 600,
+          fontSize: '0.78rem',
+          letterSpacing: '0.01em',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: '#FFD700',
+          backdropFilter: 'blur(10px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(10px) saturate(160%)',
         }}
       >
-        <span className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-black border border-yellow-400 mr-2" style={{boxShadow:'0 1px 4px #000', position:'relative'}}>
-          <FaStar style={{ color: '#FFD700', fontSize: '1em', marginBottom: '-1px', lineHeight:1 }} />
-          {badgeText && <span style={{fontSize:'0.78em', fontWeight:700, color:'#FFD700', opacity:0.98, position:'absolute', bottom:3, left:0, right:0, textAlign:'center', letterSpacing:'0.04em'}}>{badgeText.replace(/^#?/, '')}</span>}
+        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-200 to-yellow-500 border border-yellow-200 shadow" style={{ boxShadow: '0 1px 4px #FFD70055' }}>
+          <FaStar style={{ color: '#fff', fontSize: '0.75em', filter: 'drop-shadow(0 0 1px #FFD700)' }} />
         </span>
-        <span style={{fontWeight:800, fontSize:'1.05em', color:'#FFD700', whiteSpace:'nowrap', letterSpacing:'0.04em', lineHeight:1}}>Founders&apos; Stack</span>
+        <span style={{ color: '#222', fontWeight: 700, fontSize: '0.85em', marginLeft: 3, marginRight: 3, textShadow: '0 1px 2px #fff, 0 0 2px #FFD70033' }}>
+          Founders&apos; Stack
+        </span>
+        <span style={{ marginLeft: 3, fontWeight: 800, fontSize: '0.85em', color: '#fff', background: 'rgba(34,34,34,0.85)', borderRadius: 4, padding: '0 5px', letterSpacing: '0.01em', boxShadow: '0 1px 2px #FFD70033', textShadow: '0 1px 2px #222' }}>
+          #{number}
+        </span>
       </div>
     </div>
   );
@@ -231,133 +238,138 @@ export default function PublicProfilePage() {
         </button>
       </div>
 
-      {/* Banner & Avatar */}
-      <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
-        {bannerUrl && (
-          <img
-            src={bannerUrl.startsWith('http') ? bannerUrl : `${API}${bannerUrl}`}
-            alt="Banner"
-            className="w-full h-full object-cover"
-          />
-        )}
-        {avatarUrl && (
-          <img
-            src={avatarUrl.startsWith('http') ? avatarUrl : `${API}${avatarUrl}`}
-            alt="Avatar"
-            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
-          />
-        )}
-      </div>
+      {/* Card container with rounded corners */}
+      <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl">
+        {/* Banner & Avatar */}
+        <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
+          {/* Badge inside banner, not card */}
+          <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
+          {bannerUrl && (
+            <img
+              src={bannerUrl.startsWith('http') ? bannerUrl : `${API}${bannerUrl}`}
+              alt="Banner"
+              className="w-full h-full object-cover"
+            />
+          )}
+          {avatarUrl && (
+            <img
+              src={avatarUrl.startsWith('http') ? avatarUrl : `${API}${avatarUrl}`}
+              alt="Avatar"
+              className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+            />
+          )}
+        </div>
 
-      {/* Main Info */}
-      <div className="px-6 pt-14 pb-2 text-center">
-        <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
-        {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
-        {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
-        {tags.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1 mt-2">
-            {tags.map(t => (
-              <span
-                key={t}
-                className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+        {/* Main Info */}
+        <div className="px-6 pt-14 pb-2 text-center">
+          <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
+          {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
+          {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1 mt-2">
+              {tags.map(t => (
+                <span
+                  key={t}
+                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Action Buttons */}
-      <div className="px-6 mt-2 flex gap-2">
-        <button
-          onClick={() => setShowQR(true)}
-          className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
-        >
-          <MdQrCode /> QR Code
-        </button>
-        <button
-          onClick={downloadVCard}
-          className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
-        >
-          <FaSave /> Save to Contact
-        </button>
-        <button
-          onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
-          className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
-        >
-          <FaRegCopy />
-        </button>
-      </div>
+        {/* Action Buttons */}
+        <div className="px-6 mt-2 flex gap-2">
+          <button
+            onClick={() => setShowQR(true)}
+            className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+          >
+            <MdQrCode /> QR Code
+          </button>
+          <button
+            onClick={downloadVCard}
+            className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+          >
+            <FaSave /> Save to Contact
+          </button>
+          <button
+            onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
+            className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
+          >
+            <FaRegCopy />
+          </button>
+        </div>
 
-      {/* Contact Rows */}
-      <div className="px-6 mt-4 space-y-2">
-        {email && (
-          <ContactRow
-            icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
-            label="Email"
-            value={email}
-            href={`mailto:${email}`}
-            onCopy={() => copyToClipboard(email)}
-          />
-        )}
-        {phone && (
-          <ContactRow
-            icon={<FaPhone className="text-green-500 dark:text-green-400" />}
-            label="Phone"
-            value={phone}
-            href={`tel:${phone}`}
-            onCopy={() => copyToClipboard(phone)}
-          />
-        )}
-        {website && (
-          <ContactRow
-            icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
-            label="Website"
-            value={website}
-            href={website.startsWith('http') ? website : `https://${website}`}
-            onCopy={() => copyToClipboard(website)}
-          />
-        )}
-        {socialLinks.instagram && (
-          <ContactRow
-            icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
-            label="Instagram"
-            value={socialLinks.instagram}
-            href={`https://instagram.com/${socialLinks.instagram}`}
-            onCopy={() => copyToClipboard(socialLinks.instagram)}
-          />
-        )}
-        {socialLinks.linkedin && (
-          <ContactRow
-            icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
-            label="LinkedIn"
-            value={socialLinks.linkedin}
-            href={`https://linkedin.com/in/${socialLinks.linkedin}`}
-            onCopy={() => copyToClipboard(socialLinks.linkedin)}
-          />
-        )}
-        {socialLinks.twitter && (
-          <ContactRow
-            icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
-            label="Twitter"
-            value={socialLinks.twitter}
-            href={`https://twitter.com/${socialLinks.twitter}`}
-            onCopy={() => copyToClipboard(socialLinks.twitter)}
-          />
-        )}
-        {location && (
-          <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
-            <FaMapMarkerAlt /> {location}
+        {/* Contact Rows */}
+        <div className="px-6 mt-4 space-y-2">
+          {email && (
+            <ContactRow
+              icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
+              label="Email"
+              value={email}
+              href={`mailto:${email}`}
+              onCopy={() => copyToClipboard(email)}
+            />
+          )}
+          {phone && (
+            <ContactRow
+              icon={<FaPhone className="text-green-500 dark:text-green-400" />}
+              label="Phone"
+              value={phone}
+              href={`tel:${phone}`}
+              onCopy={() => copyToClipboard(phone)}
+            />
+          )}
+          {website && (
+            <ContactRow
+              icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
+              label="Website"
+              value={website}
+              href={website.startsWith('http') ? website : `https://${website}`}
+              onCopy={() => copyToClipboard(website)}
+            />
+          )}
+          {socialLinks.instagram && (
+            <ContactRow
+              icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
+              label="Instagram"
+              value={socialLinks.instagram}
+              href={`https://instagram.com/${socialLinks.instagram}`}
+              onCopy={() => copyToClipboard(socialLinks.instagram)}
+            />
+          )}
+          {socialLinks.linkedin && (
+            <ContactRow
+              icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
+              label="LinkedIn"
+              value={socialLinks.linkedin}
+              href={`https://linkedin.com/in/${socialLinks.linkedin}`}
+              onCopy={() => copyToClipboard(socialLinks.linkedin)}
+            />
+          )}
+          {socialLinks.twitter && (
+            <ContactRow
+              icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
+              label="Twitter"
+              value={socialLinks.twitter}
+              href={`https://twitter.com/${socialLinks.twitter}`}
+              onCopy={() => copyToClipboard(socialLinks.twitter)}
+            />
+          )}
+          {location && (
+            <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+              <FaMapMarkerAlt /> {location}
+            </p>
+          )}
+        </div>
+
+        {/* Member Since */}
+        <div className="px-6 pt-4 pb-6 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Member since {createdAt ? new Date(createdAt).toLocaleDateString('en-GB') : ''}
           </p>
-        )}
-      </div>
-
-      {/* Member Since */}
-      <div className="px-6 pt-4 pb-6 text-center">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Member since {createdAt ? new Date(createdAt).toLocaleDateString('en-GB') : ''}
-        </p>
+        </div>
       </div>
     </>
   );
@@ -379,19 +391,19 @@ export default function PublicProfilePage() {
             className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-visible"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <FoundersStackBadge badgeText={exclusiveBadge?.text} />
+            <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
             <CardContent />
           </div>
           {/* Back Face */}
           <div
-            className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-hidden"
+            className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl overflow-visible"
             style={{
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)'
             }}
           >
-            <FoundersStackBadge badgeText={exclusiveBadge?.text} />
+            <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
             <CardContent />
           </div>
         </animated.div>
