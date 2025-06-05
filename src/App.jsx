@@ -9,6 +9,7 @@ import DashboardPage from "./pages/DashboardPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import AdminPage from "./pages/AdminPage";
 import HomePage from './pages/HomePage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Theme context for dark/light mode
 const ThemeContext = createContext();
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/p/:activationCode" element={<PublicProfilePage />} />
           <Route path="/" element={<HomePage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Protected customer dashboard */}
           <Route

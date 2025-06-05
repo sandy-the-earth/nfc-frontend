@@ -8,6 +8,9 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotStatus, setForgotStatus] = useState({ loading: false, error: '', success: '' });
   const navigate = useNavigate();
 
   const handleChange = e => {
@@ -30,6 +33,17 @@ export default function LoginPage() {
       }, 1500);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
+    }
+  };
+
+  const handleForgot = async e => {
+    e.preventDefault();
+    setForgotStatus({ loading: true, error: '', success: '' });
+    try {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/forgot-password`, { email: forgotEmail });
+      setForgotStatus({ loading: false, error: '', success: 'Reset link sent! Check your email.' });
+    } catch (err) {
+      setForgotStatus({ loading: false, error: err.response?.data?.message || 'Failed to send reset link', success: '' });
     }
   };
 
@@ -63,56 +77,87 @@ export default function LoginPage() {
           </h1>
 
           {/* form */}
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-300 mb-1"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
-              />
-            </div>
+          {!showForgot ? (
+            <form onSubmit={handleLogin} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-300 mb-1"
+                >
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
+                />
+              </div>
 
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-300 mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
-              />
-            </div>
+              {/* Password */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-300 mb-1"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
+                />
+              </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              className="w-full flex justify-center items-center gap-2 py-3 font-semibold rounded-full bg-[#D4AF37] text-black hover:scale-105 transform transition disabled:opacity-50"
-            >
-              Login
-            </button>
-          </form>
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full flex justify-center items-center gap-2 py-3 font-semibold rounded-full bg-[#D4AF37] text-black hover:scale-105 transform transition disabled:opacity-50"
+              >
+                Login
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleForgot} className="space-y-5">
+              <div>
+                <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-300 mb-1">
+                  Enter your email to reset password
+                </label>
+                <input
+                  id="forgot-email"
+                  name="forgot-email"
+                  type="email"
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full flex justify-center items-center gap-2 py-3 font-semibold rounded-full bg-[#D4AF37] text-black hover:scale-105 transform transition disabled:opacity-50"
+                disabled={forgotStatus.loading}
+              >
+                {forgotStatus.loading ? 'Sending…' : 'Send Reset Link'}
+              </button>
+              {forgotStatus.error && <div className="text-red-300 bg-red-900/50 p-2 rounded-lg text-center">{forgotStatus.error}</div>}
+              {forgotStatus.success && <div className="text-green-300 bg-green-900/50 p-2 rounded-lg text-center">{forgotStatus.success}</div>}
+              <button type="button" className="w-full mt-2 text-sm text-gray-300 hover:underline" onClick={() => setShowForgot(false)}>
+                Back to Login
+              </button>
+            </form>
+          )}
 
           {/* error message */}
-          {error && (
+          {!showForgot && error && (
             <div className="mt-6 text-center text-red-300 bg-red-900/50 p-3 rounded-lg">
               {error}
             </div>
@@ -125,6 +170,13 @@ export default function LoginPage() {
               className="text-sm font-medium text-[#D4AF37] hover:underline"
             >
               Need to activate your profile?
+            </button>
+            <button
+              type="button"
+              className="block w-full text-sm text-[#D4AF37] hover:underline mt-2"
+              onClick={() => setShowForgot(true)}
+            >
+              Forgot Password?
             </button>
             <p className="text-xl font-extrabold text-gray-100">
               comma<span className="text-[#D4AF37]">Cards</span>
