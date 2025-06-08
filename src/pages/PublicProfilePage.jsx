@@ -232,34 +232,7 @@ export default function PublicProfilePage() {
   // Card content JSX
   const CardContent = () => (
     <>
-      {/* Insights Section */}
-      {insights && (
-        <div className="px-6 pt-4 pb-2">
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{insights.totalViews ?? 0}</div>
-              <div className="text-xs text-gray-500">Profile Views</div>
-            </div>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">{insights.uniqueVisitors ?? 0}</div>
-              <div className="text-xs text-gray-500">Unique Visitors</div>
-            </div>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{insights.contactExchanges ?? 0}</div>
-              <div className="text-xs text-gray-500">Contact Exchanges</div>
-            </div>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{insights.mostPopularContactMethod ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1) : '-'}</div>
-              <div className="text-xs text-gray-500">Top Contact Method</div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1 text-xs text-gray-500 mt-1">
-            <div>Last Viewed: {insights.lastViewedAt ? new Date(insights.lastViewedAt).toLocaleString() : '-'}</div>
-            <div>Created: {insights.createdAt ? new Date(insights.createdAt).toLocaleString() : '-'}</div>
-            <div>Last Updated: {insights.updatedAt ? new Date(insights.updatedAt).toLocaleString() : '-'}</div>
-          </div>
-        </div>
-      )}
+      {/* Insights Section - removed from public profile */}
 
       {/* Theme toggle */}
       <div className="absolute top-3 right-3 z-10">
