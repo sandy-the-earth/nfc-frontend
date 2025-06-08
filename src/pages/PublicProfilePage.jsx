@@ -51,26 +51,33 @@ function ContactRow({ icon, label, value, href, onCopy }) {
   );
 }
 
-// Badge component for a ribbon style
-function RibbonBadge({ text }) {
-  if (!text) return null;
+// Badge component for both faces
+function FoundersStackBadge({ number }) {
+  if (!number) return null;
   return (
-    <div
-      className="absolute top-3 left-[-22px] z-20 select-none pointer-events-none"
-      style={{ width: 120, height: 32 }}
-    >
+    <div className="absolute" style={{ left: '0.5rem', top: '0.5rem', zIndex: 9999 }}>
       <div
-        className="bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 text-yellow-900 text-center text-xs font-extrabold py-1 px-6 shadow-lg"
+        className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-yellow-400 shadow-sm"
         style={{
-          transform: 'rotate(-45deg)', // Rotate for ribbon effect
-          borderRadius: '8px', // Rounded corners
-          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.10)', // Subtle shadow for depth
-          letterSpacing: 1, // Spacing between letters
-          fontFamily: 'Inter, Arial, sans-serif', // Modern font
-          border: '2px solid #fff', // White border for separation
+          background: 'linear-gradient(90deg, #FFD700 80%, #fff8 100%)',
+          boxShadow: '0 1px 4px 0 rgba(0,0,0,0.08)',
+          fontWeight: 600,
+          fontSize: '0.78rem',
+          letterSpacing: '0.01em',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: '#FFD700',
         }}
       >
-        {text}
+        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-yellow-400 border border-yellow-300 shadow" style={{ boxShadow: '0 1px 2px #FFD70033' }}>
+          <FaStar style={{ color: '#fff', fontSize: '0.75em', filter: 'drop-shadow(0 0 1px #FFD700)' }} />
+        </span>
+        <span style={{ color: '#222', fontWeight: 700, fontSize: '0.85em', marginLeft: 3, marginRight: 3 }}>
+          Founders&apos; Stack
+        </span>
+        <span style={{ marginLeft: 3, fontWeight: 800, fontSize: '0.85em', color: '#fff', background: '#222', borderRadius: 4, padding: '0 5px', letterSpacing: '0.01em', boxShadow: '0 1px 2px #FFD70033' }}>
+          #{number}
+        </span>
       </div>
     </div>
   );
@@ -87,6 +94,7 @@ export default function PublicProfilePage() {
   const [showQR, setShowQR] = useState(false);
   const [msg, setMsg] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [insights, setInsights] = useState(null);
 
   // Contact form state
   const [form, setForm] = useState({
@@ -124,6 +132,11 @@ export default function PublicProfilePage() {
       .then(res => setProfile(res.data))
       .catch(() => setProfile(null))
       .finally(() => setLoading(false));
+    // Fetch insights
+    axios
+      .get(`${API}/api/public/${activationCode}/insights`)
+      .then(res => setInsights(res.data))
+      .catch(() => setInsights(null));
   }, [activationCode, API]);
 
   // Copy helper
@@ -219,6 +232,35 @@ export default function PublicProfilePage() {
   // Card content JSX
   const CardContent = () => (
     <>
+      {/* Insights Section */}
+      {insights && (
+        <div className="px-6 pt-4 pb-2">
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{insights.totalViews ?? 0}</div>
+              <div className="text-xs text-gray-500">Profile Views</div>
+            </div>
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-green-600 dark:text-green-400">{insights.uniqueVisitors ?? 0}</div>
+              <div className="text-xs text-gray-500">Unique Visitors</div>
+            </div>
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{insights.contactExchanges ?? 0}</div>
+              <div className="text-xs text-gray-500">Contact Exchanges</div>
+            </div>
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{insights.mostPopularContactMethod ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1) : '-'}</div>
+              <div className="text-xs text-gray-500">Top Contact Method</div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1 text-xs text-gray-500 mt-1">
+            <div>Last Viewed: {insights.lastViewedAt ? new Date(insights.lastViewedAt).toLocaleString() : '-'}</div>
+            <div>Created: {insights.createdAt ? new Date(insights.createdAt).toLocaleString() : '-'}</div>
+            <div>Last Updated: {insights.updatedAt ? new Date(insights.updatedAt).toLocaleString() : '-'}</div>
+          </div>
+        </div>
+      )}
+
       {/* Theme toggle */}
       <div className="absolute top-3 right-3 z-10">
         <button
@@ -230,9 +272,11 @@ export default function PublicProfilePage() {
       </div>
 
       {/* Card container with rounded corners */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl relative">
+      <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl">
         {/* Banner & Avatar */}
-        <div className="h-32 bg-gray-300 dark:bg-gray-600 relative overflow-visible z-0">
+        <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
+          {/* Badge inside banner, not card */}
+          <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
           {bannerUrl && (
             <img
               src={bannerUrl.startsWith('http') ? bannerUrl : `${API}${bannerUrl}`}
@@ -244,8 +288,7 @@ export default function PublicProfilePage() {
             <img
               src={avatarUrl.startsWith('http') ? avatarUrl : `${API}${avatarUrl}`}
               alt="Avatar"
-              className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover z-50"
-              style={{zIndex: 50}}
+              className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
             />
           )}
         </div>
