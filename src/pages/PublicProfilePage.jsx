@@ -23,18 +23,22 @@ import { useTheme } from '../App';
 import { useSpring, useTransition, animated } from '@react-spring/web';
 
 // Reusable ContactRow component
-function ContactRow({ icon, label, value, href, onCopy }) {
+function ContactRow({ icon, label, value, href, onCopy, isTopLink }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition"
+      onClick={() => postLinkTap(href)}
+      className={`flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition ${isTopLink ? 'ring-2 ring-yellow-400' : ''}`}
     >
       <div className="flex items-center gap-3">
         <div className="text-xl text-[#FFC300]">{icon}</div>
         <div className="text-left">
-          <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{label}</p>
+          <p className="font-medium text-sm text-gray-900 dark:text-gray-100 flex items-center gap-1">
+            {label}
+            {isTopLink && <span className="ml-1 px-2 py-0.5 rounded-full bg-yellow-200 text-yellow-900 text-xs font-bold">Top</span>}
+          </p>
           <p className="text-xs text-gray-700 dark:text-gray-400 truncate">{value}</p>
         </div>
       </div>
@@ -164,6 +168,15 @@ export default function PublicProfilePage() {
     }
   };
 
+  // Helper to POST link tap
+  const postLinkTap = async (link) => {
+    try {
+      await axios.post(`${API}/api/public/${activationCode}/link-tap`, { link });
+    } catch (e) {
+      // Ignore errors for UX
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
@@ -228,6 +241,11 @@ export default function PublicProfilePage() {
     const slug = profile.customSlug || activationCode;
     return `${FRONTEND.replace(/\/$/, '')}/p/${slug}`;
   };
+
+  // Determine top link from insights
+  const topLink = insights?.topLink;
+  const mostPopularContactMethod = insights?.mostPopularContactMethod;
+  const totalLinkTaps = insights?.totalTaps;
 
   // Card content JSX
   const CardContent = () => (
@@ -316,6 +334,7 @@ export default function PublicProfilePage() {
               value={email}
               href={`mailto:${email}`}
               onCopy={() => copyToClipboard(email)}
+              isTopLink={topLink === `mailto:${email}`}
             />
           )}
           {phone && (
@@ -325,6 +344,7 @@ export default function PublicProfilePage() {
               value={phone}
               href={`tel:${phone}`}
               onCopy={() => copyToClipboard(phone)}
+              isTopLink={topLink === `tel:${phone}`}
             />
           )}
           {website && (
@@ -334,6 +354,7 @@ export default function PublicProfilePage() {
               value={website}
               href={website.startsWith('http') ? website : `https://${website}`}
               onCopy={() => copyToClipboard(website)}
+              isTopLink={topLink === (website.startsWith('http') ? website : `https://${website}`)}
             />
           )}
           {socialLinks.instagram && (
@@ -343,6 +364,7 @@ export default function PublicProfilePage() {
               value={socialLinks.instagram}
               href={`https://instagram.com/${socialLinks.instagram}`}
               onCopy={() => copyToClipboard(socialLinks.instagram)}
+              isTopLink={topLink === `https://instagram.com/${socialLinks.instagram}`}
             />
           )}
           {socialLinks.linkedin && (
@@ -352,6 +374,7 @@ export default function PublicProfilePage() {
               value={socialLinks.linkedin}
               href={`https://linkedin.com/in/${socialLinks.linkedin}`}
               onCopy={() => copyToClipboard(socialLinks.linkedin)}
+              isTopLink={topLink === `https://linkedin.com/in/${socialLinks.linkedin}`}
             />
           )}
           {socialLinks.twitter && (
@@ -361,6 +384,7 @@ export default function PublicProfilePage() {
               value={socialLinks.twitter}
               href={`https://twitter.com/${socialLinks.twitter}`}
               onCopy={() => copyToClipboard(socialLinks.twitter)}
+              isTopLink={topLink === `https://twitter.com/${socialLinks.twitter}`}
             />
           )}
           {location && (
@@ -369,6 +393,22 @@ export default function PublicProfilePage() {
             </p>
           )}
         </div>
+
+        {/* Insights Summary - below contact rows */}
+        {insights && (
+          <div className="mt-4 mb-2 text-center">
+            <div className="flex flex-wrap justify-center gap-2 text-xs">
+              <span className="bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-full">
+                <b>Total Link Taps:</b> {totalLinkTaps ?? 0}
+              </span>
+              {mostPopularContactMethod && (
+                <span className="bg-yellow-100 text-yellow-900 px-2 py-1 rounded-full font-semibold">
+                  <b>Top Contact Method:</b> {mostPopularContactMethod.charAt(0).toUpperCase() + mostPopularContactMethod.slice(1)}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Member Since */}
         <div className="px-6 pt-4 pb-6 text-center">
