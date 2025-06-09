@@ -10,6 +10,7 @@ import PublicProfilePage from "./pages/PublicProfilePage";
 import AdminPage from "./pages/AdminPage";
 import HomePage from './pages/HomePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import DashboardInsightsPage from './pages/DashboardInsightsPage';
 
 // Theme context for dark/light mode
 const ThemeContext = createContext();
@@ -64,6 +65,15 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Insights page for dashboard */}
+          <Route
+            path="/dashboard/insights"
+            element={
+              <ProtectedRoute>
+                <DashboardInsightsPage />
               </ProtectedRoute>
             }
           />

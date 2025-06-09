@@ -628,34 +628,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      {/* Insights Section (Dashboard Only) */}
-      {insights && (
-        <div className="w-full max-w-md px-4 pt-8 pb-2">
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{insights.totalViews ?? 0}</div>
-              <div className="text-xs text-gray-500">Profile Views</div>
-            </div>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">{insights.uniqueVisitors ?? 0}</div>
-              <div className="text-xs text-gray-500">Unique Visitors</div>
-            </div>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{insights.contactExchanges ?? 0}</div>
-              <div className="text-xs text-gray-500">Contact Exchanges</div>
-            </div>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{insights.mostPopularContactMethod ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1) : '-'}</div>
-              <div className="text-xs text-gray-500">Top Contact Method</div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1 text-xs text-gray-500 mt-1">
-            <div>Last Viewed: {insights.lastViewedAt ? new Date(insights.lastViewedAt).toLocaleString() : '-'}</div>
-            <div>Created: {insights.createdAt ? new Date(insights.createdAt).toLocaleString() : '-'}</div>
-            <div>Last Updated: {insights.updatedAt ? new Date(insights.updatedAt).toLocaleString() : '-'}</div>
-          </div>
-        </div>
-      )}
+      {/* Card Section */}
       <div style={{ perspective: '800px' }} className="relative w-full max-w-md flex-1 flex flex-col justify-center">
         <animated.div
           style={{
@@ -727,6 +700,15 @@ export default function DashboardPage() {
             />
           </div>
         </animated.div>
+      </div>
+      {/* Insights Button Below Card */}
+      <div className="w-full max-w-md flex flex-col items-center">
+        <button
+          className="mt-6 mb-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow"
+          onClick={() => navigate('/dashboard/insights')}
+        >
+          View Insights
+        </button>
       </div>
       {/* Footer Branding */}
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
