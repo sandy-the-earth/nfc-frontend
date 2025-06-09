@@ -11,6 +11,7 @@ import AdminPage from "./pages/AdminPage";
 import HomePage from './pages/HomePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardInsightsPage from './pages/DashboardInsightsPage';
+import AdminProfilePage from './pages/AdminProfilePage';
 
 // Theme context for dark/light mode
 const ThemeContext = createContext();
@@ -54,7 +55,8 @@ export default function App() {
           {/* Public pages */}
           <Route path="/activate" element={<ActivatePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          {/* Change admin route to a 19-character custom slug */}
+          <Route path="/admin-bs1978av1123ss2402" element={<AdminPage />} />
           <Route path="/p/:activationCode" element={<PublicProfilePage />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -77,6 +79,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          {/* Admin profile details page */}
+          <Route path="/admin-7x9q2v4k1b8z6r3p0/profile/:id" element={<AdminProfilePage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />

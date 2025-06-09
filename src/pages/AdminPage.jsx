@@ -12,6 +12,7 @@ import {
   FaStar,
   FaTimes
 } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminPage() {
   const API = import.meta.env.VITE_API_BASE_URL;
@@ -41,6 +42,8 @@ export default function AdminPage() {
   const [badgeInputs, setBadgeInputs] = useState({}); // { [profileId]: inputValue }
   const [badgeEditMode, setBadgeEditMode] = useState({}); // { [profileId]: boolean }
   const [badgeFeedback, setBadgeFeedback] = useState({}); // { [profileId]: { type, message } }
+
+  const navigate = useNavigate();
 
   // Persist adminKey between reloads
   useEffect(() => {
@@ -283,6 +286,8 @@ export default function AdminPage() {
               <th className="px-4 py-2 text-left">Custom URL</th>
               <th className="px-4 py-2 text-left">Exclusive Badge</th>
               <th className="px-4 py-2 text-center">Status</th>
+              <th className="px-4 py-2 text-center">Insights</th>
+              <th className="px-4 py-2 text-center">Manage</th>
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -398,6 +403,29 @@ export default function AdminPage() {
                   <span className={`font-semibold ${p.status === 'active' ? 'text-green-600 dark:text-green-400' : 'text-yellow-500 dark:text-yellow-300'}`}>
                     {p.status === 'active' ? 'Active' : 'Pending'}
                   </span>
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <button
+                    className={`px-3 py-1 rounded text-xs font-semibold ${p.insightsEnabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'} hover:bg-green-600`}
+                    onClick={async () => {
+                      try {
+                        await axios.patch(`${API}/api/admin/profile/${p._id}/insights-enabled`, { enabled: !p.insightsEnabled });
+                        fetchProfiles();
+                      } catch (err) {
+                        alert('Failed to update insights status');
+                      }
+                    }}
+                  >
+                    {p.insightsEnabled ? 'Enabled' : 'Disabled'}
+                  </button>
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <button
+                    className="px-3 py-1 rounded text-xs font-semibold bg-blue-500 text-white hover:bg-blue-600"
+                    onClick={() => navigate(`/admin/profile/${p._id}`)}
+                  >
+                    Manage
+                  </button>
                 </td>
                 <td className="px-4 py-2 flex justify-center gap-3">
                   <button onClick={() => toggleStatus(p._id)} title={p.status === 'active' ? 'Deactivate' : 'Activate'}>

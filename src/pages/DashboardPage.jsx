@@ -439,6 +439,8 @@ export default function DashboardPage() {
   const [cropperAspect, setCropperAspect] = useState(3); // Default to banner aspect
   const [cropperField, setCropperField] = useState('banner');
   const [insights, setInsights] = useState(null);
+  // Only show insights button if enabled
+  const [insightsEnabled, setInsightsEnabled] = useState(false);
 
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
 
@@ -589,6 +591,7 @@ export default function DashboardPage() {
           bannerUrl: data.bannerUrl || '',
           avatarUrl: data.avatarUrl || ''
         });
+        setInsightsEnabled(!!data.insightsEnabled);
       })
       .catch((err) => {
         setError('Profile not found or server error.');
@@ -703,12 +706,14 @@ export default function DashboardPage() {
       </div>
       {/* Insights Button Below Card */}
       <div className="w-full max-w-md flex flex-col items-center">
-        <button
-          className="mt-6 mb-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow"
-          onClick={() => navigate('/dashboard/insights')}
-        >
-          View Insights
-        </button>
+        {insightsEnabled && (
+          <button
+            className="mt-6 mb-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow"
+            onClick={() => navigate('/dashboard/insights')}
+          >
+            View Insights
+          </button>
+        )}
       </div>
       {/* Footer Branding */}
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">

@@ -6,9 +6,22 @@ export default function DashboardInsightsPage() {
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [insightsEnabled, setInsightsEnabled] = useState(false);
   const profileId = localStorage.getItem('profileId');
   const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!profileId) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    axios.get(`${API}/api/profile/${profileId}`)
+      .then(res => {
+        setInsightsEnabled(!!res.data.insightsEnabled);
+      })
+      .catch(() => setInsightsEnabled(false));
+  }, [API, profileId, navigate]);
 
   useEffect(() => {
     if (!profileId) {
@@ -23,6 +36,23 @@ export default function DashboardInsightsPage() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading insights…</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 text-red-500">{error}</div>;
+
+  if (!insightsEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 px-4">
+        <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 mt-10 text-center">
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Profile Insights</h2>
+          <div className="text-gray-500 dark:text-gray-300">Insights are not enabled for your profile. Please contact support or your admin.</div>
+          <button
+            className="mt-8 w-full px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow"
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 px-4">
