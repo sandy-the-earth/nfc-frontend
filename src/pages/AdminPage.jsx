@@ -65,7 +65,7 @@ export default function AdminPage() {
     }
     axios.defaults.headers.common['x-admin-key'] = adminKey;
     try {
-      await axios.get(`${API}/api/admin/profiles`, { params: { page: 1, limit: 1 } });
+      await axios.get(`${API}/api/admin-bs1978av1123ss2402/profiles`, { params: { page: 1, limit: 1 } });
       sessionStorage.setItem('adminKey', adminKey);
       setAuthorized(true);
     } catch {
@@ -77,7 +77,7 @@ export default function AdminPage() {
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/api/admin/profiles`, {
+      const res = await axios.get(`${API}/api/admin-bs1978av1123ss2402/profiles`, {
         params: { search, status: statusFilter, page, limit }
       });
       setProfiles(res.data.data);
@@ -93,13 +93,19 @@ export default function AdminPage() {
     if (authorized) fetchProfiles();
   }, [authorized, fetchProfiles]);
 
+  // Fix: fetch profiles when route changes (for new admin URL)
+  useEffect(() => {
+    fetchProfiles();
+    // eslint-disable-next-line
+  }, []);
+
   const handleCreateProfile = async () => {
     setCreating(true);
     setCreateError('');
     setCreateSuccess('');
     setNewCode('');
     try {
-      const res = await axios.post(`${API}/api/admin/create-profile`);
+      const res = await axios.post(`${API}/api/admin-bs1978av1123ss2402/create-profile`);
       setNewCode(res.data.activationCode);
       setCreateSuccess('Activation code generated!');
       fetchProfiles();
@@ -112,7 +118,7 @@ export default function AdminPage() {
 
   const toggleStatus = async (id) => {
     try {
-      await axios.put(`${API}/api/admin/toggle-status/${id}`);
+      await axios.put(`${API}/api/admin-bs1978av1123ss2402/toggle-status/${id}`);
       setProfiles(prev =>
         prev.map(p =>
           p._id === id
@@ -128,7 +134,7 @@ export default function AdminPage() {
   const deleteProfile = async (id) => {
     if (!window.confirm('Delete this profile?')) return;
     try {
-      await axios.delete(`${API}/api/admin/profiles/${id}`);
+      await axios.delete(`${API}/api/admin-bs1978av1123ss2402/profiles/${id}`);
       setProfiles(prev => prev.filter(p => p._id !== id));
       setTotal(t => t - 1);
     } catch (err) {
@@ -138,7 +144,7 @@ export default function AdminPage() {
 
   const exportCSV = () => {
     const qs = new URLSearchParams({ search, status: statusFilter });
-    window.location.href = `${API}/api/admin/export?${qs}`;
+    window.location.href = `${API}/api/admin-bs1978av1123ss2402/export?${qs}`;
   };
 
   // Use customSlug if present, else activationCode
@@ -183,7 +189,7 @@ export default function AdminPage() {
   // Set or remove exclusive badge
   const setExclusiveBadge = async (id, text) => {
     try {
-      await axios.patch(`${API}/api/profile/${id}/exclusive-badge`, { text });
+      await axios.patch(`${API}/api/admin-bs1978av1123ss2402/profiles/${id}/exclusive-badge`, { text });
       setBadgeFeedback(fb => ({ ...fb, [id]: { type: 'success', message: text ? 'Badge set!' : 'Badge removed' } }));
       setBadgeEditMode(em => ({ ...em, [id]: false }));
       fetchProfiles();
@@ -409,7 +415,7 @@ export default function AdminPage() {
                     className={`px-3 py-1 rounded text-xs font-semibold ${p.insightsEnabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'} hover:bg-green-600`}
                     onClick={async () => {
                       try {
-                        await axios.patch(`${API}/api/admin/profile/${p._id}/insights-enabled`, { enabled: !p.insightsEnabled });
+                        await axios.patch(`${API}/api/admin-bs1978av1123ss2402/profile/${p._id}/insights-enabled`, { enabled: !p.insightsEnabled });
                         fetchProfiles();
                       } catch (err) {
                         alert('Failed to update insights status');
@@ -422,7 +428,7 @@ export default function AdminPage() {
                 <td className="px-4 py-2 text-center">
                   <button
                     className="px-3 py-1 rounded text-xs font-semibold bg-blue-500 text-white hover:bg-blue-600"
-                    onClick={() => navigate(`/admin/profile/${p._id}`)}
+                    onClick={() => navigate(`/admin-7x9q2v4k1b8z6r3p0/profile/${p._id}`)}
                   >
                     Manage
                   </button>

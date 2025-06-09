@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export default function AdminProfilePage() {
   const { id } = useParams();
@@ -9,23 +10,31 @@ export default function AdminProfilePage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [insightsEnabled, setInsightsEnabled] = useState(false);
+  const [insights, setInsights] = useState(null);
+  const [insightsLoading, setInsightsLoading] = useState(true);
+  const [insightsError, setInsightsError] = useState('');
   const API = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/profile/${id}`)
+    axios.get(`${API}/api/admin-bs1978av1123ss2402/profile/${id}`)
       .then(res => {
         setProfile(res.data);
         setInsightsEnabled(!!res.data.insightsEnabled);
       })
       .catch(() => setError('Profile not found'))
       .finally(() => setLoading(false));
+    // Fetch insights (contact saves/downloads, view time series)
+    axios.get(`${API}/api/admin-bs1978av1123ss2402/profile/${id}/insights`)
+      .then(res => setInsights(res.data))
+      .catch(() => setInsightsError('Could not load insights'))
+      .finally(() => setInsightsLoading(false));
   }, [API, id]);
 
   const handleToggleInsights = async () => {
     setSaving(true);
     try {
-      await axios.patch(`${API}/api/admin/profile/${id}/insights-enabled`, { enabled: !insightsEnabled });
+      await axios.patch(`${API}/api/admin-bs1978av1123ss2402/profile/${id}/insights-enabled`, { enabled: !insightsEnabled });
       setInsightsEnabled(!insightsEnabled);
     } catch {
       alert('Failed to update insights status');
@@ -84,7 +93,7 @@ export default function AdminProfilePage() {
               className={`px-5 py-2 rounded-full font-semibold shadow transition ${profile.status === 'active' ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-yellow-400 text-gray-900 hover:bg-yellow-500'}`}
               onClick={async () => {
                 try {
-                  await axios.put(`${API}/api/admin/toggle-status/${profile._id}`);
+                  await axios.put(`${API}/api/admin-bs1978av1123ss2402/toggle-status/${profile._id}`);
                   setProfile(p => ({ ...p, status: p.status === 'active' ? 'pending_activation' : 'active' }));
                 } catch {
                   alert('Failed to update status');
@@ -135,7 +144,7 @@ export default function AdminProfilePage() {
               className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg text-xs font-bold hover:bg-yellow-500 transition"
               onClick={async () => {
                 try {
-                  await axios.patch(`${API}/api/profile/${profile._id}/exclusive-badge`, { text: profile.exclusiveBadge?.text });
+                  await axios.patch(`${API}/api/admin-bs1978av1123ss2402/profiles/${profile._id}/exclusive-badge`, { text: profile.exclusiveBadge?.text });
                   alert('Badge updated!');
                 } catch {
                   alert('Failed to update badge');
@@ -148,7 +157,7 @@ export default function AdminProfilePage() {
               className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg text-xs hover:bg-gray-300 transition"
               onClick={async () => {
                 try {
-                  await axios.patch(`${API}/api/profile/${profile._id}/exclusive-badge`, { text: null });
+                  await axios.patch(`${API}/api/admin-bs1978av1123ss2402/profiles/${profile._id}/exclusive-badge`, { text: null });
                   setProfile(p => ({ ...p, exclusiveBadge: { ...p.exclusiveBadge, text: '' } }));
                   alert('Badge removed');
                 } catch {
@@ -159,6 +168,53 @@ export default function AdminProfilePage() {
               Remove
             </button>
           </div>
+        </div>
+        {/* Insights Section */}
+        <div className="px-8 pb-4">
+          <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100">Insights</h3>
+          {insightsLoading ? (
+            <div className="text-gray-400 text-sm">Loading insights…</div>
+          ) : insightsError ? (
+            <div className="text-red-500 text-sm">{insightsError}</div>
+          ) : insights ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 mb-2">
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{insights.totalViews ?? 0}</div>
+                  <div className="text-xs text-gray-500">Profile Views</div>
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-lg font-bold text-green-600 dark:text-green-400">{insights.uniqueVisitors ?? 0}</div>
+                  <div className="text-xs text-gray-500">Unique Visitors</div>
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{insights.contactExchanges ?? 0}</div>
+                  <div className="text-xs text-gray-500">Contact Exchanges</div>
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{insights.contactSaves ?? 0}</div>
+                  <div className="text-xs text-gray-500">Contact Saved/Downloaded</div>
+                </div>
+              </div>
+              {/* Chart */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                <div className="font-semibold text-sm mb-2 text-gray-700 dark:text-gray-200">Views Over Time</div>
+                {Array.isArray(insights.viewCountsOverTime) && insights.viewCountsOverTime.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={180}>
+                    <LineChart data={insights.viewCountsOverTime} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                      <Tooltip contentStyle={{ background: '#fff', borderRadius: 8, fontSize: 13 }} />
+                      <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-xs text-gray-400 text-center">No view data available</div>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
         {/* Footer */}
         <div className="px-8 pb-6 pt-2 text-center border-t border-gray-100 dark:border-gray-800">
