@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { FaArrowLeft, FaExchangeAlt, FaDownload, FaLink } from 'react-icons/fa';
+import { FaArrowLeft, FaExchangeAlt, FaDownload, FaLink, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 
 export default function AdminProfilePage() {
   const { id } = useParams();
@@ -48,20 +48,45 @@ export default function AdminProfilePage() {
     setSaving(false);
   };
 
-  if (loading) return <div className="p-8 text-center">Loading…</div>;
-  if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-black">Loading insights…</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
       <div className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl mt-10 p-0 overflow-hidden relative">
         {/* Header with Back Button */}
         <div className="flex items-center px-4 pt-5 pb-3 border-b border-gray-800 bg-gray-900">
-          <button className="text-gray-300 hover:text-white mr-2" onClick={() => navigate('/admin')}>
+          <button className="text-gray-300 hover:text-white mr-2" onClick={() => navigate('/admin-bs1978av1123ss2402')}>
             <FaArrowLeft size={22} />
           </button>
           <h2 className="text-xl font-bold text-white flex-1 text-center">Profile Insights</h2>
           <div className="w-8" /> {/* Spacer for symmetry */}
         </div>
+
+        {/* Admin Controls */}
+        <div className="px-6 pt-6 pb-4 border-b border-gray-800">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-gray-300">Profile Status</span>
+            <span className={`text-sm font-semibold ${profile.status === 'active' ? 'text-green-400' : 'text-yellow-400'}`}>
+              {profile.status === 'active' ? 'Active' : 'Pending Activation'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-300">Insights Feature</span>
+            <button
+              onClick={handleToggleInsights}
+              disabled={saving}
+              className="flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-lg text-sm hover:bg-gray-700 transition"
+            >
+              {insightsEnabled ? (
+                <><FaToggleOn className="text-green-400" size={20} /> <span className="text-green-400">Enabled</span></>
+              ) : (
+                <><FaToggleOff className="text-gray-400" size={20} /> <span className="text-gray-400">Disabled</span></>
+              )}
+            </button>
+          </div>
+        </div>
+
         {/* Weekly Activity Section */}
         <div className="px-6 pt-6 pb-2">
           <div className="flex items-center justify-between mb-2">
@@ -88,6 +113,7 @@ export default function AdminProfilePage() {
             </div>
           </div>
         </div>
+
         {/* Metrics List Section */}
         <div className="px-6 pb-6 space-y-3">
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
@@ -106,6 +132,21 @@ export default function AdminProfilePage() {
             <span className="text-lg font-bold text-white">{insights?.totalLinkTaps ?? 0}</span>
           </div>
         </div>
+
+        {/* Timestamps Section */}
+        <div className="px-6 pb-6 flex flex-col gap-1 text-xs text-gray-500">
+          <div>Last Viewed: {insights?.lastViewedAt ? new Date(insights.lastViewedAt).toLocaleString() : '-'}</div>
+          <div>Created: {insights?.createdAt ? new Date(insights.createdAt).toLocaleString() : '-'}</div>
+          <div>Last Updated: {insights?.updatedAt ? new Date(insights.updatedAt).toLocaleString() : '-'}</div>
+        </div>
+
+        {/* Back to Admin Button */}
+        <button
+          className="mx-6 mb-6 w-full px-6 py-2 bg-gray-800 text-gray-200 rounded-lg font-semibold hover:bg-gray-700 transition shadow"
+          onClick={() => navigate('/admin-bs1978av1123ss2402')}
+        >
+          Back to Admin
+        </button>
       </div>
     </div>
   );

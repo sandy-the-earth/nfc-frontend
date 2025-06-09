@@ -36,6 +36,15 @@ export default function DashboardInsightsPage() {
       .finally(() => setLoading(false));
   }, [API, profileId, navigate]);
 
+  const postLinkTap = async (link) => {
+    try {
+      await axios.post(`${API}/api/public/${profileId}/link-tap`, { link });
+      console.log('Link tap tracked successfully:', link);
+    } catch (e) {
+      console.error('Failed to track link tap:', e);
+    }
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black">Loading insights…</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500">{error}</div>;
 

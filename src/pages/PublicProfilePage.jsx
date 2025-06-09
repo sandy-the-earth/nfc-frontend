@@ -99,6 +99,7 @@ export default function PublicProfilePage() {
   const [msg, setMsg] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [insights, setInsights] = useState(null);
+  const [insightsError, setInsightsError] = useState('');
 
   // Contact form state
   const [form, setForm] = useState({
@@ -139,15 +140,47 @@ export default function PublicProfilePage() {
     // Fetch insights
     axios
       .get(`${API}/api/public/${activationCode}/insights`)
-      .then(res => setInsights(res.data))
-      .catch(() => setInsights(null));
+      .then(res => {
+        // Set defaults for missing fields
+        const d = res.data || {};
+        setInsights({
+          totalViews: d.totalViews ?? 0,
+          uniqueVisitors: d.uniqueVisitors ?? 0,
+          totalLinkTaps: d.totalLinkTaps ?? 0,
+          contactExchanges: d.contactExchanges ?? 0,
+          contactSaves: d.contactSaves ?? 0,
+          mostPopularContactMethod: d.mostPopularContactMethod ?? '',
+          topLink: d.topLink ?? '',
+          viewCountsOverTime: d.viewCountsOverTime ?? [],
+          lastViewedAt: d.lastViewedAt ?? null,
+          createdAt: d.createdAt ?? null,
+          updatedAt: d.updatedAt ?? null
+        });
+        setInsightsError('');
+      })
+      .catch(() => {
+        setInsights(null);
+        setInsightsError('Could not load insights.');
+      });
   }, [activationCode, API]);
+
+  // Helper to POST link tap
+  const postLinkTap = async (link) => {
+    try {
+      await axios.post(`${API}/api/public/${activationCode}/link-tap`, { link });
+    } catch (e) {
+      console.error('Failed to track link tap:', e);
+      // Don't show errors to users for analytics
+    }
+  };
 
   // Copy helper
   const copyToClipboard = txt => {
     navigator.clipboard.writeText(txt);
     setMsg('Copied!');
     setTimeout(() => setMsg(''), 1500);
+    // Track copy as a link tap
+    postLinkTap(txt);
   };
 
   // Contact form handlers
@@ -168,13 +201,233 @@ export default function PublicProfilePage() {
     }
   };
 
-  // Helper to POST link tap
-  const postLinkTap = async (link) => {
-    try {
-      await axios.post(`${API}/api/public/${activationCode}/link-tap`, { link });
-    } catch (e) {
-      // Ignore errors for UX
+  // vCard download helper
+  const downloadVCard = () => {
+    if (!profile) return;
+    const {
+      name = '',
+      email = '',
+      phone = '',
+      website = '',
+      socialLinks = {},
+      location = ''
+    } = profile;
+    const vCard = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${name}`,
+      email && `EMAIL;type=INTERNET,WORK:${email}`,
+      phone && `TEL;type=CELL,VOICE:${phone}`,
+      website && `URL;type=work:${website}`,
+      socialLinks.instagram && `X-SOCIALPROFILE;type=instagram:https://instagram.com/${socialLinks.instagram}`,
+      socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${socialLinks.linkedin}`,
+      socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${socialLinks.twitter}`,
+      location && `ADR;type=work:;;${location}`,
+      'END:VCARD'
+    ].filter(Boolean).join('\n');
+    const blob = new Blob([vCard], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, '_') || 'contact'}.vcf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Helper to get the correct profile URL (customSlug or activationCode)
+  const getProfileUrl = () => {
+    const slug = profile.customSlug || activationCode;
+    return `${FRONTEND.replace(/\/$/, '')}/p/${slug}`;
+  };
+
+  // Determine top link from insights
+  const topLink = insights?.topLink;
+  const mostPopularContactMethod = insights?.mostPopularContactMethod;
+
+  // Extract exclusiveBadge at the top level for use in the main render
+  const exclusiveBadge = profile?.exclusiveBadge || null;
+
+  // Card content JSX
+  const CardContent = () => {
+    if (!profile) return null;
+
+    const {
+      name,
+      title,
+      subtitle,
+      tags = [],
+      email,
+      phone,
+      website,
+      socialLinks = {},
+      location,
+      bannerUrl,
+      avatarUrl,
+      createdAt,
+      exclusiveBadge = null // Fallback to null if undefined
+    } = profile;
+
+    // In the CardContent or wherever insights are displayed, show error if present
+    if (insightsError) {
+      return (
+        <div className="px-6 py-4 text-center text-red-500 bg-red-100 rounded-lg mt-4">
+          {insightsError}
+        </div>
+      );
     }
+
+    return (
+      <>
+        {/* Card container with rounded corners */}
+        <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl">
+          {/* Banner & Avatar */}
+          <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
+            {/* Badge inside banner, not card */}
+            <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
+            {bannerUrl && (
+              <img
+                src={bannerUrl.startsWith('http') ? bannerUrl : `${API}${bannerUrl}`}
+                alt="Banner"
+                className="w-full h-full object-cover"
+              />
+            )}
+            {avatarUrl && (
+              <img
+                src={avatarUrl.startsWith('http') ? avatarUrl : `${API}${avatarUrl}`}
+                alt="Avatar"
+                className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+              />
+            )}
+          </div>
+
+          {/* Main Info */}
+          <div className="px-6 pt-14 pb-2 text-center">
+            <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
+            {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
+            {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-1 mt-2">
+                {tags.map(t => (
+                  <span
+                    key={t}
+                    className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="px-6 mt-2 flex gap-2">
+            <button
+              onClick={() => setShowQR(true)}
+              className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+            >
+              <MdQrCode /> QR Code
+            </button>
+            <button
+              onClick={downloadVCard}
+              className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+            >
+              <FaSave /> Save to Contact
+            </button>
+            <button
+              onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
+              className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
+            >
+              <FaRegCopy />
+            </button>
+          </div>
+
+          {/* Contact Rows */}
+          <div className="px-6 mt-4 space-y-2">
+            {email && (
+              <ContactRow
+                icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
+                label="Email"
+                value={email}
+                href={`mailto:${email}`}
+                onCopy={() => copyToClipboard(email)}
+                isTopLink={topLink === `mailto:${email}`}
+              />
+            )}
+            {phone && (
+              <ContactRow
+                icon={<FaPhone className="text-green-500 dark:text-green-400" />}
+                label="Phone"
+                value={phone}
+                href={`tel:${phone}`}
+                onCopy={() => copyToClipboard(phone)}
+                isTopLink={topLink === `tel:${phone}`}
+              />
+            )}
+            {website && (
+              <ContactRow
+                icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
+                label="Website"
+                value={website}
+                href={website.startsWith('http') ? website : `https://${website}`}
+                onCopy={() => copyToClipboard(website)}
+                isTopLink={topLink === (website.startsWith('http') ? website : `https://${website}`)}
+              />
+            )}
+            {socialLinks.instagram && (
+              <ContactRow
+                icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
+                label="Instagram"
+                value={socialLinks.instagram}
+                href={`https://instagram.com/${socialLinks.instagram}`}
+                onCopy={() => copyToClipboard(socialLinks.instagram)}
+                isTopLink={topLink === `https://instagram.com/${socialLinks.instagram}`}
+              />
+            )}
+            {socialLinks.linkedin && (
+              <ContactRow
+                icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
+                label="LinkedIn"
+                value={socialLinks.linkedin}
+                href={`https://linkedin.com/in/${socialLinks.linkedin}`}
+                onCopy={() => copyToClipboard(socialLinks.linkedin)}
+                isTopLink={topLink === `https://linkedin.com/in/${socialLinks.linkedin}`}
+              />
+            )}
+            {socialLinks.twitter && (
+              <ContactRow
+                icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
+                label="Twitter"
+                value={socialLinks.twitter}
+                href={`https://twitter.com/${socialLinks.twitter}`}
+                onCopy={() => copyToClipboard(socialLinks.twitter)}
+                isTopLink={topLink === `https://twitter.com/${socialLinks.twitter}`}
+              />
+            )}
+            {location && (
+              <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+                <FaMapMarkerAlt /> {location}
+              </p>
+            )}
+          </div>
+
+          {/* Insights Summary - below contact rows */}
+          {insights && mostPopularContactMethod && (
+            <div className="mt-4 mb-2 text-center">
+              <span className="bg-yellow-100 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
+                <b>Top Contact Method:</b> {mostPopularContactMethod.charAt(0).toUpperCase() + mostPopularContactMethod.slice(1)}
+              </span>
+            </div>
+          )}
+
+          {/* Member Since */}
+          <div className="px-6 pt-4 pb-6 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Member since {createdAt ? new Date(createdAt).toLocaleDateString('en-GB') : ''}
+            </p>
+          </div>
+        </div>
+      </>
+    );
   };
 
   if (loading) {
@@ -192,236 +445,22 @@ export default function PublicProfilePage() {
     );
   }
 
-  const {
-    bannerUrl,
-    avatarUrl,
-    name,
-    title,
-    subtitle,
-    tags = [],
-    location,
-    email,
-    phone,
-    website,
-    socialLinks = {},
-    createdAt,
-    exclusiveBadge // <-- get badge from profile
-  } = profile;
-
-  // Generate vCard
-  const vCard = [
-    'BEGIN:VCARD',
-    'VERSION:3.0',
-    `FN:${name}`,
-    `TITLE:${title || ''}`,
-    `ORG:${subtitle || ''}`,
-    `EMAIL;TYPE=work:${email || ''}`,
-    phone && `TEL;TYPE=CELL:${phone}`,
-    `URL:${FRONTEND}/p/${activationCode}`,
-    socialLinks.instagram && `X-SOCIALPROFILE;type=instagram:https://instagram.com/${socialLinks.instagram}`,
-    socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${socialLinks.linkedin}`,
-    socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${socialLinks.twitter}`,
-    website && `URL;type=work:${website}`,
-    'END:VCARD'
-  ]
-    .filter(Boolean)
-    .join('\n');
-  const downloadVCard = () => {
-    const blob = new Blob([vCard], { type: 'text/vcard' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name.replace(/\s+/g, '_')}.vcf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // Helper to get the correct profile URL (customSlug or activationCode)
-  const getProfileUrl = () => {
-    const slug = profile.customSlug || activationCode;
-    return `${FRONTEND.replace(/\/$/, '')}/p/${slug}`;
-  };
-
-  // Determine top link from insights
-  const topLink = insights?.topLink;
-  const mostPopularContactMethod = insights?.mostPopularContactMethod;
-  const totalLinkTaps = insights?.totalTaps;
-
-  // Card content JSX
-  const CardContent = () => (
-    <>
-      {/* Insights Section - removed from public profile */}
-
-      {/* Theme toggle */}
+  return (
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+      {/* Theme toggle button */}
       <div className="absolute top-3 right-3 z-10">
         <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={toggleTheme}
           className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:scale-105 transition"
         >
-          {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-800" />}
+          {darkMode ? (
+            <FaSun className="text-yellow-400" />
+          ) : (
+            <FaMoon className="text-gray-800" />
+          )}
         </button>
       </div>
 
-      {/* Card container with rounded corners */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl">
-        {/* Banner & Avatar */}
-        <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
-          {/* Badge inside banner, not card */}
-          <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
-          {bannerUrl && (
-            <img
-              src={bannerUrl.startsWith('http') ? bannerUrl : `${API}${bannerUrl}`}
-              alt="Banner"
-              className="w-full h-full object-cover"
-            />
-          )}
-          {avatarUrl && (
-            <img
-              src={avatarUrl.startsWith('http') ? avatarUrl : `${API}${avatarUrl}`}
-              alt="Avatar"
-              className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
-            />
-          )}
-        </div>
-
-        {/* Main Info */}
-        <div className="px-6 pt-14 pb-2 text-center">
-          <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
-          {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
-          {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
-          {tags.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1 mt-2">
-              {tags.map(t => (
-                <span
-                  key={t}
-                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="px-6 mt-2 flex gap-2">
-          <button
-            onClick={() => setShowQR(true)}
-            className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
-          >
-            <MdQrCode /> QR Code
-          </button>
-          <button
-            onClick={downloadVCard}
-            className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
-          >
-            <FaSave /> Save to Contact
-          </button>
-          <button
-            onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
-            className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
-          >
-            <FaRegCopy />
-          </button>
-        </div>
-
-        {/* Contact Rows */}
-        <div className="px-6 mt-4 space-y-2">
-          {email && (
-            <ContactRow
-              icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
-              label="Email"
-              value={email}
-              href={`mailto:${email}`}
-              onCopy={() => copyToClipboard(email)}
-              isTopLink={topLink === `mailto:${email}`}
-            />
-          )}
-          {phone && (
-            <ContactRow
-              icon={<FaPhone className="text-green-500 dark:text-green-400" />}
-              label="Phone"
-              value={phone}
-              href={`tel:${phone}`}
-              onCopy={() => copyToClipboard(phone)}
-              isTopLink={topLink === `tel:${phone}`}
-            />
-          )}
-          {website && (
-            <ContactRow
-              icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
-              label="Website"
-              value={website}
-              href={website.startsWith('http') ? website : `https://${website}`}
-              onCopy={() => copyToClipboard(website)}
-              isTopLink={topLink === (website.startsWith('http') ? website : `https://${website}`)}
-            />
-          )}
-          {socialLinks.instagram && (
-            <ContactRow
-              icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
-              label="Instagram"
-              value={socialLinks.instagram}
-              href={`https://instagram.com/${socialLinks.instagram}`}
-              onCopy={() => copyToClipboard(socialLinks.instagram)}
-              isTopLink={topLink === `https://instagram.com/${socialLinks.instagram}`}
-            />
-          )}
-          {socialLinks.linkedin && (
-            <ContactRow
-              icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
-              label="LinkedIn"
-              value={socialLinks.linkedin}
-              href={`https://linkedin.com/in/${socialLinks.linkedin}`}
-              onCopy={() => copyToClipboard(socialLinks.linkedin)}
-              isTopLink={topLink === `https://linkedin.com/in/${socialLinks.linkedin}`}
-            />
-          )}
-          {socialLinks.twitter && (
-            <ContactRow
-              icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
-              label="Twitter"
-              value={socialLinks.twitter}
-              href={`https://twitter.com/${socialLinks.twitter}`}
-              onCopy={() => copyToClipboard(socialLinks.twitter)}
-              isTopLink={topLink === `https://twitter.com/${socialLinks.twitter}`}
-            />
-          )}
-          {location && (
-            <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
-              <FaMapMarkerAlt /> {location}
-            </p>
-          )}
-        </div>
-
-        {/* Insights Summary - below contact rows */}
-        {insights && (
-          <div className="mt-4 mb-2 text-center">
-            <div className="flex flex-wrap justify-center gap-2 text-xs">
-              <span className="bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-full">
-                <b>Total Link Taps:</b> {totalLinkTaps ?? 0}
-              </span>
-              {mostPopularContactMethod && (
-                <span className="bg-yellow-100 text-yellow-900 px-2 py-1 rounded-full font-semibold">
-                  <b>Top Contact Method:</b> {mostPopularContactMethod.charAt(0).toUpperCase() + mostPopularContactMethod.slice(1)}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Member Since */}
-        <div className="px-6 pt-4 pb-6 text-center">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Member since {createdAt ? new Date(createdAt).toLocaleDateString('en-GB') : ''}
-          </p>
-        </div>
-      </div>
-    </>
-  );
-
-  return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
       <div style={{ perspective: '800px' }} className="w-full max-w-md relative">
         <animated.div
           style={{
