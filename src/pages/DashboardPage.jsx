@@ -22,6 +22,7 @@ import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
 import { useSpring, animated } from '@react-spring/web';
 import ImageCropper from '../components/ImageCropper';
+import { industries } from '../utils/constants';
 
 // Reusable ContactRow
 const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }) {
