@@ -87,6 +87,24 @@ function FoundersStackBadge({ number }) {
   );
 }
 
+const industries = [
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Retail",
+  "Manufacturing",
+  "Hospitality",
+  "Real Estate",
+  "Transportation",
+  "Energy",
+  "Entertainment",
+  "Agriculture",
+  "Government",
+  "Non-Profit",
+  "Other"
+];
+
 export default function PublicProfilePage() {
   const { activationCode } = useParams();
   const API = import.meta.env.VITE_API_BASE_URL || 'https://nfc-backend-9c1q.onrender.com';
@@ -392,6 +410,25 @@ export default function PublicProfilePage() {
               <FaMapMarkerAlt /> {location}
             </p>
           )}
+        </div>
+
+        {/* Industry Selection - Public Profile */}
+        <div className="mt-4">
+          <label htmlFor="industry" className="block text-sm font-medium text-gray-300 mb-1">
+            Select Your Industry
+          </label>
+          <select
+            id="industry"
+            name="industry"
+            value={profile?.industry || ''}
+            onChange={(e) => setProfile({ ...profile, industry: e.target.value })}
+            className="w-full px-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
+          >
+            <option value="" disabled>Select an industry</option>
+            {industries.map((industry) => (
+              <option key={industry} value={industry}>{industry}</option>
+            ))}
+          </select>
         </div>
 
         {/* Insights Summary - below contact rows */}

@@ -118,7 +118,7 @@ export default function ActivatePage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-200"
+                className="absolute right-3 top-[calc(50%+11px)] -translate-y-1/2 flex items-center justify-center text-gray-400 hover:text-gray-200 focus:outline-none"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>

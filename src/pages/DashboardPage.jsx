@@ -345,6 +345,21 @@ const CardContent = memo(function CardContent({
               />
             </div>
           </div>
+          {/* Industry Selection */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Industry</label>
+            <select
+              name="industry"
+              value={form.industry || ''}
+              onChange={handleChange}
+              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
+            >
+              <option value="" disabled>Select an industry</option>
+              {industries.map(industry => (
+                <option key={industry} value={industry}>{industry}</option>
+              ))}
+            </select>
+          </div>
           {/* File uploads */}
           <div className="grid grid-cols-2 gap-4 items-end">
             <div>
