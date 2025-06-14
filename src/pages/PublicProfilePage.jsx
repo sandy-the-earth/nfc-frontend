@@ -21,7 +21,6 @@ import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
 import { useSpring, useTransition, animated } from '@react-spring/web';
-import { industries } from '../utils/constants';
 
 // Reusable ContactRow component
 function ContactRow({ icon, label, value, href, onCopy, isTopLink }) {
@@ -115,6 +114,10 @@ export default function PublicProfilePage() {
   // Dark mode detection
   const [darkMode, setDarkMode] = useState(theme === 'dark');
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
+
+  // UI Style toggle for public profile
+  const [uiStyle, setUiStyle] = useState(() => localStorage.getItem('uiStyle') || 'chrome');
+  useEffect(() => { localStorage.setItem('uiStyle', uiStyle); }, [uiStyle]);
 
   // Card flip animation
   const { rotateY } = useSpring({
@@ -252,9 +255,8 @@ export default function PublicProfilePage() {
   const CardContent = () => (
     <>
       {/* Insights Section - removed from public profile */}
-
       {/* Theme toggle */}
-      <div className="absolute top-3 right-3 z-10">
+      <div className="absolute top-3 right-3 z-10 flex gap-2">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:scale-105 transition"
@@ -262,18 +264,25 @@ export default function PublicProfilePage() {
           {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-800" />}
         </button>
       </div>
-
       {/* Card container with rounded corners */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl">
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl"
+        style={{
+          background: darkMode
+            ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+            : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+          border: darkMode ? '1.5px solid #444' : '1.5px solid #bdbdbd',
+          boxShadow: darkMode
+            ? '0 4px 32px 0 #111a, 0 2px 0 #444'
+            : '0 4px 32px 0 #e0e0e0cc, 0 2px 0 #bdbdbd',
+          backdropFilter: 'blur(2px)',
+        }}>
         {/* Banner & Avatar */}
-        <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
-          {/* Badge inside banner, not card */}
-          <FoundersStackBadge number={exclusiveBadge?.text ? exclusiveBadge.text.replace(/^#?/, '') : undefined} />
+        <div className="h-32 bg-gray-300 dark:bg-gray-600 relative rounded-t-2xl overflow-visible">
           {bannerUrl && (
             <img
               src={bannerUrl.startsWith('http') ? bannerUrl : `${API}${bannerUrl}`}
               alt="Banner"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-t-2xl"
             />
           )}
           {avatarUrl && (
@@ -281,21 +290,39 @@ export default function PublicProfilePage() {
               src={avatarUrl.startsWith('http') ? avatarUrl : `${API}${avatarUrl}`}
               alt="Avatar"
               className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+              style={{zIndex: 10}}
             />
           )}
         </div>
-
         {/* Main Info */}
         <div className="px-6 pt-14 pb-2 text-center">
           <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
           {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
           {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
+          {profile.industry && (
+            <div className="flex justify-center mt-2">
+              <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-blue-400 via-blue-600 to-blue-800 text-white text-xs font-semibold shadow-lg border border-blue-300 dark:border-blue-700 tracking-wide">
+                {profile.industry}
+              </span>
+            </div>
+          )}
           {tags.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1 mt-2">
               {tags.map(t => (
                 <span
                   key={t}
-                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
+                  className="px-3 py-1 rounded-lg text-xs font-semibold shadow border border-gray-300 dark:border-gray-700 tracking-wide"
+                  style={{
+                    background: darkMode
+                      ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                      : 'linear-gradient(120deg, #e6e6e6 0%, #f5f5f5 40%, #bdbdbd 100%)',
+                    color: darkMode ? '#e0e0e0' : '#232323',
+                    textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                    boxShadow: darkMode
+                      ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                      : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                    border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                  }}
                 >
                   {t}
                 </span>
@@ -308,19 +335,19 @@ export default function PublicProfilePage() {
         <div className="px-6 mt-2 flex gap-2">
           <button
             onClick={() => setShowQR(true)}
-            className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+            className="flex-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
           >
             <MdQrCode /> QR Code
           </button>
           <button
             onClick={downloadVCard}
-            className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+            className="flex-1 bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
           >
             <FaSave /> Save to Contact
           </button>
           <button
             onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
-            className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
+            className="w-8 h-8 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
           >
             <FaRegCopy />
           </button>
@@ -329,78 +356,164 @@ export default function PublicProfilePage() {
         {/* Contact Rows */}
         <div className="px-6 mt-4 space-y-2">
           {email && (
-            <ContactRow
-              icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
-              label="Email"
-              value={email}
+            <a
               href={`mailto:${email}`}
-              onCopy={() => copyToClipboard(email)}
-              isTopLink={topLink === `mailto:${email}`}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Email</span>
+              <FaEnvelope className="mr-2 text-blue-500 dark:text-blue-400" />{email}
+            </a>
           )}
           {phone && (
-            <ContactRow
-              icon={<FaPhone className="text-green-500 dark:text-green-400" />}
-              label="Phone"
-              value={phone}
+            <a
               href={`tel:${phone}`}
-              onCopy={() => copyToClipboard(phone)}
-              isTopLink={topLink === `tel:${phone}`}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Phone</span>
+              <FaPhone className="mr-2 text-green-500 dark:text-green-400" />{phone}
+            </a>
           )}
           {website && (
-            <ContactRow
-              icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
-              label="Website"
-              value={website}
+            <a
               href={website.startsWith('http') ? website : `https://${website}`}
-              onCopy={() => copyToClipboard(website)}
-              isTopLink={topLink === (website.startsWith('http') ? website : `https://${website}`)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Website</span>
+              <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{website}
+            </a>
           )}
           {socialLinks.instagram && (
-            <ContactRow
-              icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
-              label="Instagram"
-              value={socialLinks.instagram}
+            <a
               href={`https://instagram.com/${socialLinks.instagram}`}
-              onCopy={() => copyToClipboard(socialLinks.instagram)}
-              isTopLink={topLink === `https://instagram.com/${socialLinks.instagram}`}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Instagram</span>
+              <FaInstagram className="mr-2 text-pink-500 dark:text-pink-400" />{socialLinks.instagram}
+            </a>
           )}
           {socialLinks.linkedin && (
-            <ContactRow
-              icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
-              label="LinkedIn"
-              value={socialLinks.linkedin}
+            <a
               href={`https://linkedin.com/in/${socialLinks.linkedin}`}
-              onCopy={() => copyToClipboard(socialLinks.linkedin)}
-              isTopLink={topLink === `https://linkedin.com/in/${socialLinks.linkedin}`}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">LinkedIn</span>
+              <FaLinkedin className="mr-2 text-blue-700 dark:text-blue-300" />{socialLinks.linkedin}
+            </a>
           )}
           {socialLinks.twitter && (
-            <ContactRow
-              icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
-              label="Twitter"
-              value={socialLinks.twitter}
+            <a
               href={`https://twitter.com/${socialLinks.twitter}`}
-              onCopy={() => copyToClipboard(socialLinks.twitter)}
-              isTopLink={topLink === `https://twitter.com/${socialLinks.twitter}`}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Twitter</span>
+              <FaTwitter className="mr-2 text-blue-400 dark:text-blue-200" />{socialLinks.twitter}
+            </a>
           )}
           {location && (
-            <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
-              <FaMapMarkerAlt /> {location}
-            </p>
+            <span
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Location</span>
+              <FaMapMarkerAlt className="mr-2 text-gray-600 dark:text-gray-400" />{location}
+            </span>
           )}
         </div>
-
-        {/* Industry Information */}
-        {profile.industry && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Industry: {profile.industry}
-          </p>
-        )}
 
         {/* Insights Summary - below contact rows */}
         {insights && mostPopularContactMethod && (

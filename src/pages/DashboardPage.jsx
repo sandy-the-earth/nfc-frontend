@@ -74,7 +74,8 @@ const CardContent = memo(function CardContent({
   downloadVCard,
   isDashboard,
   saveProfile,
-  handleFileInput
+  handleFileInput,
+  uiStyle
 }) {
   // Use backend-provided slug for all links
   const profileSlug = profile.slug || profile.customSlug || profile.activationCode;
@@ -89,34 +90,54 @@ const CardContent = memo(function CardContent({
           {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-800" />}
         </button>
       </div>
-      {/* Banner + Avatar */}
-      <div className="h-32 bg-gray-300 dark:bg-gray-600 relative">
+      {/* Banner & Avatar (public profile style) */}
+      <div className="h-32 bg-gray-300 dark:bg-gray-600 relative rounded-t-2xl overflow-visible">
         {form && form.bannerUrl && (
           <img
             src={form.bannerUrl.startsWith('http') ? form.bannerUrl : `${API}${form.bannerUrl}`}
             alt="Banner"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-t-2xl"
           />
         )}
         {form && form.avatarUrl && (
           <img
             src={form.avatarUrl.startsWith('http') ? form.avatarUrl : `${API}${form.avatarUrl}`}
             alt="Avatar"
-            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 object-cover shadow-lg"
+            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+            style={{zIndex: 10}}
           />
         )}
       </div>
-      {/* Main Info */}
+      {/* Main Info (public profile style) */}
       <div className="px-6 pt-14 pb-2 text-center">
-        <h1 className="text-2xl font-bold dark:text-white">{form && form.name ? form.name : ''}</h1>
-        {form && form.title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{form.title}</p>}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white break-words">{form && form.name ? form.name : ''}</h1>
+        {form && form.title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-200">{form.title}</p>}
         {form && form.subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{form.subtitle}</p>}
+        {form && form.industry && (
+          <div className="flex justify-center mt-2">
+            <span className="px-3 py-1 rounded-lg text-xs font-semibold shadow-lg border tracking-wide"
+              style={theme === 'dark' ? { background: 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)', color: '#FFD700', border: '1.5px solid #FFD700', boxShadow: '0 2px 8px 0 #FFC30055' } : { background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)', color: '#fff', border: '1.5px solid #2563eb' }}>
+              {form.industry}
+            </span>
+          </div>
+        )}
         {form && form.tags && form.tags.length > 0 && (
           <div className="flex flex-wrap justify-center gap-1 mt-2">
             {form.tags.map(t => (
               <span
                 key={t}
-                className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200/80 dark:bg-gray-200/30 text-gray-700 dark:text-gray-200"
+                className="px-3 py-1 rounded-lg text-xs font-semibold shadow border border-gray-300 dark:border-[#23272f] tracking-wide"
+                style={{
+                  background: theme === 'dark'
+                    ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                    : 'linear-gradient(120deg, #e6e6e6 0%, #f5f5f5 40%, #bdbdbd 100%)',
+                  color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                  textShadow: theme === 'dark' ? '0 1px 2px #000a, 0 0.5px 0 #23272f' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                  boxShadow: theme === 'dark'
+                    ? '0 2px 8px 0 #000a, 0 1.5px 0 #23272f'
+                    : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                  border: theme === 'dark' ? '1px solid #23272f' : '1px solid #bdbdbd',
+                }}
               >
                 {t}
               </span>
@@ -128,22 +149,22 @@ const CardContent = memo(function CardContent({
       {!editMode && (
         <div className="px-6 mt-2 flex gap-2">
           <button
-            onClick={() => setEditMode(true)}
-            className="flex-1 bg-[#FFC300] text-black py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow hover:bg-[#e6b200] transition"
+            onClick={() => setShowQR(true)}
+            className="flex-1 bg-blue-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:bg-blue-600 transition text-sm border border-blue-600"
           >
-            <FaEdit className="text-base" /> Edit
+            <MdQrCode /> QR Code
           </button>
           <button
-            onClick={() => setShowQR(true)}
-            className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-semibold shadow hover:bg-blue-600 transition"
+            onClick={downloadVCard}
+            className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:bg-green-600 transition text-sm border border-green-600"
           >
-            <MdQrCode className="text-base" /> QR Code
+            <FaSave /> Save to Contact
           </button>
           <button
             onClick={() => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
-            className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition border border-gray-400 dark:border-gray-600"
           >
-            <FaRegCopy className="text-base" />
+            <FaRegCopy />
           </button>
         </div>
       )}
@@ -151,63 +172,150 @@ const CardContent = memo(function CardContent({
       {!editMode && (
         <div className="px-6 mt-4 space-y-2">
           {profile.ownerEmail && (
-            <ContactRow
-              icon={<FaEnvelope className="text-blue-500 dark:text-blue-400" />}
-              label="Email"
-              value={profile.ownerEmail}
+            <a
               href={`mailto:${profile.ownerEmail}`}
-              onCopy={() => copyToClipboard(profile.ownerEmail)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                border: theme === 'dark' ? '1px solid #23272f' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Email</span>
+              <FaEnvelope className="mr-2 text-blue-500 dark:text-blue-400" />{profile.ownerEmail}
+            </a>
           )}
           {profile.phone && (
-            <ContactRow
-              icon={<FaPhone className="text-green-500 dark:text-green-400" />}
-              label="Phone"
-              value={profile.phone}
+            <a
               href={`tel:${profile.phone}`}
-              onCopy={() => copyToClipboard(profile.phone)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                border: theme === 'dark' ? '1px solid #23272f' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Phone</span>
+              <FaPhone className="mr-2 text-green-500 dark:text-green-400" />{profile.phone}
+            </a>
           )}
           {profile.website && (
-            <ContactRow
-              icon={<FaGlobe className="text-purple-500 dark:text-purple-400" />}
-              label="Website"
-              value={profile.website}
+            <a
               href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
-              onCopy={() => copyToClipboard(profile.website)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                border: theme === 'dark' ? '1px solid #23272f' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Website</span>
+              <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{profile.website}
+            </a>
           )}
           {profile.socialLinks?.instagram && (
-            <ContactRow
-              icon={<FaInstagram className="text-pink-500 dark:text-pink-400" />}
-              label="Instagram"
-              value={profile.socialLinks.instagram}
+            <a
               href={`https://instagram.com/${profile.socialLinks.instagram}`}
-              onCopy={() => copyToClipboard(profile.socialLinks.instagram)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+                boxShadow: theme === 'dark'
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Instagram</span>
+              <FaInstagram className="mr-2 text-pink-500 dark:text-pink-400" />{profile.socialLinks.instagram}
+            </a>
           )}
           {profile.socialLinks?.linkedin && (
-            <ContactRow
-              icon={<FaLinkedin className="text-blue-700 dark:text-blue-300" />}
-              label="LinkedIn"
-              value={profile.socialLinks.linkedin}
+            <a
               href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
-              onCopy={() => copyToClipboard(profile.socialLinks.linkedin)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+                boxShadow: theme === 'dark'
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">LinkedIn</span>
+              <FaLinkedin className="mr-2 text-blue-700 dark:text-blue-300" />{profile.socialLinks.linkedin}
+            </a>
           )}
           {profile.socialLinks?.twitter && (
-            <ContactRow
-              icon={<FaTwitter className="text-blue-400 dark:text-blue-200" />}
-              label="Twitter"
-              value={profile.socialLinks.twitter}
+            <a
               href={`https://twitter.com/${profile.socialLinks.twitter}`}
-              onCopy={() => copyToClipboard(profile.socialLinks.twitter)}
-            />
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+                boxShadow: theme === 'dark'
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Twitter</span>
+              <FaTwitter className="mr-2 text-blue-400 dark:text-blue-200" />{profile.socialLinks.twitter}
+            </a>
           )}
           {profile.location && (
-            <p className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
-              <FaMapMarkerAlt /> {profile.location}
-            </p>
+            <span
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] flex items-center gap-2"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: theme === 'dark' ? '#e0e0e0' : '#232323',
+                textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+                boxShadow: theme === 'dark'
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Location</span>
+              <FaMapMarkerAlt className="mr-2 text-gray-600 dark:text-gray-400" />{profile.location}
+            </span>
           )}
         </div>
       )}
@@ -356,8 +464,8 @@ const CardContent = memo(function CardContent({
               className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
             >
               <option value="" disabled>Select an industry</option>
-              {industries.map(industry => (
-                <option key={industry} value={industry}>{industry}</option>
+              {industries.map(ind => (
+                <option key={ind} value={ind}>{ind}</option>
               ))}
             </select>
           </div>
@@ -435,6 +543,7 @@ export default function DashboardPage() {
     website: '',
     location: '',
     bio: '',
+    industry: '', // <-- add industry field
     socialLinks: { instagram: '', linkedin: '', twitter: '' },
     bannerUrl: '',
     avatarUrl: ''
@@ -457,6 +566,17 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState(null);
   // Only show insights button if enabled
   const [insightsEnabled, setInsightsEnabled] = useState(false);
+  const [industries, setIndustries] = useState([]);
+  // UI Style toggle
+  const [uiStyle, setUiStyle] = useState(() => localStorage.getItem('uiStyle') || 'chrome');
+  useEffect(() => { localStorage.setItem('uiStyle', uiStyle); }, [uiStyle]);
+
+  useEffect(() => {
+    fetch('https://nfc-backend-9c1q.onrender.com/api/profile/industries')
+      .then(res => res.json())
+      .then(data => setIndustries(data.industries))
+      .catch(err => console.error('Failed to fetch industries', err));
+  }, []);
 
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
 
@@ -647,6 +767,20 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">
+      {/* UI Style Toggle */}
+      {/* <div className="w-full max-w-md flex justify-end mb-2 pr-2">
+        <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+          <span>Style:</span>
+          <select
+            value={uiStyle}
+            onChange={e => setUiStyle(e.target.value)}
+            className="px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs"
+          >
+            <option value="chrome">Chrome</option>
+            <option value="classic">Classic</option>
+          </select>
+        </label>
+      </div> */}
       {/* Card Section */}
       <div style={{ perspective: '800px' }} className="relative w-full max-w-md flex-1 flex flex-col justify-center">
         <animated.div
@@ -658,10 +792,21 @@ export default function DashboardPage() {
           }}
           className="relative w-full"
         >
-          {/* Front face */}
+          {/* Front Face */}
           <div
-            className="relative bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-visible"
-            style={{ backfaceVisibility: 'hidden' }}
+            className="relative rounded-2xl overflow-hidden shadow-2xl"
+            style={{
+              background: darkMode
+                ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+              border: darkMode ? '1.5px solid #23272f' : '1.5px solid #bdbdbd',
+              boxShadow: darkMode
+                ? '0 4px 32px 0 #000a, 0 2px 0 #23272f'
+                : '0 4px 32px 0 #e0e0e0cc, 0 2px 0 #bdbdbd',
+              backdropFilter: 'blur(2px)',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
           >
             <CardContent
               API={API}
@@ -684,12 +829,21 @@ export default function DashboardPage() {
               isDashboard={true}
               saveProfile={saveProfile}
               handleFileInput={handleFileInput}
+              uiStyle={uiStyle}
             />
           </div>
-          {/* Back face (edit mode) can remain as is */}
+          {/* Back Face (edit mode) */}
           <div
-            className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border border-white/30 dark:border-gray-700 rounded-2xl shadow-2xl overflow-visible"
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
             style={{
+              background: darkMode
+                ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+                : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+              border: darkMode ? '1.5px solid #23272f' : '1.5px solid #bdbdbd',
+              boxShadow: darkMode
+                ? '0 4px 32px 0 #000a, 0 2px 0 #23272f'
+                : '0 4px 32px 0 #e0e0e0cc, 0 2px 0 #bdbdbd',
+              backdropFilter: 'blur(2px)',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)'
@@ -716,6 +870,7 @@ export default function DashboardPage() {
               isDashboard={true}
               saveProfile={saveProfile}
               handleFileInput={handleFileInput}
+              uiStyle={uiStyle}
             />
           </div>
         </animated.div>
