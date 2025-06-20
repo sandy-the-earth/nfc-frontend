@@ -117,7 +117,7 @@ export default function DashboardInsightsPage() {
           <div className="flex flex-col items-center bg-gray-800 rounded-xl px-4 py-5">
             <FaExchangeAlt className="text-yellow-300 text-xl mb-1" />
             <span className="text-lg font-bold text-white">{insights?.contactExchanges ?? 0}</span>
-            <span className="text-xs text-gray-400 mt-1">Contact Exchanged</span>
+            <span className="text-xs text-gray-400 mt-1">Contact Exchanges</span>
           </div>
           <div className="flex flex-col items-center bg-gray-800 rounded-xl px-4 py-5">
             <FaDownload className="text-purple-300 text-xl mb-1" />

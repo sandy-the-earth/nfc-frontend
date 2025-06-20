@@ -118,7 +118,7 @@ export default function AdminProfilePage() {
         <div className="px-6 pb-6 space-y-3">
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
             <span className="bg-gray-700 rounded-full p-2 mr-3"><FaExchangeAlt className="text-blue-300" /></span>
-            <span className="flex-1 text-white font-medium">Contact Exchanged</span>
+            <span className="flex-1 text-white font-medium">Contact Exchanges</span>
             <span className="text-lg font-bold text-white">{insights?.contactExchanges ?? 0}</span>
           </div>
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">

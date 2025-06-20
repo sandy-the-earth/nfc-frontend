@@ -249,7 +249,7 @@ export default function PublicProfilePage() {
   // Determine top link from insights
   const topLink = insights?.topLink;
   const mostPopularContactMethod = insights?.mostPopularContactMethod;
-  const totalLinkTaps = insights?.totalTaps;
+  const totalLinkTaps = insights?.totalLinkTaps;
 
   // Card content JSX
   const CardContent = () => (
