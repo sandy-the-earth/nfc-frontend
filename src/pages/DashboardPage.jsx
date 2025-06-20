@@ -23,6 +23,7 @@ import { useTheme } from '../App';
 import { useSpring, animated } from '@react-spring/web';
 import ImageCropper from '../components/ImageCropper';
 import { industries } from '../utils/constants';
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 // Reusable ContactRow
 const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }) {
@@ -574,6 +575,11 @@ export default function DashboardPage() {
   const [industries, setIndustries] = useState([]);
   // UI Style toggle
   const [uiStyle, setUiStyle] = useState(() => localStorage.getItem('uiStyle') || 'chrome');
+  const [graphDays, setGraphDays] = useState(30);
+  const filteredViewCounts = React.useMemo(() => {
+    if (!insights || !Array.isArray(insights.viewCountsOverTime)) return [];
+    return insights.viewCountsOverTime.slice(-graphDays);
+  }, [insights, graphDays]);
   useEffect(() => { localStorage.setItem('uiStyle', uiStyle); }, [uiStyle]);
 
   useEffect(() => {
@@ -891,6 +897,50 @@ export default function DashboardPage() {
           </button>
         )}
       </div>
+      {/* Insert Time vs Views Graph Below Card */}
+      {insightsEnabled && insights && Array.isArray(insights.viewCountsOverTime) && insights.viewCountsOverTime.length > 0 && (
+        <div className="w-full max-w-md mt-8 mb-2 bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Profile Views (Last {graphDays} Days)</h3>
+          {/* Time Range Selector */}
+          <div className="flex gap-2 mb-4">
+            {[7, 14, 30].map(days => (
+              <button
+                key={days}
+                onClick={() => setGraphDays(days)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold border transition focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] ${graphDays === days ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-400 dark:border-blue-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-800'}`}
+              >
+                Past {days} days
+              </button>
+            ))}
+          </div>
+          <div className="w-full h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={filteredViewCounts} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: theme === 'dark' ? '#b3b8c5' : '#7b7b93' }} angle={-30} textAnchor="end" height={50} dy={10} />
+                <YAxis tick={{ fontSize: 12, fill: theme === 'dark' ? '#b3b8c5' : '#7b7b93' }} label={{ value: 'Views', angle: -90, position: 'insideLeft', fill: theme === 'dark' ? '#b3b8c5' : '#7b7b93', fontSize: 13 }} allowDecimals={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={{ background: theme === 'dark' ? '#23272f' : '#f9fafb', borderRadius: 8, color: theme === 'dark' ? '#e0e0e0' : '#232323', border: 'none', boxShadow: '0 2px 8px #0001' }}
+                  labelStyle={{ color: theme === 'dark' ? '#a3a3ff' : '#6d6dd6', fontWeight: 500 }}
+                  formatter={(value, name) => [`${value} views`, 'Views']}
+                  labelFormatter={label => `Date: ${label}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke={theme === 'dark' ? '#a3a3ff' : '#6d6dd6'}
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: theme === 'dark' ? '#b3b8c5' : '#b3b8c5', stroke: theme === 'dark' ? '#a3a3ff' : '#6d6dd6', strokeWidth: 1.5 }}
+                  activeDot={{ r: 6, fill: theme === 'dark' ? '#23272f' : '#fff', stroke: theme === 'dark' ? '#a3a3ff' : '#6d6dd6', strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="text-xs text-gray-500 mt-2">
+            {filteredViewCounts.length > 0 && `${filteredViewCounts[0].date} - ${filteredViewCounts[filteredViewCounts.length-1].date}`}
+          </div>
+        </div>
+      )}
       {/* Footer Branding */}
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
         <div className="w-full flex flex-col items-center max-w-xs">
