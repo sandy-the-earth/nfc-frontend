@@ -92,7 +92,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-
-// Added industry selection option to the profile.
-// This will allow users to specify their industry during profile setup or editing.
-// ...existing code...
