@@ -15,7 +15,9 @@ import {
   FaMoon,
   FaSun,
   FaSave,
-  FaStar // <-- add star icon for badge
+  FaStar, // <-- add star icon for badge
+  FaExchangeAlt,
+  FaDownload
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
@@ -340,16 +342,16 @@ export default function PublicProfilePage() {
             <MdQrCode /> QR Code
           </button>
           <button
-            onClick={downloadVCard}
+            onClick={() => setModalOpen(true)}
             className="flex-1 bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
           >
-            <FaSave /> Save to Contact
+            <FaExchangeAlt /> Exchange
           </button>
           <button
-            onClick={() => copyToClipboard(`${FRONTEND}/p/${activationCode}`)}
+            onClick={downloadVCard}
             className="w-8 h-8 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 rounded-lg flex items-center justify-center shadow hover:scale-105 transition"
           >
-            <FaRegCopy />
+            <FaDownload />
           </button>
         </div>
 
@@ -567,16 +569,6 @@ export default function PublicProfilePage() {
             <CardContent />
           </div>
         </animated.div>
-      </div>
-
-      {/* Exchange Contact Button Below Card */}
-      <div className="mt-4 w-full max-w-md px-6 pb-6">
-        <button
-          onClick={() => setModalOpen(true)}
-          className="w-full bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 py-3 rounded-lg hover:opacity-90 transition"
-        >
-          Exchange Contact
-        </button>
       </div>
 
       {/* Branding Footer */}

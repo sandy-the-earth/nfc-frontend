@@ -116,7 +116,12 @@ const CardContent = memo(function CardContent({
         {form && form.industry && (
           <div className="flex justify-center mt-2">
             <span className="px-3 py-1 rounded-lg text-xs font-semibold shadow-lg border tracking-wide"
-              style={theme === 'dark' ? { background: 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)', color: '#FFD700', border: '1.5px solid #FFD700', boxShadow: '0 2px 8px 0 #FFC30055' } : { background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)', color: '#fff', border: '1.5px solid #2563eb' }}>
+              style={{
+                background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)',
+                color: '#fff',
+                border: '1.5px solid #2563eb',
+                boxShadow: '0 2px 8px 0 #2563eb55'
+              }}>
               {form.industry}
             </span>
           </div>
@@ -155,10 +160,10 @@ const CardContent = memo(function CardContent({
             <MdQrCode /> QR Code
           </button>
           <button
-            onClick={downloadVCard}
-            className="flex-1 bg-green-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:bg-green-600 transition text-sm border border-green-600"
+            onClick={() => setEditMode(true)}
+            className="flex-1 bg-yellow-500 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:bg-yellow-600 transition text-sm border border-yellow-600"
           >
-            <FaSave /> Save to Contact
+            <FaEdit /> Edit Profile
           </button>
           <button
             onClick={() => copyToClipboard(`${window.location.origin}/p/${profileSlug}`)}
