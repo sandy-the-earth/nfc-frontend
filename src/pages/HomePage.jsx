@@ -32,10 +32,10 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="bg-black flex flex-col items-center px-4 relative">
+    <div className="bg-black text-gray-100 flex flex-col min-h-screen relative">
       <div className="background-glow" />
 
-      <header className="w-full max-w-4xl py-4 flex justify-between items-center z-10">
+      <header className="container mx-auto flex justify-between items-center px-4 py-4 z-10">
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
@@ -47,8 +47,8 @@ export default function HomePage() {
         </button>
       </header>
 
-      <main className="w-full z-10">
-        <section className="min-h-screen flex items-center justify-center">
+      <main className="flex-1 z-10">
+        <section className="container mx-auto min-h-[60vh] flex items-center justify-center px-4">
           <animated.div
             style={entry}
             className="gradient-border rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-2xl md:max-w-3xl lg:max-w-4xl aspect-[4/5] sm:aspect-[16/7] flex items-center justify-center border-2 border-gray-400/60 shadow-2xl bg-black"
@@ -109,7 +109,7 @@ export default function HomePage() {
         </animated.div>
         </section>
 
-        <section className="py-16 max-w-4xl mx-auto space-y-12">
+        <section className="container mx-auto py-16 space-y-12 px-4">
           <div className="text-center space-y-4 px-4">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">What is comma?</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
@@ -157,7 +157,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="w-full max-w-4xl py-4 text-center text-sm text-gray-500 z-10">
+      <footer className="container mx-auto py-4 text-center text-sm text-gray-500 z-10">
         &copy; {new Date().getFullYear()} comma<span className="text-[#D4AF37]">Cards</span> — Continued Relationships.
       </footer>
     </div>
