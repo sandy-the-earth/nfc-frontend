@@ -50,7 +50,7 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="bg-black flex flex-col items-center px-4 relative">
+    <div className="min-h-screen bg-black flex flex-col items-center px-4 relative">
       <div className="background-glow" />
 
       <header className="w-full max-w-4xl py-4 flex justify-between items-center z-10">
@@ -92,7 +92,7 @@ export default function HomePage() {
                   style={{ fontFamily: 'California FB' }}
                   className="text-5xl sm:text-6xl md:text-7xl text-[#D4AF37] font-extrabold leading-none"
                 >
-                  ’
+                  '
                 </span>
               </div>
 
