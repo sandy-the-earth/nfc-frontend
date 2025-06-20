@@ -1,7 +1,7 @@
 // src/pages/HomePage.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBolt } from 'react-icons/fa';
+import { FaBolt, FaUser, FaHandshake } from 'react-icons/fa';
 import { useSpring, useTrail, animated, config } from '@react-spring/web';
 import '../index.css';
 
@@ -118,32 +118,40 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3 px-4">
-            <div className="bg-gray-900 rounded-xl p-6 text-center shadow-lg">
-              <div className="text-[#D4AF37] text-3xl mb-3">
-                <FaBolt />
+            <div className="gradient-border rounded-2xl p-px">
+              <div className="card-container bg-gray-900 rounded-2xl p-6 text-center space-y-3 flex flex-col items-center">
+                <div className="text-[#D4AF37] text-3xl">
+                  <FaBolt />
+                </div>
+                <h3 className="font-semibold text-gray-100">Instant Connections</h3>
+                <p className="text-gray-400 text-sm">
+                  Share your information with a single tap. No apps, no friction—just seamless networking.
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-100 mb-2">Instant Connections</h3>
-              <p className="text-gray-400 text-sm">
-                Share your information with a single tap. No apps, no friction—just seamless networking.
-              </p>
             </div>
-            <div className="bg-gray-900 rounded-xl p-6 text-center shadow-lg">
-              <div className="text-[#D4AF37] text-3xl mb-3">
-                <span className="font-bold">’</span>
+
+            <div className="gradient-border rounded-2xl p-px">
+              <div className="card-container bg-gray-900 rounded-2xl p-6 text-center space-y-3 flex flex-col items-center">
+                <div className="text-[#D4AF37] text-3xl">
+                  <FaUser />
+                </div>
+                <h3 className="font-semibold text-gray-100">Own Your Profile</h3>
+                <p className="text-gray-400 text-sm">
+                  Customize every detail of your digital card and update it anytime—no reprints required.
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-100 mb-2">Own Your Profile</h3>
-              <p className="text-gray-400 text-sm">
-                Customize every detail of your digital card and update it anytime—no reprints required.
-              </p>
             </div>
-            <div className="bg-gray-900 rounded-xl p-6 text-center shadow-lg">
-              <div className="text-[#D4AF37] text-3xl mb-3">
-                <FaBolt className="rotate-90" />
+
+            <div className="gradient-border rounded-2xl p-px">
+              <div className="card-container bg-gray-900 rounded-2xl p-6 text-center space-y-3 flex flex-col items-center">
+                <div className="text-[#D4AF37] text-3xl">
+                  <FaHandshake />
+                </div>
+                <h3 className="font-semibold text-gray-100">Stay Top of Mind</h3>
+                <p className="text-gray-400 text-sm">
+                  Keep conversations going beyond the event and turn new contacts into long-lasting relationships.
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-100 mb-2">Stay Top of Mind</h3>
-              <p className="text-gray-400 text-sm">
-                Keep conversations going beyond the event and turn new contacts into long-lasting relationships.
-              </p>
             </div>
           </div>
         </section>
