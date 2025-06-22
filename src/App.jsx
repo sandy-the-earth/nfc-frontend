@@ -13,6 +13,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardInsightsPage from './pages/DashboardInsightsPage';
 import AdminProfilePage from './pages/AdminProfilePage';
 import keepServerAwake from './utils/keepServerAwake';
+import PlansPage from './pages/PlansPage';
 
 // Theme context for dark/light mode
 const ThemeContext = createContext();
@@ -84,6 +85,9 @@ export default function App() {
           />
           {/* Admin profile details page */}
           <Route path="/admin-7x9q2v4k1b8z6r3p0/profile/:id" element={<AdminProfilePage />} />
+
+          {/* Plans page */}
+          <Route path="/plans" element={<PlansPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />

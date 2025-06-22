@@ -23,6 +23,7 @@ import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useTheme } from '../App';
 import { useSpring, useTransition, animated } from '@react-spring/web';
+import ContactForm from '../components/ContactForm';
 
 // Reusable ContactRow component
 function ContactRow({ icon, label, value, href, onCopy, isTopLink }) {

@@ -327,25 +327,16 @@ const CardContent = memo(function CardContent({
       )}
       {/* Logout Button */}
       {!editMode && (
-        <>
-          <button
-            onClick={() => navigate('/plans')}
-            className="w-40 mx-auto mt-8 mb-2 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-semibold transition block shadow-lg"
-            style={{marginBottom: '8px'}}
-          >
-            Pricing
-          </button>
-          <button
-            onClick={() => {
-              localStorage.removeItem('profileId');
-              window.location.href = '/login';
-            }}
-            className="w-40 mx-auto mb-10 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition block shadow-lg"
-            style={{marginBottom: '32px'}}
-          >
-            Logout
-          </button>
-        </>
+        <button
+          onClick={() => {
+            localStorage.removeItem('profileId');
+            window.location.href = '/login';
+          }}
+          className="w-40 mx-auto mt-10 mb-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition block shadow-lg"
+          style={{marginBottom: '32px'}}
+        >
+          Logout
+        </button>
       )}
       {/* Edit Mode Fields (unchanged) */}
       {editMode && (

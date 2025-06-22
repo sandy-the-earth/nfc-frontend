@@ -45,6 +45,14 @@ export default function DashboardInsightsPage() {
     }
   };
 
+  // Add a fetchInsights function to allow refetching from outside
+  const fetchInsights = () => {
+    if (!profileId) return;
+    axios.get(`${API}/api/profile/${profileId}/insights`)
+      .then(res => setInsights(res.data))
+      .catch(() => setError('Could not load insights'));
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black">Loading insights…</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500">{error}</div>;
 
@@ -118,6 +126,14 @@ export default function DashboardInsightsPage() {
             <FaExchangeAlt className="text-yellow-300 text-xl mb-1" />
             <span className="text-lg font-bold text-white">{insights?.contactExchanges ?? 0}</span>
             <span className="text-xs text-gray-400 mt-1">Contact Exchanges</span>
+            {/* <p className="text-sm text-gray-400 mt-1">
+              {insights?.contactExchanges ?? 0} used / {insights?.contactExchangeLimit === Infinity ? 'Unlimited' : insights?.contactExchangeLimit ?? '-'} total
+            </p> */}
+            <p className="text-xs text-gray-500 mt-4">
+              {insights?.contactExchangeRemaining === 'Unlimited' || insights?.contactExchangeLimit === Infinity
+                ? 'Enjoy your limitless Contact Exchanges!'
+                : `${insights?.contactExchangeRemaining ?? '-'} exchanges left this month.`}
+            </p>
           </div>
           <div className="flex flex-col items-center bg-gray-800 rounded-xl px-4 py-5">
             <FaDownload className="text-purple-300 text-xl mb-1" />
