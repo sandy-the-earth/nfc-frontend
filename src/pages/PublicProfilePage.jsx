@@ -233,7 +233,12 @@ export default function PublicProfilePage() {
   ]
     .filter(Boolean)
     .join('\n');
-  const downloadVCard = () => {
+  const downloadVCard = async () => {
+    try {
+      await axios.post(`${API}/api/public/${activationCode}/contact-download`);
+    } catch (e) {
+      // Ignore errors for UX
+    }
     const blob = new Blob([vCard], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

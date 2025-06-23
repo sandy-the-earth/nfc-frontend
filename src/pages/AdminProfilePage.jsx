@@ -4,6 +4,78 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { FaArrowLeft, FaExchangeAlt, FaDownload, FaLink, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 
+function AdminSubscriptionSetter({ profileId, currentSubscription, onSuccess }) {
+  const [plan, setPlan] = useState(currentSubscription?.plan || 'Novice');
+  const [cycle, setCycle] = useState(currentSubscription?.cycle || 'monthly');
+  const [activatedAt, setActivatedAt] = useState(currentSubscription?.activatedAt ? currentSubscription.activatedAt.slice(0, 10) : '');
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSuccess('');
+    setError('');
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin-bs1978av1123ss2402/profile/${profileId}/subscription`,
+        {
+          plan,
+          cycle,
+          activatedAt: activatedAt || undefined
+        }
+      );
+    
+      setSuccess('Subscription updated!');
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      setError('Failed to update subscription');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-gray-800 rounded-xl p-4 mb-4 flex flex-col gap-3">
+      <div className="flex flex-wrap gap-4 items-center">
+        <label className="text-gray-300">
+          Plan:
+          <select value={plan} onChange={e => setPlan(e.target.value)} className="ml-2 px-2 py-1 rounded bg-gray-900 text-white">
+            <option value="Novice">Novice</option>
+            <option value="Corporate">Corporate</option>
+            <option value="Elite">Elite</option>
+          </select>
+        </label>
+        <label className="text-gray-300">
+          Cycle:
+          <select value={cycle} onChange={e => setCycle(e.target.value)} className="ml-2 px-2 py-1 rounded bg-gray-900 text-white">
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+          </select>
+        </label>
+        <label className="text-gray-300">
+          Activation Date:
+          <input
+            type="date"
+            value={activatedAt}
+            onChange={e => setActivatedAt(e.target.value)}
+            className="ml-2 px-2 py-1 rounded bg-gray-900 text-white"
+          />
+        </label>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : 'Save Subscription'}
+        </button>
+      </div>
+      {success && <div className="text-green-400 text-sm">{success}</div>}
+      {error && <div className="text-red-400 text-sm">{error}</div>}
+    </div>
+  );
+}
+
 export default function AdminProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
@@ -63,6 +135,15 @@ export default function AdminProfilePage() {
           <div className="w-8" /> {/* Spacer for symmetry */}
         </div>
 
+        {/* Admin Subscription Setter */}
+        {profile && (
+          <AdminSubscriptionSetter
+            profileId={profile._id}
+            currentSubscription={profile.subscription}
+            onSuccess={() => window.location.reload()}
+          />
+        )}
+
         {/* Admin Controls */}
         <div className="px-6 pt-6 pb-4 border-b border-gray-800">
           <div className="flex items-center justify-between mb-4">
@@ -119,7 +200,19 @@ export default function AdminProfilePage() {
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
             <span className="bg-gray-700 rounded-full p-2 mr-3"><FaExchangeAlt className="text-blue-300" /></span>
             <span className="flex-1 text-white font-medium">Contact Exchanges</span>
-            <span className="text-lg font-bold text-white">{insights?.contactExchanges ?? 0}</span>
+            <span className="text-lg font-bold text-white">{typeof insights?.contactExchanges === 'object' && insights?.contactExchanges !== null ? insights.contactExchanges.count : insights?.contactExchanges ?? 0}</span>
+          </div>
+          {/* Contact Exchange Remaining */}
+          <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
+            <span className="bg-gray-700 rounded-full p-2 mr-3"></span>
+            <span className="flex-1 text-gray-400 text-xs">Exchanges Left This Month</span>
+            <span className="text-xs text-gray-300">
+              {insights?.contactExchangeRemaining === 'Unlimited' || insights?.contactExchangeLimit === Infinity
+                ? 'Unlimited'
+                : (typeof insights?.contactExchangeRemaining === 'object' && insights?.contactExchangeRemaining !== null
+                    ? insights.contactExchangeRemaining.count
+                    : insights?.contactExchangeRemaining ?? '-')}
+            </span>
           </div>
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
             <span className="bg-gray-700 rounded-full p-2 mr-3"><FaDownload className="text-purple-300" /></span>
