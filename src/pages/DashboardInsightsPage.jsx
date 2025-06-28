@@ -134,7 +134,7 @@ export default function DashboardInsightsPage() {
                     } exchanges left this month.`}
               </div>
             ) },
-            { icon: <FaDownload />,   label: 'Contact Downloads', value: insights.contactSaves },
+            { icon: <FaDownload />,   label: 'Contact Downloads', value: insights.contactDownloads ?? 0 },
           ].map((m, i) => (
             <div key={i} className="flex flex-col items-center justify-center bg-white/5 p-4 rounded-xl h-full text-center">
               <div className="flex justify-center items-center mb-2 text-2xl text-indigo-300">{m.icon}</div>
@@ -148,7 +148,7 @@ export default function DashboardInsightsPage() {
           <div className="col-span-full flex justify-center bg-white/5 p-4 rounded-xl">
             <div className="flex flex-col items-center">
               <FaLink className="text-2xl text-indigo-300 mb-2" />
-              <div className="text-xl font-bold text-white">{insights.totalLinkTaps}</div>
+              <div className="text-xl font-bold text-white">{insights.totalLinkTaps ?? 0}</div>
               <div className="text-xs text-gray-300">Total Link Taps</div>
             </div>
           </div>
@@ -156,12 +156,31 @@ export default function DashboardInsightsPage() {
             <div className="flex flex-col items-center">
               <FaStar className="text-2xl text-indigo-300 mb-2" />
               <div className="text-xl font-bold text-white">
-                {insights.mostPopularContactMethod?.[0].toUpperCase() + insights.mostPopularContactMethod?.slice(1)}
+                {insights.topLink
+                  ? insights.topLink
+                  : insights.mostPopularContactMethod
+                    ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1)
+                    : '—'}
               </div>
               <div className="text-xs text-gray-300">Top Contact Method</div>
             </div>
           </div>
         </section>
+
+        {/* Per-link tap counts */}
+        {insights.linkClicks && Object.keys(insights.linkClicks).length > 0 && (
+          <section className="px-6 py-5 border-t border-white/20">
+            <h4 className="text-md font-semibold text-white mb-2">Link Tap Breakdown</h4>
+            <ul className="space-y-2">
+              {Object.entries(insights.linkClicks).map(([link, count]) => (
+                <li key={link} className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-2 text-gray-200">
+                  <span className="truncate max-w-[60%]" title={link}>{link}</span>
+                  <span className="font-bold text-indigo-300">{count}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Timestamps */}
         <section className="px-6 py-5 border-t border-white/20">

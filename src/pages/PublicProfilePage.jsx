@@ -179,6 +179,10 @@ export default function PublicProfilePage() {
   const postLinkTap = async (link) => {
     try {
       await axios.post(`${API}/api/public/${activationCode}/link-tap`, { link });
+      // Only refetch insights, not the profile
+      setTimeout(() => {
+        axios.get(`${API}/api/public/${activationCode}/insights`).then(res => setInsights(res.data));
+      }, 300);
     } catch (e) {
       // Ignore errors for UX
     }
@@ -414,6 +418,7 @@ export default function PublicProfilePage() {
               href={website.startsWith('http') ? website : `https://${website}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => { postLinkTap(website.startsWith('http') ? website : `https://${website}`); }}
               className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
               style={{
                 background: darkMode
@@ -437,6 +442,7 @@ export default function PublicProfilePage() {
               href={`https://instagram.com/${socialLinks.instagram}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => { postLinkTap(`https://instagram.com/${socialLinks.instagram}`); }}
               className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
               style={{
                 background: darkMode
@@ -460,6 +466,7 @@ export default function PublicProfilePage() {
               href={`https://linkedin.com/in/${socialLinks.linkedin}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => { postLinkTap(`https://linkedin.com/in/${socialLinks.linkedin}`); }}
               className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
               style={{
                 background: darkMode
@@ -483,6 +490,7 @@ export default function PublicProfilePage() {
               href={`https://twitter.com/${socialLinks.twitter}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => { postLinkTap(`https://twitter.com/${socialLinks.twitter}`); }}
               className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
               style={{
                 background: darkMode

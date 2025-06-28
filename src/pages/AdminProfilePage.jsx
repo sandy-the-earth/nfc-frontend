@@ -217,7 +217,7 @@ export default function AdminProfilePage() {
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
             <span className="bg-gray-700 rounded-full p-2 mr-3"><FaDownload className="text-purple-300" /></span>
             <span className="flex-1 text-white font-medium">Contact Downloads</span>
-            <span className="text-lg font-bold text-white">{insights?.contactSaves ?? 0}</span>
+            <span className="text-lg font-bold text-white">{insights?.contactDownloads ?? 0}</span>
           </div>
           <div className="flex items-center bg-gray-800 rounded-xl px-4 py-3 mb-1">
             <span className="bg-gray-700 rounded-full p-2 mr-3"><FaLink className="text-green-300" /></span>
