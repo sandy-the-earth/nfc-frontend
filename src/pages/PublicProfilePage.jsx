@@ -25,6 +25,13 @@ import { useTheme } from '../App';
 import { useSpring, useTransition, animated } from '@react-spring/web';
 import ContactForm from '../components/ContactForm';
 
+// Subscription-based field restrictions
+const PLAN_FIELDS = {
+  Novice: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin'],
+  Corporate: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin', 'industry', 'website'],
+  Elite: [] // All fields available
+};
+
 // Reusable ContactRow component
 function ContactRow({ icon, label, value, href, onCopy, isTopLink }) {
   return (
@@ -136,19 +143,48 @@ export default function PublicProfilePage() {
     config: { tension: 300, friction: 25 }
   });
 
-  // Fetch public profile
+  // Fetch public profile and insights in parallel, set loading to false as soon as profile is fetched
   useEffect(() => {
-    axios
-      .get(`${API}/api/public/${activationCode}`)
-      .then(res => setProfile(res.data))
-      .catch(() => setProfile(null))
-      .finally(() => setLoading(false));
-    // Fetch insights
-    axios
-      .get(`${API}/api/public/${activationCode}/insights`)
-      .then(res => setInsights(res.data))
-      .catch(() => setInsights(null));
+    let isMounted = true;
+    setLoading(true);
+    Promise.all([
+      axios.get(`${API}/api/public/${activationCode}`),
+      axios.get(`${API}/api/public/${activationCode}/insights`).catch(() => null)
+    ]).then(([profileRes, insightsRes]) => {
+      if (!isMounted) return;
+      setProfile(profileRes.data);
+      setInsights(insightsRes ? insightsRes.data : null);
+    }).catch(() => {
+      if (!isMounted) return;
+      setProfile(null);
+      setInsights(null);
+    }).finally(() => {
+      if (!isMounted) return;
+      setLoading(false);
+    });
+    return () => { isMounted = false; };
   }, [activationCode, API]);
+
+  // Only destructure profile fields after loading is complete and profile is not null
+  let bannerUrl = '', avatarUrl = '', name = '', title = '', subtitle = '', tags = [], location = '', email = '', phone = '', website = '', socialLinks = {}, createdAt = '', industry = '', exclusiveBadge = undefined;
+  if (!loading && profile) {
+    ({
+      bannerUrl = '',
+      avatarUrl = '',
+      name = '',
+      title = '',
+      subtitle = '',
+      tags = [],
+      location = '',
+      email = '',
+      phone = '',
+      website = '',
+      socialLinks = {},
+      createdAt = '',
+      industry = '',
+      exclusiveBadge = undefined
+    } = profile);
+  }
 
   // Copy helper
   const copyToClipboard = txt => {
@@ -188,70 +224,6 @@ export default function PublicProfilePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="animate-pulse text-gray-500">Loading profile…</div>
-      </div>
-    );
-  }
-  if (!profile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="text-red-500">Profile not found.</div>
-      </div>
-    );
-  }
-
-  const {
-    bannerUrl,
-    avatarUrl,
-    name,
-    title,
-    subtitle,
-    tags = [],
-    location,
-    email,
-    phone,
-    website,
-    socialLinks = {},
-    createdAt,
-    exclusiveBadge // <-- get badge from profile
-  } = profile;
-
-  // Generate vCard
-  const vCard = [
-    'BEGIN:VCARD',
-    'VERSION:3.0',
-    `FN:${name}`,
-    `TITLE:${title || ''}`,
-    `ORG:${subtitle || ''}`,
-    `EMAIL;TYPE=work:${email || ''}`,
-    phone && `TEL;TYPE=CELL:${phone}`,
-    `URL:${FRONTEND}/p/${activationCode}`,
-    socialLinks.instagram && `X-SOCIALPROFILE;type=instagram:https://instagram.com/${socialLinks.instagram}`,
-    socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${socialLinks.linkedin}`,
-    socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${socialLinks.twitter}`,
-    website && `URL;type=work:${website}`,
-    'END:VCARD'
-  ]
-    .filter(Boolean)
-    .join('\n');
-  const downloadVCard = async () => {
-    try {
-      await axios.post(`${API}/api/public/${activationCode}/contact-download`);
-    } catch (e) {
-      // Ignore errors for UX
-    }
-    const blob = new Blob([vCard], { type: 'text/vcard' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name.replace(/\s+/g, '_')}.vcf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   // Helper to get the correct profile URL (customSlug or activationCode)
   const getProfileUrl = () => {
     const slug = profile.customSlug || activationCode;
@@ -262,6 +234,42 @@ export default function PublicProfilePage() {
   const topLink = insights?.topLink;
   const mostPopularContactMethod = insights?.mostPopularContactMethod;
   const totalLinkTaps = insights?.totalLinkTaps;
+
+  // Add Elite plan check
+  const isElite = insights?.subscription?.plan === 'Elite';
+
+  // Download vCard helper
+  const downloadVCard = async () => {
+    try {
+      await axios.post(`${API}/api/public/${activationCode}/contact-download`);
+    } catch (e) {
+      // Ignore errors for UX
+    }
+    const vCard = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${name}`,
+      `TITLE:${title || ''}`,
+      `ORG:${subtitle || ''}`,
+      `EMAIL;TYPE=work:${email || ''}`,
+      phone && `TEL;TYPE=CELL:${phone}`,
+      `URL:${FRONTEND}/p/${activationCode}`,
+      socialLinks.instagram && `X-SOCIALPROFILE;type=instagram:https://instagram.com/${socialLinks.instagram}`,
+      socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${socialLinks.linkedin}`,
+      socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${socialLinks.twitter}`,
+      website && `URL;type=work:${website}`,
+      'END:VCARD'
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const blob = new Blob([vCard], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, '_')}.vcf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Card content JSX
   const CardContent = () => (
@@ -311,14 +319,16 @@ export default function PublicProfilePage() {
           <h1 className="text-2xl font-bold dark:text-white">{name}</h1>
           {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
           {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
-          {profile.industry && (
+          {/* Industry */}
+          {industry && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('industry')) && (
             <div className="flex justify-center mt-2">
               <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-blue-400 via-blue-600 to-blue-800 text-white text-xs font-semibold shadow-lg border border-blue-300 dark:border-blue-700 tracking-wide">
-                {profile.industry}
+                {industry}
               </span>
             </div>
           )}
-          {tags.length > 0 && (
+          {/* Tags */}
+          {tags.length > 0 && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('tags')) && (
             <div className="flex flex-wrap justify-center gap-1 mt-2">
               {tags.map(t => (
                 <span
@@ -339,6 +349,14 @@ export default function PublicProfilePage() {
                   {t}
                 </span>
               ))}
+            </div>
+          )}
+          {/* Location */}
+          {location && (isElite) && (
+            <div className="flex justify-center mt-2">
+              <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-400 via-pink-600 to-pink-800 text-white text-xs font-semibold shadow-lg border border-pink-300 dark:border-pink-700 tracking-wide">
+                <FaMapMarkerAlt className="inline mr-1" />{location}
+              </span>
             </div>
           )}
         </div>
@@ -367,6 +385,7 @@ export default function PublicProfilePage() {
 
         {/* Contact Rows */}
         <div className="px-6 mt-4 space-y-2">
+          {/* Email - always shown */}
           {email && (
             <a
               href={`mailto:${email}`}
@@ -390,7 +409,8 @@ export default function PublicProfilePage() {
               <FaEnvelope className="mr-2 text-blue-500 dark:text-blue-400" />{email}
             </a>
           )}
-          {phone && (
+          {/* Phone */}
+          {phone && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('phone')) && (
             <a
               href={`tel:${phone}`}
               target="_blank"
@@ -413,7 +433,8 @@ export default function PublicProfilePage() {
               <FaPhone className="mr-2 text-green-500 dark:text-green-400" />{phone}
             </a>
           )}
-          {website && (
+          {/* Website */}
+          {website && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('website')) && (
             <a
               href={website.startsWith('http') ? website : `https://${website}`}
               target="_blank"
@@ -437,7 +458,8 @@ export default function PublicProfilePage() {
               <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{website}
             </a>
           )}
-          {socialLinks.instagram && (
+          {/* Instagram */}
+          {socialLinks.instagram && (isElite) && (
             <a
               href={`https://instagram.com/${socialLinks.instagram}`}
               target="_blank"
@@ -461,7 +483,8 @@ export default function PublicProfilePage() {
               <FaInstagram className="mr-2 text-pink-500 dark:text-pink-400" />{socialLinks.instagram}
             </a>
           )}
-          {socialLinks.linkedin && (
+          {/* LinkedIn */}
+          {socialLinks.linkedin && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('linkedin')) && (
             <a
               href={`https://linkedin.com/in/${socialLinks.linkedin}`}
               target="_blank"
@@ -485,7 +508,8 @@ export default function PublicProfilePage() {
               <FaLinkedin className="mr-2 text-blue-700 dark:text-blue-300" />{socialLinks.linkedin}
             </a>
           )}
-          {socialLinks.twitter && (
+          {/* Twitter */}
+          {socialLinks.twitter && (isElite) && (
             <a
               href={`https://twitter.com/${socialLinks.twitter}`}
               target="_blank"
@@ -509,26 +533,6 @@ export default function PublicProfilePage() {
               <FaTwitter className="mr-2 text-blue-400 dark:text-blue-200" />{socialLinks.twitter}
             </a>
           )}
-          {location && (
-            <span
-              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 flex items-center gap-2"
-              style={{
-                background: darkMode
-                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
-                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
-                color: darkMode ? '#e0e0e0' : '#232323',
-                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
-                boxShadow: darkMode
-                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
-                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
-                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
-                minHeight: '44px',
-              }}
-            >
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Location</span>
-              <FaMapMarkerAlt className="mr-2 text-gray-600 dark:text-gray-400" />{location}
-            </span>
-          )}
         </div>
 
         {/* Insights Summary - below contact rows */}
@@ -549,6 +553,25 @@ export default function PublicProfilePage() {
       </div>
     </>
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="animate-spin-slow">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" stroke="#D4AF37" strokeWidth="6" opacity="0.2" />
+            <path d="M44 32c0 6.627-5.373 12-12 12S20 38.627 20 32 25.373 20 32 20c2.21 0 4 1.79 4 4s-1.79 4-4 4c-2.21 0-4 1.79-4 4s1.79 4 4 4c4.418 0 8-3.582 8-8" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+              <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="1s" repeatCount="indefinite" />
+            </path>
+          </svg>
+        </div>
+        <style>{`
+          @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+          .animate-spin-slow { animation: spin-slow 1s linear infinite; }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800">

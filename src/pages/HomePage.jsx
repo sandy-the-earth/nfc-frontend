@@ -192,20 +192,6 @@ export default function HomePage() {
         <div className="text-2xl font-extrabold text-gray-200">
           comma<span className="text-[#D4AF37]">Cards</span>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => navigate('/plans')}
-            className="px-4 py-2 bg-gray-900 text-[#D4AF37] rounded-lg font-semibold hover:bg-gray-800 transition"
-          >
-            Pricing
-          </button>
-          <button
-            onClick={() => navigate('/login')}
-            className="px-4 py-2 bg-[#D4AF37] text-black rounded-lg font-semibold hover:bg-[#b4972a] transition"
-          >
-            Login
-          </button>
-        </div>
       </header>
 
       <main className="flex-1 z-10">
@@ -230,12 +216,18 @@ export default function HomePage() {
                 className="bg-black w-full h-full rounded-2xl sm:rounded-3xl flex flex-col justify-center items-center"
               >
                 <div className="flex justify-center mt-2 mb-2 sm:mt-1 sm:mb-1">
-                  <span
-                    style={{ fontFamily: 'California FB' }}
-                    className="text-5xl sm:text-6xl md:text-7xl text-[#D4AF37] font-extrabold leading-none sm:leading-none"
+                  <svg
+                    width="32" height="32" viewBox="0 0 32 32"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="block"
+                    style={{ display: 'block' }}
                   >
-                    ’
-                  </span>
+                    <path
+                      d="M16 6c4 0 6 2.5 6 6 0 2.5-1.5 4.5-4 5.5 1.5 1 2.5 2.5 2.5 4.5 0 2-1.5 3-3 3s-3-1-3-3c0-2 1-3.5 2.5-4.5C11.5 16.5 10 14.5 10 12c0-3.5 2-6 6-6z"
+                      fill="#D4AF37"
+                    />
+                  </svg>
                 </div>
 
                 <div className="text-center space-y-2 sm:space-y-3 w-full">
@@ -249,20 +241,26 @@ export default function HomePage() {
 
                 <animated.div
                   style={trail[2]}
-                  className="flex flex-col gap-3 mt-6 mb-1 w-full sm:flex-row sm:justify-center sm:items-center sm:gap-8 md:gap-12 px-2"
+                  className="flex flex-col gap-3 mt-6 mb-1 w-full sm:flex-row sm:justify-center sm:items-center sm:gap-4 md:gap-6 px-2"
                 >
                   <button
                     onClick={() => navigate('/activate')}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-4 md:px-14 md:py-5 bg-gray-900 text-[#D4AF37] rounded-full text-lg sm:text-xl md:text-2xl font-bold hover:bg-gray-800 transition shadow"
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-gray-900 text-[#D4AF37] rounded-full text-base sm:text-lg md:text-xl font-bold hover:bg-gray-800 transition shadow"
                   >
-                    <FaBolt size={26} /> Activate
+                    <FaBolt size={20} /> Activate
                   </button>
-                  {/* <button
+                  <button
                     onClick={() => navigate('/login')}
-                    className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-4 md:px-14 md:py-5 bg-gray-900 text-gray-200 rounded-full text-lg sm:text-xl md:text-2xl font-bold hover:bg-gray-800 transition shadow"
+                    className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-[#D4AF37] text-black rounded-full text-base sm:text-lg md:text-xl font-bold hover:bg-[#b4972a] transition shadow"
                   >
                     Login
-                  </button> */}
+                  </button>
+                  <button
+                    onClick={() => navigate('/plans')}
+                    className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3 md:px-10 md:py-4 bg-gray-900 text-[#D4AF37] rounded-full text-base sm:text-lg md:text-xl font-bold hover:bg-gray-800 transition shadow"
+                  >
+                    Pricing
+                  </button>
                 </animated.div>
               </animated.div>
             </div>

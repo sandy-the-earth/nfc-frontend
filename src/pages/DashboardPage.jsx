@@ -15,7 +15,8 @@ import {
   FaRegCopy,
   FaMoon,
   FaSun,
-  FaEdit
+  FaEdit,
+  FaLock
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
@@ -54,6 +55,27 @@ const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }
   );
 });
 
+// Subscription-based field restrictions
+const PLAN_FIELDS = {
+  Novice: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin'],
+  Corporate: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin', 'industry', 'website'],
+  Elite: [] // All fields available
+};
+
+const ALL_FIELDS = [
+  { key: 'name', label: 'Name', type: 'text', placeholder: 'e.g. Jane Doe' },
+  { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. CEO' },
+  { key: 'subtitle', label: 'Subtitle / Organization', type: 'text', placeholder: 'e.g. Acme Inc.' },
+  { key: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'e.g. Marketing, Networking, SaaS' },
+  { key: 'phone', label: 'Phone', type: 'tel', placeholder: 'e.g. +91 9876543210' },
+  { key: 'website', label: 'Website', type: 'url', placeholder: 'e.g. https://yourcompany.com' },
+  { key: 'instagram', label: 'Instagram', type: 'text', placeholder: 'e.g. yourhandle' },
+  { key: 'linkedin', label: 'LinkedIn', type: 'text', placeholder: 'e.g. your-linkedin-url-id' },
+  { key: 'twitter', label: 'Twitter', type: 'text', placeholder: 'e.g. yourhandle' },
+  { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' },
+  { key: 'industry', label: 'Industry', type: 'select', placeholder: 'Select an industry' }
+];
+
 // Extracted CardContent to top-level to preserve input focus
 const CardContent = memo(function CardContent({
   API,
@@ -76,10 +98,14 @@ const CardContent = memo(function CardContent({
   isDashboard,
   saveProfile,
   handleFileInput,
-  uiStyle
+  uiStyle,
+  subscription,
+  navigate
 }) {
   // Use backend-provided slug for all links
   const profileSlug = profile.slug || profile.customSlug || profile.activationCode;
+  const plan = subscription?.plan || 'Novice';
+  
   return (
     <>
       {/* Theme toggle */}
@@ -207,7 +233,11 @@ const CardContent = memo(function CardContent({
                   ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
                   : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
                 color: theme === 'dark' ? '#e0e0e0' : '#232323',
-                border: theme === 'dark' ? '1px solid #23272f' : '1px solid #bdbdbd',
+                textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+                boxShadow: theme === 'dark'
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
                 minHeight: '44px',
               }}
             >
@@ -226,7 +256,11 @@ const CardContent = memo(function CardContent({
                   ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
                   : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
                 color: theme === 'dark' ? '#e0e0e0' : '#232323',
-                border: theme === 'dark' ? '1px solid #23272f' : '1px solid #bdbdbd',
+                textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+                boxShadow: theme === 'dark'
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
                 minHeight: '44px',
               }}
             >
@@ -234,7 +268,7 @@ const CardContent = memo(function CardContent({
               <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{profile.website}
             </a>
           )}
-          {profile.socialLinks?.instagram && (
+          {profile.socialLinks && profile.socialLinks.instagram && (
             <a
               href={`https://instagram.com/${profile.socialLinks.instagram}`}
               target="_blank"
@@ -257,7 +291,7 @@ const CardContent = memo(function CardContent({
               <FaInstagram className="mr-2 text-pink-500 dark:text-pink-400" />{profile.socialLinks.instagram}
             </a>
           )}
-          {profile.socialLinks?.linkedin && (
+          {profile.socialLinks && profile.socialLinks.linkedin && (
             <a
               href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
               target="_blank"
@@ -280,7 +314,7 @@ const CardContent = memo(function CardContent({
               <FaLinkedin className="mr-2 text-blue-700 dark:text-blue-300" />{profile.socialLinks.linkedin}
             </a>
           )}
-          {profile.socialLinks?.twitter && (
+          {profile.socialLinks && profile.socialLinks.twitter && (
             <a
               href={`https://twitter.com/${profile.socialLinks.twitter}`}
               target="_blank"
@@ -338,144 +372,64 @@ const CardContent = memo(function CardContent({
           Logout
         </button>
       )}
-      {/* Edit Mode Fields (unchanged) */}
+      {/* Edit Mode Fields with Subscription Restrictions */}
       {editMode && (
         <div className="px-6 pt-4 pb-6 space-y-4 text-left">
-          {/* Name */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="e.g. Jane Doe"
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            />
-          </div>
-          {/* Title */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Title</label>
-            <input
-              type="text"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              placeholder="e.g. CEO"
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            />
-          </div>
-          {/* Subtitle */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Subtitle / Organization</label>
-            <input
-              type="text"
-              name="subtitle"
-              value={form.subtitle}
-              onChange={handleChange}
-              placeholder="e.g. Acme Inc."
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            />
-          </div>
-          {/* Tags */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Tags (comma-separated)</label>
-            <input
-              type="text"
-              name="tags"
-              value={form.tags.join(', ')}
-              onChange={handleChange}
-              placeholder="e.g. Marketing, Networking, SaaS"
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            />
-          </div>
-          {/* Phone */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="e.g. +91 9876543210"
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            />
-          </div>
-          {/* Website */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Website</label>
-            <input
-              type="url"
-              name="website"
-              value={form.website}
-              onChange={handleChange}
-              placeholder="e.g. https://yourcompany.com"
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            />
-          </div>
-          {/* Social + Location */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Instagram</label>
-              <input
-                type="text"
-                name="instagram"
-                value={form.socialLinks.instagram}
-                onChange={handleChange}
-                placeholder="e.g. yourhandle"
-                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">LinkedIn</label>
-              <input
-                type="text"
-                name="linkedin"
-                value={form.socialLinks.linkedin}
-                onChange={handleChange}
-                placeholder="e.g. your-linkedin-url-id"
-                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Twitter</label>
-              <input
-                type="text"
-                name="twitter"
-                value={form.socialLinks.twitter}
-                onChange={handleChange}
-                placeholder="e.g. yourhandle"
-                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="e.g. San Francisco, CA"
-                className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-              />
-            </div>
-          </div>
-          {/* Industry Selection */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Industry</label>
-            <select
-              name="industry"
-              value={form.industry || ''}
-              onChange={handleChange}
-              className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
-            >
-              <option value="" disabled>Select an industry</option>
-              {industries.map(ind => (
-                <option key={ind} value={ind}>{ind}</option>
-              ))}
-            </select>
-          </div>
-          {/* File uploads */}
+          {/* Render fields based on subscription plan */}
+          {ALL_FIELDS.map(({ key, label, type, placeholder }) => {
+            const isAllowed = PLAN_FIELDS[plan]?.includes(key) || plan === 'Elite';
+            
+            if (isAllowed) {
+              // Render normal input field
+              if (type === 'select') {
+                return (
+                  <div key={key} className="space-y-2">
+                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">{label}</label>
+                    <select
+                      name={key}
+                      value={form[key] || ''}
+                      onChange={handleChange}
+                      className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
+                    >
+                      <option value="" disabled>{placeholder}</option>
+                      {key === 'industry' && industries.map(ind => (
+                        <option key={ind} value={ind}>{ind}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              } else {
+                return (
+                  <div key={key} className="space-y-2">
+                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">{label}</label>
+                    <input
+                      type={type}
+                      name={key}
+                      value={key === 'tags' ? form[key].join(', ') : (key === 'instagram' || key === 'linkedin' || key === 'twitter' ? form.socialLinks[key] : form[key])}
+                      onChange={handleChange}
+                      placeholder={placeholder}
+                      className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
+                    />
+                  </div>
+                );
+              }
+            } else {
+              // Render locked field
+              return (
+                <div key={key} className="locked-field flex justify-between items-center p-3 mb-2 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <span className="text-sm font-medium">{label}</span>
+                  <button 
+                    onClick={() => navigate('/plans')}
+                    className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-sm"
+                  >
+                    <FaLock className="text-xs" /> Upgrade to use
+                  </button>
+                </div>
+              );
+            }
+          })}
+          
+          {/* File uploads - always available */}
           <div className="grid grid-cols-2 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Change Banner</label>  
@@ -755,7 +709,18 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="animate-pulse text-gray-500">Loading profile…</div>
+        <div className="animate-spin-slow">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" stroke="#D4AF37" strokeWidth="6" opacity="0.2" />
+            <path d="M44 32c0 6.627-5.373 12-12 12S20 38.627 20 32 25.373 20 32 20c2.21 0 4 1.79 4 4s-1.79 4-4 4c-2.21 0-4 1.79-4 4s1.79 4 4 4c4.418 0 8-3.582 8-8" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+              <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="1s" repeatCount="indefinite" />
+            </path>
+          </svg>
+        </div>
+        <style>{`
+          @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+          .animate-spin-slow { animation: spin-slow 1s linear infinite; }
+        `}</style>
       </div>
     );
   }
@@ -841,6 +806,8 @@ export default function DashboardPage() {
               saveProfile={saveProfile}
               handleFileInput={handleFileInput}
               uiStyle={uiStyle}
+              subscription={profile.subscription}
+              navigate={navigate}
             />
           </div>
           {/* Back Face (edit mode) */}
@@ -850,7 +817,7 @@ export default function DashboardPage() {
               background: darkMode
                 ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
                 : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
-              border: darkMode ? '1.5px solid #23272f' : '1.5px solid #bdbdbd',
+              border: darkMode ? '1.5px solid #23272f' : '1px solid #bdbdbd',
               boxShadow: darkMode
                 ? '0 4px 32px 0 #000a, 0 2px 0 #23272f'
                 : '0 4px 32px 0 #e0e0e0cc, 0 2px 0 #bdbdbd',
@@ -882,6 +849,8 @@ export default function DashboardPage() {
               saveProfile={saveProfile}
               handleFileInput={handleFileInput}
               uiStyle={uiStyle}
+              subscription={profile.subscription}
+              navigate={navigate}
             />
           </div>
         </animated.div>
