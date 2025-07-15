@@ -554,6 +554,7 @@ export default function PublicProfilePage() {
     </>
   );
 
+  // Show loading animation while fetching profile
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">

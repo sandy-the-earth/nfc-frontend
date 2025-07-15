@@ -162,7 +162,7 @@ const CardContent = memo(function CardContent({
                 style={{
                   background: theme === 'dark'
                     ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
-                    : 'linear-gradient(120deg, #e6e6e6 0%, #f5f5f5 40%, #bdbdbd 100%)',
+                    : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
                   color: theme === 'dark' ? '#e0e0e0' : '#232323',
                   textShadow: theme === 'dark' ? '0 1px 2px #000a, 0 0.5px 0 #23272f' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
                   boxShadow: theme === 'dark'
@@ -377,8 +377,10 @@ const CardContent = memo(function CardContent({
         <div className="px-6 pt-4 pb-6 space-y-4 text-left">
           {/* Render fields based on subscription plan */}
           {ALL_FIELDS.map(({ key, label, type, placeholder }) => {
-            const isAllowed = PLAN_FIELDS[plan]?.includes(key) || plan === 'Elite';
-            
+            // Normalize plan string to match PLAN_FIELDS keys
+            const normalizedPlan = (plan && PLAN_FIELDS[plan]) ? plan : 'Novice';
+            const isElite = normalizedPlan === 'Elite';
+            const isAllowed = isElite || PLAN_FIELDS[normalizedPlan]?.includes(key);
             if (isAllowed) {
               // Render normal input field
               if (type === 'select') {

@@ -1,6 +1,6 @@
 // src/pages/DashboardInsightsPage.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
@@ -22,6 +22,11 @@ export default function DashboardInsightsPage() {
   const profileId = localStorage.getItem('profileId');
   const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const navigate = useNavigate();
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [deactivateInput, setDeactivateInput] = useState('');
+  const [deactivating, setDeactivating] = useState(false);
+  const [deactivateError, setDeactivateError] = useState(null);
+  const deactivateInputRef = useRef(null);
 
   useEffect(() => {
     if (!profileId) return navigate('/login', { replace: true });
@@ -39,6 +44,21 @@ export default function DashboardInsightsPage() {
       .catch(() => setError('Could not load insights'))
       .finally(() => setLoading(false));
   }, [API, profileId]);
+
+  const handleDeactivateProfile = async () => {
+    setDeactivating(true);
+    setDeactivateError(null);
+    try {
+      await axios.patch(`${API}/api/profile/${profileId}/deactivate`, { active: false });
+      setShowDeactivateModal(false);
+      setDeactivateInput('');
+      window.location.reload(); // Or navigate to login/dashboard if preferred
+    } catch (err) {
+      setDeactivateError('Error deactivating profile');
+    } finally {
+      setDeactivating(false);
+    }
+  };
 
   if (loading) return (
     <div className="h-screen flex items-center justify-center bg-gray-900 text-gray-200">
@@ -190,6 +210,52 @@ export default function DashboardInsightsPage() {
             <p>Updated:     {new Date(insights.updatedAt).toLocaleString()}</p>
           </div>
         </section>
+
+        {/* Deactivate Profile Button */}
+        <div className="px-6 py-5 border-t border-white/20 flex flex-col items-center">
+          <button
+            onClick={() => setShowDeactivateModal(true)}
+            className="w-full max-w-xs bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition shadow-lg"
+          >
+            Deactivate Profile
+          </button>
+        </div>
+
+        {/* Deactivate Profile Confirmation Modal */}
+        {showDeactivateModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-sm text-center">
+              <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Deactivate Profile</h2>
+              <p className="mb-4 text-gray-700 dark:text-gray-300">Type <span className="font-mono font-bold text-red-600">deactivate</span> to confirm. This will hide your profile from public view. You can reactivate by contacting support.</p>
+              <input
+                ref={deactivateInputRef}
+                type="text"
+                className="w-full px-3 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-900 dark:text-white"
+                placeholder="Type 'deactivate' to confirm"
+                value={deactivateInput}
+                onChange={e => setDeactivateInput(e.target.value)}
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => { setShowDeactivateModal(false); setDeactivateInput(''); }}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                  disabled={deactivating}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeactivateProfile}
+                  className={`px-4 py-2 bg-red-600 text-white rounded-lg font-semibold transition ${deactivateInput !== 'deactivate' || deactivating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'}`}
+                  disabled={deactivateInput !== 'deactivate' || deactivating}
+                >
+                  {deactivating ? 'Deactivating...' : 'Deactivate'}
+                </button>
+              </div>
+              {deactivateError && <div className="mt-2 text-red-500 text-sm">{deactivateError}</div>}
+            </div>
+          </div>
+        )}
 
         {/* Back Button */}
         <footer className="px-6 py-5 border-t border-white/20">
