@@ -38,7 +38,7 @@ function ContactForm({ profileId, onSuccess }) {
           disabled={isSubmitting}
           className="bg-black text-white p-2 rounded-md"
         >
-          {isSubmitting ? 'Submitting...' : 'Exchange Contact'}
+          {isSubmitting ? 'Sharing...' : 'Exchange Contact'}
         </button>
       </form>
 
