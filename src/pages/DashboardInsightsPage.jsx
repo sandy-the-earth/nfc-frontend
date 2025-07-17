@@ -40,10 +40,33 @@ export default function DashboardInsightsPage() {
     if (!profileId) return;
     axios
       .get(`${API}/api/profile/${profileId}/insights`)
-      .then(res => setInsights(res.data))
+      .then(res => {
+        setInsights(res.data);
+        // If insightVisibility is missing, fallback to all true (for backward compatibility)
+        setInsightVisibility(res.data.insightVisibility || {
+          uniqueVisitors: true,
+          totalViews: true,
+          contactExchanges: true,
+          contactDownloads: true,
+          totalLinkTaps: true,
+          topLink: true,
+          linkClicks: true,
+        });
+      })
       .catch(() => setError('Could not load insights'))
       .finally(() => setLoading(false));
   }, [API, profileId]);
+
+  // Add state for insightVisibility
+  const [insightVisibility, setInsightVisibility] = useState({
+    uniqueVisitors: true,
+    totalViews: true,
+    contactExchanges: true,
+    contactDownloads: true,
+    totalLinkTaps: true,
+    topLink: true,
+    linkClicks: true,
+  });
 
   const handleDeactivateProfile = async () => {
     setDeactivating(true);
@@ -142,9 +165,9 @@ export default function DashboardInsightsPage() {
         {/* Metrics Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-6 py-5 border-t border-white/20">
           {[
-            { icon: <FaUsers />,     label: 'Unique Visitors',   value: insights.uniqueVisitors },
-            { icon: <FaUser />,      label: 'Total Views',       value: insights.totalViews },
-            { icon: <FaExchangeAlt />, label: 'Contact Exchanges', value: (typeof insights.contactExchanges === 'object' && insights.contactExchanges !== null) ? insights.contactExchanges.count : insights.contactExchanges ?? 0, extra: (
+            { key: 'uniqueVisitors', icon: <FaUsers />, label: 'Unique Visitors', value: insights.uniqueVisitors },
+            { key: 'totalViews', icon: <FaUser />, label: 'Total Views', value: insights.totalViews },
+            { key: 'contactExchanges', icon: <FaExchangeAlt />, label: 'Contact Exchanges', value: (typeof insights.contactExchanges === 'object' && insights.contactExchanges !== null) ? insights.contactExchanges.count : insights.contactExchanges ?? 0, extra: (
               <div className="text-xs text-gray-400 mt-1">
                 {insights.contactExchangeRemaining === 'Unlimited' || insights.contactExchangeLimit === Infinity
                   ? 'Enjoy limitless Contact Exchanges!'
@@ -154,41 +177,74 @@ export default function DashboardInsightsPage() {
                     } exchanges left this month.`}
               </div>
             ) },
-            { icon: <FaDownload />,   label: 'Contact Downloads', value: insights.contactDownloads ?? 0 },
-          ].map((m, i) => (
-            <div key={i} className="flex flex-col items-center justify-center bg-white/5 p-4 rounded-xl h-full text-center">
-              <div className="flex justify-center items-center mb-2 text-2xl text-indigo-300">{m.icon}</div>
-              <div className="text-xl font-bold text-white">{m.value}</div>
-              <div className="text-xs text-gray-300 mb-1">{m.label}</div>
-              {i === 2 && m.extra && (
-                <div className="text-[10px] text-gray-400 mt-2 w-full text-center">{m.extra.props.children}</div>
-              )}
-            </div>
-          ))}
-          <div className="col-span-full flex justify-center bg-white/5 p-4 rounded-xl">
+            { key: 'contactDownloads', icon: <FaDownload />, label: 'Contact Downloads', value: insights.contactDownloads ?? 0 },
+          ].map((m, i) => {
+            const visible = insightVisibility[m.key];
+            return (
+              <div key={i} className={`flex flex-col items-center justify-center bg-white/5 p-4 rounded-xl h-full text-center ${!visible ? 'opacity-40 blur-sm relative pointer-events-none' : ''}`}> 
+                <div className="flex justify-center items-center mb-2 text-2xl text-indigo-300">{m.icon}</div>
+                <div className="text-xl font-bold text-white">{visible ? m.value : '—'}</div>
+                <div className="text-xs text-gray-300 mb-1">{m.label}</div>
+                {i === 2 && m.extra && visible && (
+                  <div className="text-[10px] text-gray-400 mt-2 w-full text-center">{m.extra.props.children}</div>
+                )}
+                {!visible && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                    <button
+                      onClick={() => navigate('/plans')}
+                      className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
+                    >
+                      Upgrade to unlock
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* Total Link Taps */}
+          <div className={`col-span-full flex justify-center bg-white/5 p-4 rounded-xl ${!insightVisibility.totalLinkTaps ? 'opacity-40 blur-sm relative pointer-events-none' : ''}`}>
             <div className="flex flex-col items-center">
               <FaLink className="text-2xl text-indigo-300 mb-2" />
-              <div className="text-xl font-bold text-white">{insights.totalLinkTaps ?? 0}</div>
+              <div className="text-xl font-bold text-white">{insightVisibility.totalLinkTaps ? insights.totalLinkTaps ?? 0 : '—'}</div>
               <div className="text-xs text-gray-300">Total Link Taps</div>
+              {!insightVisibility.totalLinkTaps && (
+                <button
+                  onClick={() => navigate('/plans')}
+                  className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
+                >
+                  Upgrade to unlock
+                </button>
+              )}
             </div>
           </div>
-          <div className="col-span-full flex justify-center bg-white/5 p-4 rounded-xl">
+          {/* Top Contact Method */}
+          <div className={`col-span-full flex justify-center bg-white/5 p-4 rounded-xl ${!insightVisibility.topLink ? 'opacity-40 blur-sm relative pointer-events-none' : ''}`}>
             <div className="flex flex-col items-center">
               <FaStar className="text-2xl text-indigo-300 mb-2" />
               <div className="text-xl font-bold text-white">
-                {insights.topLink
-                  ? insights.topLink
-                  : insights.mostPopularContactMethod
-                    ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1)
-                    : '—'}
+                {insightVisibility.topLink
+                  ? (insights.topLink
+                    ? insights.topLink
+                    : insights.mostPopularContactMethod
+                      ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1)
+                      : '—')
+                  : '—'}
               </div>
               <div className="text-xs text-gray-300">Top Contact Method</div>
+              {!insightVisibility.topLink && (
+                <button
+                  onClick={() => navigate('/plans')}
+                  className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
+                >
+                  Upgrade to unlock
+                </button>
+              )}
             </div>
           </div>
         </section>
 
         {/* Per-link tap counts */}
-        {insights.linkClicks && Object.keys(insights.linkClicks).length > 0 && (
+        {insightVisibility.linkClicks && insights.linkClicks && Object.keys(insights.linkClicks).length > 0 ? (
           <section className="px-6 py-5 border-t border-white/20">
             <h4 className="text-md font-semibold text-white mb-2">Link Tap Breakdown</h4>
             <ul className="space-y-2">
@@ -199,6 +255,19 @@ export default function DashboardInsightsPage() {
                 </li>
               ))}
             </ul>
+          </section>
+        ) : !insightVisibility.linkClicks && (
+          <section className="px-6 py-5 border-t border-white/20 opacity-40 blur-sm relative pointer-events-none">
+            <h4 className="text-md font-semibold text-white mb-2">Link Tap Breakdown</h4>
+            <div className="flex flex-col items-center justify-center min-h-[60px]">
+              <span className="text-gray-300">Upgrade to unlock detailed link tap breakdown.</span>
+              <button
+                onClick={() => navigate('/plans')}
+                className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
+              >
+                Upgrade to unlock
+              </button>
+            </div>
           </section>
         )}
 
