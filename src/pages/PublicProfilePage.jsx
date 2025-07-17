@@ -165,6 +165,11 @@ export default function PublicProfilePage() {
     return () => { isMounted = false; };
   }, [activationCode, API]);
 
+  // Add debug log for profile
+  useEffect(() => {
+    if (profile) console.log('Profile:', profile);
+  }, [profile]);
+
   // Only destructure profile fields after loading is complete and profile is not null
   let bannerUrl = '', avatarUrl = '', name = '', title = '', subtitle = '', tags = [], location = '', email = '', phone = '', website = '', socialLinks = {}, createdAt = '', industry = '', exclusiveBadge = undefined;
   if (!loading && profile) {
@@ -235,8 +240,8 @@ export default function PublicProfilePage() {
   const mostPopularContactMethod = insights?.mostPopularContactMethod;
   const totalLinkTaps = insights?.totalLinkTaps;
 
-  // Add Elite plan check
-  const isElite = insights?.subscription?.plan === 'Elite';
+  // Update isElite logic
+  const isElite = profile?.subscription?.plan === 'Elite' || insights?.subscription?.plan === 'Elite';
 
   // Download vCard helper
   const downloadVCard = async () => {
@@ -320,7 +325,7 @@ export default function PublicProfilePage() {
           {title && <p className="mt-0 text-base font-medium text-gray-700 dark:text-gray-300">{title}</p>}
           {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
           {/* Industry */}
-          {industry && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('industry')) && (
+          {industry && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('industry')) && (
             <div className="flex justify-center mt-2">
               <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-blue-400 via-blue-600 to-blue-800 text-white text-xs font-semibold shadow-lg border border-blue-300 dark:border-blue-700 tracking-wide">
                 {industry}
@@ -328,7 +333,7 @@ export default function PublicProfilePage() {
             </div>
           )}
           {/* Tags */}
-          {tags.length > 0 && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('tags')) && (
+          {tags.length > 0 && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('tags')) && (
             <div className="flex flex-wrap justify-center gap-1 mt-2">
               {tags.map(t => (
                 <span
@@ -410,7 +415,7 @@ export default function PublicProfilePage() {
             </a>
           )}
           {/* Phone */}
-          {phone && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('phone')) && (
+          {phone && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('phone')) && (
             <a
               href={`tel:${phone}`}
               target="_blank"
@@ -434,7 +439,7 @@ export default function PublicProfilePage() {
             </a>
           )}
           {/* Website */}
-          {website && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('website')) && (
+          {website && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('website')) && (
             <a
               href={website.startsWith('http') ? website : `https://${website}`}
               target="_blank"
@@ -484,7 +489,7 @@ export default function PublicProfilePage() {
             </a>
           )}
           {/* LinkedIn */}
-          {socialLinks.linkedin && (isElite || PLAN_FIELDS[insights?.subscription?.plan || 'Novice']?.includes('linkedin')) && (
+          {socialLinks.linkedin && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('linkedin')) && (
             <a
               href={`https://linkedin.com/in/${socialLinks.linkedin}`}
               target="_blank"
@@ -639,7 +644,7 @@ export default function PublicProfilePage() {
               >
                 ✕
               </button>
-              <h2 className="mb-4 text-xl font-semibold">Send a Connection Message - With Meeting Details</h2>
+              <h2 className="mb-4 text-xl font-semibold">Help them remember you better. Add a short message along with when & where you met</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm">Your Name</label>
@@ -648,7 +653,7 @@ export default function PublicProfilePage() {
                     value={form.name}
                     onChange={handleChange}
                     required
-                    placeholder="e.g. Jane Doe"
+                    placeholder="So they remember you — e.g. Jane Doe"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
@@ -666,12 +671,12 @@ export default function PublicProfilePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm">Event We Met At</label>
+                    <label className="block text-sm">Where did we meet?</label>
                     <input
                       name="event"
                       value={form.event}
                       onChange={handleChange}
-                      placeholder="e.g. Tech Conference 2025"
+                      placeholder="e.g. TEDx IITM"
                       className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                     />
                   </div>
@@ -687,12 +692,12 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm">Place</label>
+                  <label className="block text-sm">City/Venue</label>
                   <input
                     name="place"
                     value={form.place}
                     onChange={handleChange}
-                    placeholder="e.g. San Francisco"
+                    placeholder="e.g. Bangalore"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>
@@ -703,7 +708,7 @@ export default function PublicProfilePage() {
                     value={form.message}
                     onChange={handleChange}
                     rows="3"
-                    placeholder="e.g. It was great meeting you at the event!"
+                    placeholder="Add a personal touch or reminder"
                     className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400"
                   />
                 </div>

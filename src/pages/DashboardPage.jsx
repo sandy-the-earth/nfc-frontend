@@ -378,8 +378,8 @@ const CardContent = memo(function CardContent({
           {/* Render fields based on subscription plan */}
           {ALL_FIELDS.map(({ key, label, type, placeholder }) => {
             // Normalize plan string to match PLAN_FIELDS keys
-            const normalizedPlan = (plan && PLAN_FIELDS[plan]) ? plan : 'Novice';
-            const isElite = normalizedPlan === 'Elite';
+            const normalizedPlan = (profile?.subscription?.plan && PLAN_FIELDS[profile.subscription.plan]) ? profile.subscription.plan : 'Novice';
+            const isElite = profile?.subscription?.plan === 'Elite';
             const isAllowed = isElite || PLAN_FIELDS[normalizedPlan]?.includes(key);
             if (isAllowed) {
               // Render normal input field
@@ -546,6 +546,11 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => setDarkMode(theme === 'dark'), [theme]);
+
+  // Add debug log for profile
+  useEffect(() => {
+    if (profile) console.log('Profile:', profile);
+  }, [profile]);
 
   const { rotateY } = useSpring({
     rotateY: darkMode ? 180 : 0,
