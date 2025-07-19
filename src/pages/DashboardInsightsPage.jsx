@@ -3,16 +3,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
-import {
-  FaArrowLeft,
-  FaExchangeAlt,
-  FaDownload,
-  FaLink,
-  FaUser,
-  FaUsers,
-  FaStar
-} from 'react-icons/fa';
+import { LineChart, Line, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import MetricCard from '../components/MetricCard';
+import { FaUsers, FaUser, FaExchangeAlt, FaDownload, FaLink, FaStar, FaArrowLeft } from 'react-icons/fa';
 
 export default function DashboardInsightsPage() {
   const [insights, setInsights] = useState(null);
@@ -27,6 +20,105 @@ export default function DashboardInsightsPage() {
   const [deactivating, setDeactivating] = useState(false);
   const [deactivateError, setDeactivateError] = useState(null);
   const deactivateInputRef = useRef(null);
+
+  // Add state for insightVisibility
+  const [insightVisibility, setInsightVisibility] = useState({
+    uniqueVisitors: true,
+    totalViews: true,
+    contactExchanges: true,
+    contactDownloads: true,
+    totalLinkTaps: true,
+    topLink: true,
+    linkClicks: true,
+  });
+
+  // Add state for graph days
+  const [graphDays, setGraphDays] = useState(7);
+
+  // Add the BlurredMetric component for locked metrics
+  function BlurredMetric({ value, onUpgrade }) {
+    return (
+      <div className="relative w-full h-12 flex items-center justify-center">
+        {/* 1. The blurred value */}
+        <span
+          aria-hidden="true"
+          className="text-2xl font-bold text-white blur-sm select-none"
+          style={{ filter: 'blur(6px)' }}
+        >
+          {value}
+        </span>
+        {/* 2. Semi-opaque overlay to mute any remaining details */}
+        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg" />
+        {/* 3. Centered CTA button */}
+        <button
+          onClick={onUpgrade}
+          className="absolute px-4 py-1 bg-yellow-400 text-black font-semibold rounded-lg animate-pulse focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
+          aria-label="Upgrade to unlock full insights"
+        >
+          Upgrade to Unlock full insights
+        </button>
+      </div>
+    );
+  }
+
+  // Helper for rendering a blurred value with overlay CTA (same as Link Tap Breakdown)
+  function BlurredValue({ value, visible }) {
+    return visible ? (
+      <span className="text-xl font-bold text-white">{value}</span>
+    ) : (
+      <span className="relative inline-block" style={{ width: '100%' }}>
+        <span className="blur-sm select-none text-xl font-bold text-white opacity-80" style={{ filter: 'blur(4px)' }}>{value}</span>
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 text-yellow-700 text-xs font-semibold rounded px-2 py-1 shadow pointer-events-auto" style={{ zIndex: 2 }}>
+        Upgrade to Unlock full insights
+        </span>
+      </span>
+    );
+  }
+
+  // Add the GatedSection component for gating entire sections
+  function GatedSection({ children, onUpgrade }) {
+    return (
+      <div className="relative bg-white/5 rounded-lg overflow-hidden">
+        {/* Blurred content */}
+        <div className="p-4 text-gray-300 blur-sm select-none pointer-events-none">
+          {children}
+        </div>
+        {/* Centered, minimal CTA */}
+        <button
+          onClick={onUpgrade}
+          className="absolute inset-0 flex flex-col items-center justify-center text-sm font-medium bg-blue-600 bg-opacity-90 hover:bg-blue-700 text-white rounded-lg transition backdrop-blur-sm shadow-lg"
+          aria-label="Upgrade to unlock full insights"
+        >
+          <span className="font-bold text-lg text-white">Upgrade</span>
+          <span className="text-xs text-blue-100 flex items-center gap-1">
+            to Unlock full insights <span className="text-lg ml-1">→</span>
+          </span>
+        </button>
+      </div>
+    );
+  }
+
+  // Refined GatedGraphSection for best UI/UX consistency
+  function GatedGraphSection({ children, onUpgrade }) {
+    return (
+      <div className="relative rounded-2xl overflow-hidden bg-white/5 border border-white/20">
+        {/* Blur + pointer lock */}
+        <div className="pointer-events-none blur-[3px] brightness-[0.7] select-none">
+          {children}
+        </div>
+        {/* Glassmorphic overlay CTA, text-on-glass */}
+        <button
+          onClick={onUpgrade}
+          className="absolute inset-0 flex flex-col items-center justify-center bg-white/20 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg focus:outline-none"
+          style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.10)' }}
+          aria-label="Upgrade to unlock full insights"
+        >
+          <span className="font-bold text-lg text-white drop-shadow">Upgrade</span>
+          <span className="text-xs text-blue-100 drop-shadow">to Unlock full insights <span className="text-lg ml-1">→</span></span>
+        </button>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!profileId) return navigate('/login', { replace: true });
@@ -56,17 +148,6 @@ export default function DashboardInsightsPage() {
       .catch(() => setError('Could not load insights'))
       .finally(() => setLoading(false));
   }, [API, profileId]);
-
-  // Add state for insightVisibility
-  const [insightVisibility, setInsightVisibility] = useState({
-    uniqueVisitors: true,
-    totalViews: true,
-    contactExchanges: true,
-    contactDownloads: true,
-    totalLinkTaps: true,
-    topLink: true,
-    linkClicks: true,
-  });
 
   const handleDeactivateProfile = async () => {
     setDeactivating(true);
@@ -112,6 +193,12 @@ export default function DashboardInsightsPage() {
     );
   }
 
+  // Extract visibility object
+  const visibility = insights?.insightVisibility || {};
+
+  // Filter view counts based on graphDays
+  const filteredViewCounts = insights?.viewCountsOverTime?.slice(-graphDays) || [];
+
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4 flex flex-col items-center space-y-8">
       <div className="w-full max-w-lg bg-white/10 border border-white/20 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
@@ -139,137 +226,147 @@ export default function DashboardInsightsPage() {
           </section>
         )}
 
-        {/* Weekly Activity */}
-        <section className="px-6 py-5 border-t border-white/20">
-          <div className="flex justify-between items-center mb-2 text-xs text-gray-400">
-            <span>WEEKLY ACTIVITY</span>
-            <span>
-              {insights.viewCountsOverTime?.[0]?.date} – {insights.viewCountsOverTime?.slice(-1)[0]?.date}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <div className="mr-6">
-              <div className="text-2xl font-bold text-white">{insights.totalViews}</div>
-              <div className="text-xs text-gray-300">Profile views</div>
+        {/* Detailed Views Graph (gated for Novice) */}
+        {insightsEnabled && insights && Array.isArray(insights.viewCountsOverTime) && insights.viewCountsOverTime.length > 0 && (
+          insights.subscription?.plan === 'Novice' ? (
+            <GatedGraphSection onUpgrade={() => navigate('/plans')}>
+              <div className="w-full max-w-lg mt-8 mb-2 p-6 flex flex-col items-center">
+                <h3 className="text-lg font-bold text-white mb-2">Profile Views (Last {graphDays} Days)</h3>
+                <div className="flex gap-2 mb-4">
+                  {[7, 14, 30].map(days => (
+                    <button
+                      key={days}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold border transition focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] ${graphDays === days ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-400 dark:border-blue-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-800'}`}
+                      disabled
+                    >
+                      Past {days} days
+                    </button>
+                  ))}
+                </div>
+                <div className="w-full h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={filteredViewCounts} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#b3b8c5' }} angle={-30} textAnchor="end" height={50} dy={10} />
+                      <YAxis tick={{ fontSize: 12, fill: '#b3b8c5' }} label={{ value: 'Views', angle: -90, position: 'insideLeft', fill: '#b3b8c5', fontSize: 13 }} allowDecimals={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{ background: '#23272f', borderRadius: 8, color: '#e0e0e0', border: 'none', boxShadow: '0 2px 8px #0001' }}
+                        labelStyle={{ color: '#a3a3ff', fontWeight: 500 }}
+                        formatter={(value, name) => [`${value} views`, 'Views']}
+                        labelFormatter={label => `Date: ${label}`}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#a3a3ff"
+                        strokeWidth={2.5}
+                        dot={{ r: 3, fill: '#b3b8c5', stroke: '#a3a3ff', strokeWidth: 1.5 }}
+                        activeDot={{ r: 6, fill: '#23272f', stroke: '#a3a3ff', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                  {filteredViewCounts.length > 0 && `${filteredViewCounts[0].date} - ${filteredViewCounts[filteredViewCounts.length-1].date}`}
+                </div>
+              </div>
+            </GatedGraphSection>
+          ) : (
+            <div className="w-full max-w-lg mt-8 mb-2 bg-white/10 border border-white/20 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+              <h3 className="text-lg font-bold text-white mb-2">Profile Views (Last {graphDays} Days)</h3>
+              <div className="flex gap-2 mb-4">
+                {[7, 14, 30].map(days => (
+                  <button
+                    key={days}
+                    onClick={() => setGraphDays(days)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] ${graphDays === days ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-400 dark:border-blue-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-800'}`}
+                  >
+                    Past {days} days
+                  </button>
+                ))}
+              </div>
+              <div className="w-full h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={filteredViewCounts} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#b3b8c5' }} angle={-30} textAnchor="end" height={50} dy={10} />
+                    <YAxis tick={{ fontSize: 12, fill: '#b3b8c5' }} label={{ value: 'Views', angle: -90, position: 'insideLeft', fill: '#b3b8c5', fontSize: 13 }} allowDecimals={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ background: '#23272f', borderRadius: 8, color: '#e0e0e0', border: 'none', boxShadow: '0 2px 8px #0001' }}
+                      labelStyle={{ color: '#a3a3ff', fontWeight: 500 }}
+                      formatter={(value, name) => [`${value} views`, 'Views']}
+                      labelFormatter={label => `Date: ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#a3a3ff"
+                      strokeWidth={2.5}
+                      dot={{ r: 3, fill: '#b3b8c5', stroke: '#a3a3ff', strokeWidth: 1.5 }}
+                      activeDot={{ r: 6, fill: '#23272f', stroke: '#a3a3ff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="text-xs text-gray-500 mt-2">
+                {filteredViewCounts.length > 0 && `${filteredViewCounts[0].date} - ${filteredViewCounts[filteredViewCounts.length-1].date}`}
+              </div>
             </div>
-            <div className="flex-1 h-20">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={insights.viewCountsOverTime}>
-                  <Line type="monotone" dataKey="count" stroke="#A78BFA" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </section>
+          )
+        )}
 
         {/* Metrics Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-6 py-5 border-t border-white/20">
-          {[
-            { key: 'uniqueVisitors', icon: <FaUsers />, label: 'Unique Visitors', value: insights.uniqueVisitors },
-            { key: 'totalViews', icon: <FaUser />, label: 'Total Views', value: insights.totalViews },
-            { key: 'contactExchanges', icon: <FaExchangeAlt />, label: 'Contact Exchanges', value: (typeof insights.contactExchanges === 'object' && insights.contactExchanges !== null) ? insights.contactExchanges.count : insights.contactExchanges ?? 0, extra: (
-              <div className="text-xs text-gray-400 mt-1">
-                {insights.contactExchangeRemaining === 'Unlimited' || insights.contactExchangeLimit === Infinity
-                  ? 'Enjoy limitless Contact Exchanges!'
-                  : `${typeof insights.contactExchangeRemaining === 'object' && insights.contactExchangeRemaining !== null
-                      ? insights.contactExchangeRemaining.count
-                      : insights.contactExchangeRemaining ?? '-'
-                    } exchanges left this month.`}
-              </div>
-            ) },
-            { key: 'contactDownloads', icon: <FaDownload />, label: 'Contact Downloads', value: insights.contactDownloads ?? 0 },
-          ].map((m, i) => {
-            const visible = insightVisibility[m.key];
-            return (
-              <div key={i} className={`flex flex-col items-center justify-center bg-white/5 p-4 rounded-xl h-full text-center ${!visible ? 'opacity-40 blur-sm relative pointer-events-none' : ''}`}> 
-                <div className="flex justify-center items-center mb-2 text-2xl text-indigo-300">{m.icon}</div>
-                <div className="text-xl font-bold text-white">{visible ? m.value : '—'}</div>
-                <div className="text-xs text-gray-300 mb-1">{m.label}</div>
-                {i === 2 && m.extra && visible && (
-                  <div className="text-[10px] text-gray-400 mt-2 w-full text-center">{m.extra.props.children}</div>
-                )}
-                {!visible && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                    <button
-                      onClick={() => navigate('/plans')}
-                      className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
-                    >
-                      Upgrade to unlock
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {/* Total Link Taps */}
-          <div className={`col-span-full flex justify-center bg-white/5 p-4 rounded-xl ${!insightVisibility.totalLinkTaps ? 'opacity-40 blur-sm relative pointer-events-none' : ''}`}>
-            <div className="flex flex-col items-center">
-              <FaLink className="text-2xl text-indigo-300 mb-2" />
-              <div className="text-xl font-bold text-white">{insightVisibility.totalLinkTaps ? insights.totalLinkTaps ?? 0 : '—'}</div>
-              <div className="text-xs text-gray-300">Total Link Taps</div>
-              {!insightVisibility.totalLinkTaps && (
-                <button
-                  onClick={() => navigate('/plans')}
-                  className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
-                >
-                  Upgrade to unlock
-                </button>
-              )}
-            </div>
+          <MetricCard
+            icon={FaUsers}
+            label="Unique Visitors"
+            value={insights.uniqueVisitors}
+            visible={visibility.uniqueVisitors !== undefined ? visibility.uniqueVisitors : true}
+            onUpgrade={() => navigate('/plans')}
+          />
+          <MetricCard
+            icon={FaUser}
+            label="Total Views"
+            value={insights.totalViews}
+            visible={visibility.totalViews !== undefined ? visibility.totalViews : true}
+            onUpgrade={() => navigate('/plans')}
+          />
+          <MetricCard
+            icon={FaExchangeAlt}
+            label="Contact Exchanges"
+            value={(typeof insights.contactExchanges === 'object' && insights.contactExchanges !== null) ? insights.contactExchanges.count : insights.contactExchanges ?? '—'}
+            visible={visibility.contactExchanges !== undefined ? visibility.contactExchanges : true}
+            onUpgrade={() => navigate('/plans')}
+          />
+          <MetricCard
+            icon={FaDownload}
+            label="Contact Downloads"
+            value={insights.contactDownloads}
+            visible={visibility.contactDownloads !== undefined ? visibility.contactDownloads : true}
+            onUpgrade={() => navigate('/plans')}
+          />
+          {/* Full-width cards: */}
+          <div className="sm:col-span-2">
+            <MetricCard
+              icon={FaLink}
+              label="Total Link Taps"
+              value={insights.totalLinkTaps}
+              visible={visibility.totalLinkTaps !== undefined ? visibility.totalLinkTaps : true}
+              onUpgrade={() => navigate('/plans')}
+            />
           </div>
-          {/* Top Contact Method */}
-          <div className={`col-span-full flex justify-center bg-white/5 p-4 rounded-xl ${!insightVisibility.topLink ? 'opacity-40 blur-sm relative pointer-events-none' : ''}`}>
-            <div className="flex flex-col items-center">
-              <FaStar className="text-2xl text-indigo-300 mb-2" />
-              <div className="text-xl font-bold text-white">
-                {insightVisibility.topLink
-                  ? (insights.topLink
-                    ? insights.topLink
-                    : insights.mostPopularContactMethod
-                      ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1)
-                      : '—')
-                  : '—'}
-              </div>
-              <div className="text-xs text-gray-300">Top Contact Method</div>
-              {!insightVisibility.topLink && (
-                <button
-                  onClick={() => navigate('/plans')}
-                  className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
-                >
-                  Upgrade to unlock
-                </button>
-              )}
-            </div>
+          <div className="sm:col-span-2">
+            <MetricCard
+              icon={FaStar}
+              label="Top Contact Method"
+              value={insights.mostPopularContactMethod
+                ? insights.mostPopularContactMethod.charAt(0).toUpperCase() + insights.mostPopularContactMethod.slice(1)
+                : '—'}
+              visible={visibility.topLink !== undefined ? visibility.topLink : true}
+              onUpgrade={() => navigate('/plans')}
+            />
           </div>
         </section>
-
-        {/* Per-link tap counts */}
-        {insightVisibility.linkClicks && insights.linkClicks && Object.keys(insights.linkClicks).length > 0 ? (
-          <section className="px-6 py-5 border-t border-white/20">
-            <h4 className="text-md font-semibold text-white mb-2">Link Tap Breakdown</h4>
-            <ul className="space-y-2">
-              {Object.entries(insights.linkClicks).map(([link, count]) => (
-                <li key={link} className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-2 text-gray-200">
-                  <span className="truncate max-w-[60%]" title={link}>{link}</span>
-                  <span className="font-bold text-indigo-300">{count}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : !insightVisibility.linkClicks && (
-          <section className="px-6 py-5 border-t border-white/20 opacity-40 blur-sm relative pointer-events-none">
-            <h4 className="text-md font-semibold text-white mb-2">Link Tap Breakdown</h4>
-            <div className="flex flex-col items-center justify-center min-h-[60px]">
-              <span className="text-gray-300">Upgrade to unlock detailed link tap breakdown.</span>
-              <button
-                onClick={() => navigate('/plans')}
-                className="mt-2 px-3 py-1 bg-yellow-500 text-black text-xs font-semibold rounded-lg shadow hover:bg-yellow-400 transition pointer-events-auto"
-              >
-                Upgrade to unlock
-              </button>
-            </div>
-          </section>
-        )}
 
         {/* Timestamps */}
         <section className="px-6 py-5 border-t border-white/20">

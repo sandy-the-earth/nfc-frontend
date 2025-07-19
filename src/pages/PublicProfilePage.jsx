@@ -170,6 +170,13 @@ export default function PublicProfilePage() {
     if (profile) console.log('Profile:', profile);
   }, [profile]);
 
+  // After fetching the profile, set the theme from profile.theme
+  useEffect(() => {
+    if (profile?.theme) {
+      setTheme(profile.theme);
+    }
+  }, [profile?.theme, setTheme]);
+
   // Only destructure profile fields after loading is complete and profile is not null
   let bannerUrl = '', avatarUrl = '', name = '', title = '', subtitle = '', tags = [], location = '', email = '', phone = '', website = '', socialLinks = {}, createdAt = '', industry = '', exclusiveBadge = undefined;
   if (!loading && profile) {
