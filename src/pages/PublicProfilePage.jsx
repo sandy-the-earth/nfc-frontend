@@ -17,7 +17,8 @@ import {
   FaSave,
   FaStar, // <-- add star icon for badge
   FaExchangeAlt,
-  FaDownload
+  FaDownload,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import { MdQrCode } from 'react-icons/md';
 import QRCode from 'react-qr-code';
@@ -28,7 +29,7 @@ import ContactForm from '../components/ContactForm';
 // Subscription-based field restrictions
 const PLAN_FIELDS = {
   Novice: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin'],
-  Corporate: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin', 'industry', 'website'],
+  Corporate: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin', 'industry', 'website', 'calendlyLink'],
   Elite: [] // All fields available
 };
 
@@ -178,7 +179,7 @@ export default function PublicProfilePage() {
   }, [profile?.theme, setTheme]);
 
   // Only destructure profile fields after loading is complete and profile is not null
-  let bannerUrl = '', avatarUrl = '', name = '', title = '', subtitle = '', tags = [], location = '', email = '', phone = '', website = '', socialLinks = {}, createdAt = '', industry = '', exclusiveBadge = undefined;
+  let bannerUrl = '', avatarUrl = '', name = '', title = '', subtitle = '', tags = [], location = '', email = '', phone = '', website = '', calendlyLink = '', socialLinks = {}, createdAt = '', industry = '', exclusiveBadge = undefined;
   if (!loading && profile) {
     ({
       bannerUrl = '',
@@ -191,6 +192,7 @@ export default function PublicProfilePage() {
       email = '',
       phone = '',
       website = '',
+      calendlyLink = '',
       socialLinks = {},
       createdAt = '',
       industry = '',
@@ -270,6 +272,7 @@ export default function PublicProfilePage() {
       socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${socialLinks.linkedin}`,
       socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${socialLinks.twitter}`,
       website && `URL;type=work:${website}`,
+      calendlyLink && `URL;type=calendly:${calendlyLink}`,
       'END:VCARD'
     ]
       .filter(Boolean)
@@ -466,8 +469,33 @@ export default function PublicProfilePage() {
                 minHeight: '44px',
               }}
             >
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Website</span>
-              <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{website}
+          <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Website</span>
+          <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{website}
+        </a>
+      )}
+          {/* Calendly */}
+          {calendlyLink && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('calendlyLink')) && (
+            <a
+              href={calendlyLink.startsWith('http') ? calendlyLink : `https://${calendlyLink}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { postLinkTap(calendlyLink.startsWith('http') ? calendlyLink : `https://${calendlyLink}`); }}
+              className="block w-full px-3 py-2 rounded-lg text-gray-900 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-gray-700 transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                  : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+                color: darkMode ? '#e0e0e0' : '#232323',
+                textShadow: darkMode ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #fff8, 0 0.5px 0 #bdbdbd',
+                boxShadow: darkMode
+                  ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+                  : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+                border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+                minHeight: '44px',
+              }}
+            >
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Calendly</span>
+              <FaCalendarAlt className="mr-2 text-indigo-500 dark:text-indigo-400" />{calendlyLink}
             </a>
           )}
           {/* Instagram */}
