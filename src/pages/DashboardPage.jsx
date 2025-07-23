@@ -10,6 +10,7 @@ import {
   FaLinkedin,
   FaTwitter,
   FaGlobe,
+  FaCalendarAlt,
   FaMapMarkerAlt,
   FaSave,
   FaRegCopy,
@@ -58,7 +59,7 @@ const ContactRow = memo(function ContactRow({ icon, label, value, href, onCopy }
 // Subscription-based field restrictions
 const PLAN_FIELDS = {
   Novice: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin'],
-  Corporate: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin', 'industry', 'website'],
+  Corporate: ['name', 'title', 'subtitle', 'tags', 'phone', 'linkedin', 'industry', 'website', 'calendlyLink'],
   Elite: [] // All fields available
 };
 
@@ -69,6 +70,7 @@ const ALL_FIELDS = [
   { key: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'e.g. Marketing, Networking, SaaS' },
   { key: 'phone', label: 'Phone', type: 'tel', placeholder: 'e.g. +91 9876543210' },
   { key: 'website', label: 'Website', type: 'url', placeholder: 'e.g. https://yourcompany.com' },
+  { key: 'calendlyLink', label: 'Calendly Link', type: 'url', placeholder: 'e.g. https://calendly.com/yourlink' },
   { key: 'instagram', label: 'Instagram', type: 'text', placeholder: 'e.g. yourhandle' },
   { key: 'linkedin', label: 'LinkedIn', type: 'text', placeholder: 'e.g. your-linkedin-url-id' },
   { key: 'twitter', label: 'Twitter', type: 'text', placeholder: 'e.g. yourhandle' },
@@ -265,11 +267,34 @@ const CardContent = memo(function CardContent({
                 minHeight: '44px',
               }}
             >
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Website</span>
-              <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{profile.website}
-            </a>
-          )}
-          {profile.socialLinks && profile.socialLinks.instagram && (
+          <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Website</span>
+          <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{profile.website}
+        </a>
+      )}
+      {profile.calendlyLink && (
+        <a
+          href={profile.calendlyLink.startsWith('http') ? profile.calendlyLink : `https://${profile.calendlyLink}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 text-sm font-semibold tracking-wide mb-2 shadow border border-gray-300 dark:border-[#23272f] transition hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300] flex items-center gap-2"
+          style={{
+            background: theme === 'dark'
+              ? 'linear-gradient(120deg, #23272f 0%, #23272f 40%, #181a20 100%)'
+              : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+            color: theme === 'dark' ? '#e0e0e0' : '#232323',
+            textShadow: theme === 'dark' ? '0 1px 2px #0008, 0 0.5px 0 #444' : '0 1px 2px #bdbdbd, 0 0.5px 0 #fff8',
+            boxShadow: theme === 'dark'
+              ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+              : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+            border: theme === 'dark' ? '1px solid #444' : '1px solid #bdbdbd',
+            minHeight: '44px',
+          }}
+        >
+          <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Calendly</span>
+          <FaCalendarAlt className="mr-2 text-indigo-500 dark:text-indigo-400" />{profile.calendlyLink}
+        </a>
+      )}
+      {profile.socialLinks && profile.socialLinks.instagram && (
             <a
               href={`https://instagram.com/${profile.socialLinks.instagram}`}
               target="_blank"
@@ -502,6 +527,7 @@ export default function DashboardPage() {
     ownerEmail: '',
     phone: '',
     website: '',
+    calendlyLink: '',
     location: '',
     bio: '',
     industry: '', // <-- add industry field
@@ -674,6 +700,7 @@ export default function DashboardPage() {
     profile?.socialLinks?.twitter &&
       `X-SOCIALPROFILE;type=twitter:https://twitter.com/${profile.socialLinks.twitter}`,
     profile?.website && `URL;type=work:${profile.website}`,
+    profile?.calendlyLink && `URL;type=calendly:${profile.calendlyLink}`,
     'END:VCARD'
   ].filter(Boolean);
   const vCard = vCardLines.join('\n');
@@ -714,6 +741,7 @@ export default function DashboardPage() {
             ...initialForm.socialLinks,
             ...(data.socialLinks || {})
           },
+          calendlyLink: data.calendlyLink || '',
           bannerUrl: data.bannerUrl || '',
           avatarUrl: data.avatarUrl || ''
         });
