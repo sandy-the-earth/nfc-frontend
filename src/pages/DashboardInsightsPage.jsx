@@ -368,6 +368,20 @@ export default function DashboardInsightsPage() {
           </div>
         </section>
 
+{insights?.viewsByIndustry && (
+  <div className="sm:col-span-2 bg-white/10 border border-white/20 rounded-2xl shadow-xl p-6">
+    <h3 className="text-lg font-bold text-white mb-2">Industry-wise Views</h3>
+    <ul>
+      {Object.entries(insights.viewsByIndustry).map(([industry, count]) => (
+        <li key={industry} className="flex justify-between py-1 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+          <span className="text-gray-200">{industry}</span>
+          <span className="font-semibold text-white">{count}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
         {/* Timestamps */}
         <section className="px-6 py-5 border-t border-white/20">
           <div className="bg-white/5 p-4 rounded-xl text-gray-400 text-xs space-y-1">

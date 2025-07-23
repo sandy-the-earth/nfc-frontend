@@ -562,6 +562,8 @@ export default function DashboardPage() {
     return insights.viewCountsOverTime.slice(-graphDays);
   }, [insights, graphDays]);
   useEffect(() => { localStorage.setItem('uiStyle', uiStyle); }, [uiStyle]);
+  const [qrType, setQrType] = useState(() => localStorage.getItem('qrType') || 'url');
+  useEffect(() => { localStorage.setItem('qrType', qrType); }, [qrType]);
 
   useEffect(() => {
     fetch('https://nfc-backend-9c1q.onrender.com/api/profile/industries')
@@ -746,6 +748,8 @@ export default function DashboardPage() {
           avatarUrl: data.avatarUrl || ''
         });
         setInsightsEnabled(!!data.insightsEnabled);
+        // Set qrType from backend if present
+        if (data.qrType) setQrType(data.qrType);
       })
       .catch((err) => {
         setError('Profile not found or server error.');
@@ -810,6 +814,7 @@ export default function DashboardPage() {
           </select>
         </label>
       </div> */}
+
       {/* Card Section */}
       <div style={{ perspective: '800px' }} className="relative w-full max-w-md flex-1 flex flex-col justify-center">
         <animated.div
@@ -945,6 +950,45 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      {/* Render industry-wise views info card if present
+      {insights?.viewsByIndustry && (
+        <div className="w-full max-w-md mt-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
+          <h3 className="text-lg font-bold mb-2">Industry-wise Views</h3>
+          <ul>
+            {Object.entries(insights.viewsByIndustry).map(([industry, count]) => (
+              <li key={industry} className="flex justify-between py-1 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+                <span>{industry}</span>
+                <span className="font-semibold">{count}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )} */}
+
+      <div className="w-full max-w-md flex flex-col items-center mb-4">
+        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+          <span>QR Code Type:</span>
+          <select
+            value={qrType}
+            onChange={async e => {
+              const newType = e.target.value;
+              setQrType(newType);
+              localStorage.setItem('qrType', newType);
+              try {
+                await axios.put(`${API}/api/profile/${profileId}`, { qrType: newType });
+              } catch {}
+            }}
+            className="px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
+          >
+            <option value="url">Profile URL</option>
+            <option value="vcard">Contact Card (vCard)</option>
+          </select>
+          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400" title="Contact Card QR works offline and lets people add you to contacts even without internet. Profile URL opens your online profile (needs internet)">
+            {qrType === 'vcard' ? 'Works offline for contact sharing!' : 'Opens your online profile.'}
+          </span>
+        </label>
+      </div>
+
       {/* Footer Branding */}
       <footer className="w-full flex flex-col items-center justify-center mt-10 mb-4">
         <div className="w-full flex flex-col items-center max-w-xs">
@@ -960,8 +1004,17 @@ export default function DashboardPage() {
       {showQR && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-            <QRCode value={`${window.location.origin}/p/${profileSlug}`} size={120} fgColor={theme === 'dark' ? '#D4AF37' : '#000000'} bgColor="transparent" />
-            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to open profile</p>
+            <QRCode
+              value={qrType === 'vcard' ? vCard : `${window.location.origin}/p/${profileSlug}`}
+              size={120}
+              fgColor={theme === 'dark' ? '#D4AF37' : '#000000'}
+              bgColor="transparent"
+            />
+            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">
+              {qrType === 'vcard'
+                ? 'Scan to add contact (works offline)'
+                : 'Scan to open profile (needs internet)'}
+            </p>
             <button onClick={() => setShowQR(false)} className="mt-3 text-blue-500 dark:text-blue-400 hover:underline">
               Close
             </button>

@@ -110,6 +110,7 @@ export default function PublicProfilePage() {
   const [msg, setMsg] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [insights, setInsights] = useState(null);
+  const [qrType, setQrType] = useState(() => localStorage.getItem('qrType') || 'url');
 
   // Contact form state
   const [form, setForm] = useState({
@@ -244,6 +245,22 @@ export default function PublicProfilePage() {
     return `${FRONTEND.replace(/\/$/, '')}/p/${slug}`;
   };
 
+  // Add a helper to generate vCard string
+  const getVCardString = () => [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${name}`,
+    `TITLE:${title || ''}`,
+    `ORG:${subtitle || ''}`,
+    `EMAIL;TYPE=work:${email || ''}`,
+    phone && `TEL;TYPE=CELL:${phone}`,
+    website && `URL;type=work:${website}`,
+    socialLinks.instagram && `X-SOCIALPROFILE;type=instagram:https://instagram.com/${socialLinks.instagram}`,
+    socialLinks.linkedin && `X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/${socialLinks.linkedin}`,
+    socialLinks.twitter && `X-SOCIALPROFILE;type=twitter:https://twitter.com/${socialLinks.twitter}`,
+    'END:VCARD'
+  ].filter(Boolean).join('\n');
+
   // Determine top link from insights
   const topLink = insights?.topLink;
   const mostPopularContactMethod = insights?.mostPopularContactMethod;
@@ -369,9 +386,15 @@ export default function PublicProfilePage() {
           {/* Location */}
           {location && (isElite) && (
             <div className="flex justify-center mt-2">
-              <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-400 via-pink-600 to-pink-800 text-white text-xs font-semibold shadow-lg border border-pink-300 dark:border-pink-700 tracking-wide">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-400 via-pink-600 to-pink-800 text-white text-xs font-semibold shadow-lg border border-pink-300 dark:border-pink-700 tracking-wide hover:underline flex items-center gap-1"
+                title={`View ${location} on Google Maps`}
+              >
                 <FaMapMarkerAlt className="inline mr-1" />{location}
-              </span>
+              </a>
             </div>
           )}
         </div>
@@ -473,7 +496,7 @@ export default function PublicProfilePage() {
           <FaGlobe className="mr-2 text-purple-500 dark:text-purple-400" />{website}
         </a>
       )}
-          {/* Calendly */}
+          {/* Calendly
           {calendlyLink && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('calendlyLink')) && (
             <a
               href={calendlyLink.startsWith('http') ? calendlyLink : `https://${calendlyLink}`}
@@ -497,7 +520,8 @@ export default function PublicProfilePage() {
               <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 min-w-[60px]">Calendly</span>
               <FaCalendarAlt className="mr-2 text-indigo-500 dark:text-indigo-400" />{calendlyLink}
             </a>
-          )}
+          )} */}
+
           {/* Instagram */}
           {socialLinks.instagram && (isElite) && (
             <a
@@ -575,12 +599,39 @@ export default function PublicProfilePage() {
           )}
         </div>
 
-        {/* Insights Summary - below contact rows */}
-        {insights && mostPopularContactMethod && (
-          <div className="mt-4 mb-2 text-center">
-            <span className="bg-yellow-100 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
-              <b>Top Contact Method:</b> {mostPopularContactMethod.charAt(0).toUpperCase() + mostPopularContactMethod.slice(1)}
+        {/* Calendly
+        {calendlyLink && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('calendlyLink')) && (
+            <a href={calendlyLink.startsWith('http') ? calendlyLink : `https://${calendlyLink}`}target="_blank"
+            rel="noopener noreferrer" onClick={() => postLinkTap(calendlyLink.startsWith('http') ? calendlyLink : `https://${calendlyLink}`)}
+            className="block w-full px-4 py-3 rounded-lg text-sm font-semibold tracking-wide mb-2 shadow border transition flex items-center justify-between gap-2 hover:scale-[1.025] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-[#FFC300]"
+            style={{
+              background: darkMode ? 'linear-gradient(120deg, #232323 0%, #444 40%, #111 100%)'
+                        : 'linear-gradient(120deg, #f8f8f8 0%, #e6e6e6 40%, #bdbdbd 100%)',
+              color: darkMode ? '#e0e0e0' : '#232323',
+              textShadow: darkMode ? '0 1px 2px #0008' : '0 1px 2px #fff8',
+              boxShadow: darkMode ? '0 2px 8px 0 #111a, 0 1.5px 0 #444'
+              : '0 2px 8px 0 #e0e0e0cc, 0 1.5px 0 #bdbdbd',
+              border: darkMode ? '1px solid #444' : '1px solid #bdbdbd',
+              minHeight: '44px',
+          }}>
+            <FaCalendarAlt className="text-indigo-500 dark:text-indigo-400" />
+            <span className="text-sm font-medium">
+            Schedule a meeting
             </span>
+        </a>
+      )} */}
+
+        {/* Schedule Button */}
+        {calendlyLink && (isElite || PLAN_FIELDS[profile?.subscription?.plan || 'Novice']?.includes('calendlyLink')) && (
+          <div className="px-6 mt-2 flex gap-2">
+            <button onClick={() => window.open(
+              calendlyLink.startsWith('http') ? calendlyLink : `https://${calendlyLink}`,
+              '_blank'
+            )}
+            className="flex-1 bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 text-white py-1.5 rounded-lg flex items-center justify-center gap-1 shadow hover:scale-105 transition text-sm"
+            >
+              <FaCalendarAlt /> Schedule Meet
+            </button>
           </div>
         )}
 
@@ -766,8 +817,17 @@ export default function PublicProfilePage() {
       {showQR && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-            <QRCode value={getProfileUrl()} size={120} fgColor={theme === 'dark' ? '#D4AF37' : '#000000'} bgColor="transparent" />
-            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">Scan to open profile</p>
+            <QRCode
+              value={qrType === 'vcard' ? getVCardString() : getProfileUrl()}
+              size={120}
+              fgColor={theme === 'dark' ? '#D4AF37' : '#000000'}
+              bgColor="transparent"
+            />
+            <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">
+              {qrType === 'vcard'
+                ? 'Scan to add contact (works offline)'
+                : 'Scan to open profile (needs internet)'}
+            </p>
             <button
               onClick={() => setShowQR(false)}
               className="mt-3 text-blue-500 dark:text-blue-400 hover:underline"
