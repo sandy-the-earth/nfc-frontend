@@ -1,120 +1,208 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-const PlansPage = () => {
+const FREE_PLAN = {
+  id: 'free',
+  name: 'Free Plan',
+  prices: { monthly: 0, quarterly: 0 },
+  tagline: 'Perfect for individuals just starting out',
+  benefits: [
+    { title: 'Shareable public profile with basic details' },
+    { title: 'Tap to share phone & LinkedIn' },
+    { title: 'Access insights like top-tapped link' },
+    { title: 'No expiry — use forever' },
+  ],
+  featured: false,
+};
+
+export default function PlansPage() {
   const [plans, setPlans] = useState([]);
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
   const navigate = useNavigate();
+  const deckRef = useRef(null);
 
   useEffect(() => {
     fetch('https://nfc-backend-9c1q.onrender.com/api/plans')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then(plans => setPlans(plans))
-      .catch(err => setError(err.message))
+      .then(res => (res.ok ? res.json() : Promise.reject(res.statusText)))
+      .then(data => setPlans([FREE_PLAN, ...data]))
+      .catch(setError)
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    function handleOutside(e) {
+      if (deckRef.current && !deckRef.current.contains(e.target)) {
+        setSelected(null);
+      }
+    }
+    document.addEventListener('click', handleOutside);
+    return () => document.removeEventListener('click', handleOutside);
+  }, []);
+
+  const showTooltip = (content, event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTooltip({
+      content,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8
+    });
+  };
+  const hideTooltip = () => setTooltip(null);
+
   const onSubscribe = planId => {
-    navigate('/', { state: { scrollToContact: true } });
+    if (planId === 'free') {
+      setSelected('free');
+    } else {
+      navigate('/', { state: { scrollToContact: true, selectedPlan: planId } });
+    }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen text-white">Loading plans...</div>;
-  if (error)  return <div className="flex justify-center items-center h-screen text-red-400">Error: {error}</div>;
+  if (loading) return <div className="flex items-center justify-center h-screen text-white">Loading…</div>;
+  if (error)   return <div className="flex items-center justify-center h-screen text-red-400">Error: {error}</div>;
+
+  const offsets = [-140, -45, 45, 140];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white py-16 px-4">
+    <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-800 min-h-screen text-white py-16 px-4">
       {/* Header */}
-      <div className="max-w-4xl mx-auto text-center mb-12">
+      <div className="max-w-4xl mx-auto text-center mb-16">
         <h1 className="text-5xl font-bold text-[#D4AF37] mb-4">Choose Your Plan</h1>
-        <p className="text-gray-400 text-lg">Select a plan that suits your needs</p>
-        <div className="inline-flex rounded-full bg-white/10 backdrop-blur-md p-1 mt-6">
+        <p className="text-gray-400 mb-6">Find the perfect fit for your network.</p>
+        <div className="inline-flex rounded-full bg-white/10 backdrop-blur-md p-1">
           {['monthly','quarterly'].map(cycle => (
             <button
               key={cycle}
               onClick={() => setBillingCycle(cycle)}
-              className={`px-6 py-2 rounded-full font-medium transition ${
+              className={`px-5 py-2 rounded-full font-medium text-sm transition ${
                 billingCycle === cycle
-                  ? 'bg-[#D4AF37] text-black shadow-xl'
+                  ? 'bg-[#D4AF37] text-black shadow-lg'
                   : 'text-gray-300 hover:bg-white/20'
               }`}
             >
-              {cycle === 'monthly' ? 'Monthly' : 'Quarterly (free 1 month)'}
+              {cycle==='monthly'?'Monthly':'Quarterly (free 1m)'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Plan cards */}
-      <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-        {plans.map(plan => (
-          <div
-            key={plan.id}
-            className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col shadow-2xl transition-transform transform hover:-translate-y-3 hover:shadow-3xl"
-          >
-            {/* Featured ribbon */}
-            {plan.featured && (
-              <div className="absolute top-0 right-0 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black px-4 py-1 rounded-tl-2xl rounded-br-2xl text-xs font-bold tracking-wide">
-                POPULAR
-              </div>
-            )}
+      {/* Deck */}
+      <div
+        ref={deckRef}
+        className="relative overflow-visible flex justify-center items-end h-[500px]
+                   transform scale-75 sm:scale-90 md:scale-100 lg:scale-110"
+      >
+        {plans.map((plan, i) => {
+          const isSel = selected === plan.id;
+          const x = isSel ? 0 : offsets[i];
+          const y = isSel ? -60 : 0;
+          const rot = isSel ? 0 : offsets[i] / 20;
+          const z = isSel ? 1000 : i;
 
-            {/* Title & price */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-[#D4AF37]">{plan.name}</h2>
-              <p className="mt-2 text-3xl">
-                ₹{plan.prices[billingCycle]}
-                <span className="text-lg font-medium text-gray-400">
-                  /{billingCycle === 'monthly' ? 'mo' : '3 mo'}
-                </span>
-              </p>
-            </div>
-
-            {/* Tagline */}
-            {plan.tagline && (
-              <p className="text-gray-400 italic mb-4">{plan.tagline}</p>
-            )}
-
-            {/* Benefits list */}
-            <ul className="flex-1 mb-6 space-y-4 text-gray-200">
-              {plan.benefits.map((benefit, i) => (
-                <li key={i} className="group relative flex items-center gap-2">
-                  <span className="flex-1">{benefit.title}</span>
-                  {benefit.detail && (
-                    <>
-                      <div className="w-5 h-5 flex items-center justify-center border border-gray-400 rounded-full text-gray-400 group-hover:text-white group-hover:border-white transition-colors cursor-pointer">
-                        ℹ
-                      </div>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:flex flex-col items-center">
-                        <div className="bg-gray-800 text-white text-sm rounded-lg p-3 max-w-xs text-center shadow-lg z-20">
-                          {benefit.detail}
-                        </div>
-                        <div className="w-3 h-3 bg-gray-800 rotate-45 -mt-1 z-10" />
-                      </div>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-
-            {/* CTA button */}
-            <button
-              onClick={() => onSubscribe(plan.id)}
-              className="mt-auto bg-gradient-to-br from-yellow-400 to-yellow-500 text-black font-semibold py-3 rounded-full shadow-xl hover:shadow-2xl transition-all"
+          return (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ x, y, rotate: rot, scale: isSel ? 1.1 : 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+              style={{ transformOrigin: 'bottom left', zIndex: z }}
+              whileHover={{
+                y: -5,
+                boxShadow: '0 8px 24px rgba(212,175,48,0.6)'
+              }}
+              whileTap={{ scale: 0.97 }}
+              onClick={e => {
+                e.stopPropagation();
+                setSelected(isSel ? null : plan.id);
+              }}
+              className="absolute top-0 w-56 sm:w-64 md:w-72 lg:w-80
+                         bg-gradient-to-br from-gray-900 to-black
+                         border border-white/10 rounded-2xl p-6
+                         flex flex-col shadow-2xl cursor-pointer overflow-visible will-change-transform"
             >
-              {billingCycle === 'monthly'
-                ? `Start ${plan.name} — ₹${plan.prices.monthly}/mo`
-                : `Start ${plan.name} — ₹${plan.prices.quarterly}/3 mo`}
-            </button>
+              {plan.featured && (
+                <div className="absolute top-3 right-3 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black px-3 py-1 rounded-tl-2xl rounded-br-2xl text-xs font-bold">
+                  POPULAR
+                </div>
+              )}
+              <h3 className={`text-lg font-bold ${plan.id==='free'?'text-white':'text-yellow-400'}`}>
+                {plan.name}
+              </h3>
+              <p className="mt-2 text-3xl font-semibold text-white">
+                ₹{plan.prices[billingCycle]}
+                <span className="text-sm text-gray-400">/{billingCycle==='monthly'?'mo':'3 mo'}</span>
+              </p>
+              {plan.tagline && <p className="text-gray-400 text-sm italic mb-4">{plan.tagline}</p>}
+
+              <ul className="flex-1 overflow-y-auto space-y-2 text-sm text-gray-300 pr-2">
+                {plan.benefits?.map((b, idx) => (
+                  <li key={idx} className="relative flex items-start gap-2 overflow-visible">
+                    <span className="mt-1">•</span>
+                    <span>{b.title}</span>
+                    {b.detail && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          showTooltip(b.detail, e);
+                        }}
+                        onMouseEnter={e => showTooltip(b.detail, e)}
+                        onMouseLeave={hideTooltip}
+                        className="ml-auto w-6 h-6 flex items-center justify-center border border-gray-500 rounded-full text-gray-400 hover:text-white hover:border-white transition-colors"
+                      >
+                        ℹ
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => onSubscribe(plan.id)}
+                className={`mt-4 py-2 rounded-full font-semibold transition-all ${
+                  plan.id==='free'
+                    ? 'bg-white text-black hover:bg-gray-100'
+                    : 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-black hover:shadow-lg'
+                }`}
+              >
+                {plan.id==='free'
+                  ? isSel ? 'Free Plan Selected' : 'Select Free Plan'
+                  : `Start ${plan.name} — ₹${plan.prices[billingCycle]}/${billingCycle==='monthly'?'mo':'3 mo'}`}
+              </button>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Tooltip Portal */}
+      {tooltip && ReactDOM.createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: tooltip.y,
+            left: tooltip.x,
+            transform: 'translateX(-50%) translateY(-110%)',
+            zIndex: 2000,
+            pointerEvents: 'none'
+          }}
+        >
+          <div className="bg-gray-900 text-white text-sm rounded-md px-4 py-2 shadow-2xl max-w-md text-center opacity-100">
+            {tooltip.content}
           </div>
-        ))}
+          <div className="w-4 h-4 bg-gray-900 rotate-45 mx-auto -mt-1" />
+        </div>,
+        document.body
+      )}
+
+      {/* Disclaimers */}
+      <div className="max-w-7xl mx-auto mt-12 pt-8 text-center text-xs text-gray-400">
+        <p>* Terms and conditions apply</p>
+        <p>** Feature under development</p>
       </div>
     </div>
   );
-};
-
-export default PlansPage; 
+}
